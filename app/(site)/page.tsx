@@ -6,8 +6,8 @@ import Container from "./components/Container";
 
 export default async function Home() {
 
-  const projects = await getProjects();
 
+  const projects = await getProjects();
   return (
     <Container>
       <h1 className="text-7xl my-5">hello, i&apos;m <span className="bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 bg-clip-text text-transparent">chase</span></h1>

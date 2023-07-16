@@ -1,4 +1,4 @@
-import Container from "@/app/components/Container";
+import Container from "@/app/(site)/components/Container";
 import { getProject } from "@/sanity/sanity-utils";
 import { PortableText } from "@portabletext/react";
 
