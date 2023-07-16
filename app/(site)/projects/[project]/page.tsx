@@ -8,7 +8,8 @@ type Props = {
 export default async function Project( { params }: Props ) {
     const slug = params.project;
     const project = await getProject(slug);
-    return <div>
+    return (
+    <div>
         <Container>
             <div className="prose dark:prose-invert mx-auto">
                 <header><h1>{project.name}</h1></header>
@@ -18,4 +19,5 @@ export default async function Project( { params }: Props ) {
             </div>
         </Container>
     </div>
+    )
 }

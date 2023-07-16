@@ -2,7 +2,8 @@ import { getProjects } from "@/sanity/sanity-utils"
 import Image from "next/image";
 import Link from "next/link";
 import Container from "./components/Container";
-
+import HomeHero from "./components/HomeHero";
+import urlFor from "@/sanity/sanity.image";
 
 export default async function Home() {
 
@@ -10,7 +11,10 @@ export default async function Home() {
   const projects = await getProjects();
   return (
     <Container>
-      <h1 className="text-7xl my-5">hello, i&apos;m <span className="bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 bg-clip-text text-transparent">chase</span></h1>
+      <HomeHero 
+      text="Pixel perfection one line of code at a time." 
+      paragraph="Hi, I'm Chase. I've been a coder and designer for over 8 years. I have a passion for building with effective design. Learn more about me and my skillset." 
+      />
       <div className="grid grid-cols-2 gap-8">
         {projects.map((project) => (
 
@@ -22,10 +26,10 @@ export default async function Home() {
             >
             {project.image && (
               <Image
-                src={project.image}
+                src={urlFor(project.image).width(622).dpr(1.5).url()}
                 alt={project.name}
-                width={250}
-                height={250}
+                width={622}
+                height={622}
                 className="object-cover rounded lg border border-gray-500"
               />
             )}

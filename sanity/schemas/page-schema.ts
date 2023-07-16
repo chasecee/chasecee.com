@@ -9,6 +9,11 @@ const page = {
             type: 'string'
         },
         {
+            name: "subtitle",
+            title: 'Subtitle',
+            type: 'string'
+        },
+        {
             name: 'slug',
             title: 'Slug',
             type: 'slug',
