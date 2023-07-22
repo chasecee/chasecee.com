@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { SimulationNodeDatum, forceSimulation, forceX, forceY, forceCollide, forceManyBody, forceCenter } from 'd3-force';
 import { scaleOrdinal } from 'd3-scale';
 import { select } from 'd3-selection';
@@ -18,6 +18,8 @@ interface Skill extends SimulationNodeDatum {
 }
 
 const ForceGraph: React.FC = () => {
+    const isDragging = useRef(false);
+
     useEffect(() => {
         const skills: Skill[] = [
             { name: 'JS', years: 7, cluster: 0 },
@@ -29,13 +31,14 @@ const ForceGraph: React.FC = () => {
             { name: 'Tailwind', years: 3, cluster: 0 },
             { name: 'Wordpress', years: 12, cluster: 0 },
             { name: 'Photoshop', years: 12, cluster: 1 },
-            { name: 'After Effects', years: 5, cluster: 1 },
+            { name: 'Premier', years: 5, cluster: 1 },
             { name: 'Illustrator', years: 7, cluster: 1 },
             { name: 'Figma', years: 4, cluster: 1 },
             { name: 'Sysadmin', years: 8, cluster: 2 },
             { name: 'Node', years: 5, cluster: 2 },
             { name: 'Networking', years: 10, cluster: 2 },
             { name: 'Cloudflare', years: 8, cluster: 2 },
+            { name: 'AWS', years: 7, cluster: 2 },
         ];
 
         const width = 1280;
@@ -66,17 +69,17 @@ const ForceGraph: React.FC = () => {
         });
 
         const simulation = forceSimulation(nodes)
-            .force('collide', forceCollide().radius((d: Skill) => (d.radius || 0) + 2).strength(.6)) // Increase collide strength to prevent overlap
-            .force('charge', forceManyBody().strength(-50))
+            .force('collide', forceCollide().radius((d: Skill) => (d.radius || 0) + 2).strength(isDragging.current ? 0 : 1)) // Set collide strength to 0 while dragging
+            .force('charge', forceManyBody().strength(-250))
             .force('center', forceCenter(width / 2, height / 2)) // Center force for all nodes
             .force(
                 'cluster',
                 forceCluster() // Add the forceCluster here
                     .centers((d: Skill) => clusterCenters[d.cluster])
-                    .strength(2) // Increase the strength to keep nodes in their clusters
+                    .strength(2.75) // Increase the strength to keep nodes in their clusters
             )
-            .force('x', forceX().strength(0.3).x((d: Skill) => clusterCenters[d.cluster].x)) // Horizontal force based on cluster center
-            .force('y', forceY().strength(0.1).y((d: Skill) => clusterCenters[d.cluster].y)) // Vertical force based on cluster center
+            .force('x', forceX().strength(0.05).x((d: Skill) => clusterCenters[d.cluster].x)) // Horizontal force based on cluster center
+            .force('y', forceY().strength(0.05).y((d: Skill) => clusterCenters[d.cluster].y)) // Vertical force based on cluster center
             .on('tick', ticked);
 
         const svg = select('#d3viz')
@@ -113,7 +116,8 @@ const ForceGraph: React.FC = () => {
 
         function drag(simulation: any) {
             function dragstarted(event: any) {
-                if (!event.active) simulation.alphaTarget(0.3).restart();
+                isDragging.current = true; // Set the dragging flag to true
+                if (!event.active) simulation.alphaTarget(0.1).restart();
                 event.subject.fx = event.subject.x;
                 event.subject.fy = event.subject.y;
             }
@@ -125,6 +129,7 @@ const ForceGraph: React.FC = () => {
             }
 
             function dragended(event: any) {
+                isDragging.current = false; // Set the dragging flag back to false
                 if (!event.active) simulation.alphaTarget(0);
                 event.subject.fx = null;
                 event.subject.fy = null;
