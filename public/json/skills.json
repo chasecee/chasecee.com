@@ -9,17 +9,22 @@
      "children": [
       {"name": "Vanilla", "value": 12},
       {"name": "jQuery", "value": 9},
-      {"name": "React", "value": 4},
-      {"name": "NextJS", "value": 2},
+      {"name": "React", "value": 5},
+      {"name": "NextJS", "value": 3},
       {"name": "Typescript", "value": 3},
-      {"name": "API", "value": 3}
+      {"name": "API", "value": 3},
+      {"name": "Node.js", "value": 5},
+      {"name": "Build Tools", "value": 10},
+      {"name": "Grunt", "value": 4},
+      {"name": "Gulp", "value": 2},
+      {"name": "Webpack", "value": 5}
      ]
     },
     {
      "name": "PHP",
      "children": [
-      {"name": "Wordpress Theme", "value": 10},
-      {"name": "Plugins", "value": 9}
+      {"name": "Wordpress Custom Themes", "value": 10},
+      {"name": "Wordpress Custom Plugins", "value": 9}
      ]
     },
     {
@@ -27,7 +32,8 @@
      "children": [
       {"name": "Tailwind", "value": 10},
       {"name": "SASS", "value": 7},
-      {"name": "BEM", "value": 5},
+      {"name": "Build Tools", "value": 7},
+      {"name": "BEM Syntax", "value": 5},
       {"name": "Centering a div", "value": 10}
      ]
     },
@@ -57,7 +63,8 @@
       {"name": "Photoshop", "value": 10},
       {"name": "Illustrator", "value": 9},
       {"name": "Figma", "value": 4},
-      {"name": "Drawing", "value": 5}
+      {"name": "Drawing", "value": 5},
+      {"name": "Logo Design", "value": 5}
      ]
   },
   {
@@ -67,7 +74,9 @@
       {"name": "Recording", "value": 5},
       {"name": "Writing", "value": 4},
       {"name": "Producing", "value": 10},
-      {"name": "Ableton", "value": 2}
+      {"name": "Ableton", "value": 2},
+      {"name": "Live Sound", "value": 3},
+      {"name": "MIDI & Routing", "value": 5}
      ]
   },
   {

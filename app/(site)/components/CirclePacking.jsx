@@ -12,7 +12,7 @@ const CirclePacking = () => {
           const svg = d3.select(ref.current);
 
           const width = 800;
-          const height = width;
+          const height = 800;
 
           const color = d3.scaleSequential()
             .domain([0, 5])
