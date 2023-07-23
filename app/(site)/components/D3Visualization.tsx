@@ -75,7 +75,7 @@ const ForceGraph: React.FC = () => {
         const simulation = forceSimulation(nodes)
             .force(
                 'collide', 
-                forceCollide().radius((d: any) => (d.radius || 0) + 2).strength(2)
+                forceCollide().radius((d: any) => (d.radius || 0) + 2).strength(2.5)
             )
             .force('charge', forceManyBody().strength(-250))
             .force('center', forceCenter(width / 2, height / 2)) // Center force for all nodes
@@ -83,7 +83,7 @@ const ForceGraph: React.FC = () => {
                 'cluster',
                 forceCluster<Skill>() // Add the forceCluster here
                     .centers(Object.values(clusterCenters))
-                    .strength(5) // Increase the strength to keep nodes in their clusters
+                    .strength(2.75) // Increase the strength to keep nodes in their clusters
             )
             .force('x', forceX<Skill>().strength(0.1).x((d: Skill) => clusterCenters[d.cluster].x)) // Horizontal force based on cluster center
             .force('y', forceY<Skill>().strength(0.1).y((d: Skill) => clusterCenters[d.cluster].y)) // Vertical force based on cluster center
@@ -114,6 +114,7 @@ const ForceGraph: React.FC = () => {
             .attr('x', (d: Skill) => d.x || 0) // Add default value
             .attr('y', (d: Skill) => (d.y || 0) + 5) // Add default value
             .attr('text-anchor', 'middle')
+            .attr('class', 'fill-white pointer-events-none')
             .attr('font-size', '.875rem');
 
         function ticked() {
