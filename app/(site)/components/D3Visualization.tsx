@@ -75,18 +75,18 @@ const ForceGraph: React.FC = () => {
         const simulation = forceSimulation(nodes)
             .force(
                 'collide', 
-                forceCollide().radius((d: any) => (d.radius || 0) + 2).strength(2.5)
+                forceCollide().radius((d: any) => (d.radius || 0) + 5).strength(1)
             )
-            .force('charge', forceManyBody().strength(-250))
+            .force('charge', forceManyBody().strength(-300))
             .force('center', forceCenter(width / 2, height / 2)) // Center force for all nodes
             .force(
                 'cluster',
                 forceCluster<Skill>() // Add the forceCluster here
                     .centers(Object.values(clusterCenters))
-                    .strength(2.75) // Increase the strength to keep nodes in their clusters
+                    .strength(2.85) // Increase the strength to keep nodes in their clusters
             )
             .force('x', forceX<Skill>().strength(0.1).x((d: Skill) => clusterCenters[d.cluster].x)) // Horizontal force based on cluster center
-            .force('y', forceY<Skill>().strength(0.1).y((d: Skill) => clusterCenters[d.cluster].y)) // Vertical force based on cluster center
+            .force('y', forceY<Skill>().strength(0.5).y((d: Skill) => clusterCenters[d.cluster].y)) // Vertical force based on cluster center
             .on('tick', ticked);
 
         const svg = select('#d3viz')

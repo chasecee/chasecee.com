@@ -1,0 +1,83 @@
+{
+ "name": "Skills",
+ "children": [
+  {
+   "name": "Code",
+   "children": [
+    {
+     "name": "Javascript",
+     "children": [
+      {"name": "Vanilla", "value": 12},
+      {"name": "jQuery", "value": 9},
+      {"name": "React", "value": 4},
+      {"name": "NextJS", "value": 2},
+      {"name": "Typescript", "value": 3},
+      {"name": "API", "value": 3}
+     ]
+    },
+    {
+     "name": "PHP",
+     "children": [
+      {"name": "Wordpress Theme", "value": 10},
+      {"name": "Plugins", "value": 9}
+     ]
+    },
+    {
+     "name": "CSS",
+     "children": [
+      {"name": "Tailwind", "value": 10},
+      {"name": "SASS", "value": 7},
+      {"name": "BEM", "value": 5},
+      {"name": "Centering a div", "value": 10}
+     ]
+    },
+    {
+    "name": "CMS",
+    "children": [
+        {"name": "Wordpress", "value": 10},
+        {"name": "Sanity.io", "value": 2},
+        {"name": "Squarespace", "value": 2}
+    ]
+    },
+    {
+    "name": "Sysadmin",
+    "children": [
+        {"name": "AWS", "value": 8},
+        {"name": "Cloudflare", "value": 7},
+        {"name": "Squarespace", "value": 2},
+        {"name": "Nginx", "value": 5},
+        {"name": "Apache", "value": 4}
+    ]
+    }
+   ]
+  },
+  {
+    "name": "Design",
+    "children": [
+      {"name": "Photoshop", "value": 10},
+      {"name": "Illustrator", "value": 9},
+      {"name": "Figma", "value": 4},
+      {"name": "Drawing", "value": 5}
+     ]
+  },
+  {
+    "name": "Audio/Music",
+    "children": [
+      {"name": "Logic Pro X", "value": 12},
+      {"name": "Recording", "value": 5},
+      {"name": "Writing", "value": 4},
+      {"name": "Producing", "value": 10},
+      {"name": "Ableton", "value": 2}
+     ]
+  },
+  {
+    "name": "Video",
+    "children": [
+        {"name": "Premiere Pro", "value": 9},
+        {"name": "Final Cut", "value": 1},
+        {"name": "After Effects", "value": 4},
+        {"name": "Web Video", "value": 8}
+    ]
+  }
+ ]
+}
