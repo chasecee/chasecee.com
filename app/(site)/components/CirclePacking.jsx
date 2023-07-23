@@ -1,30 +1,51 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 
 const CirclePacking = () => {
   const ref = useRef(null);
+  const [dimensions, setDimensions] = useState({
+    width: typeof window !== 'undefined' && window.innerWidth <= 768 ? window.innerWidth : 1280,
+    height: typeof window !== 'undefined' && window.innerWidth <= 768 ? window.innerWidth : 800
+  });
+
+  // Update dimensions on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setDimensions({
+        width: typeof window !== 'undefined' && window.innerWidth <= 768 ? window.innerWidth : 1280,
+        height: typeof window !== 'undefined' && window.innerWidth <= 768 ? window.innerWidth : 800
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   useEffect(() => {
-    fetch('/json/skills.json')
-      .then(response => response.json())
-      .then((data) => {
-        if (ref.current) {
-          const svg = d3.select(ref.current);
+    const currentRef = ref.current;
+    if (currentRef) {
+      const svg = d3.select(currentRef);
 
-          const width = 800;
-          const height = 800;
+      const { width, height } = dimensions;
 
-          const color = d3.scaleSequential()
-            .domain([0, 5])
-            .interpolator(d3.interpolateHcl("hsl(152,80%,80%)", "hsl(228,30%,40%)"));
+      const color = d3.scaleSequential()
+        .domain([0, 5])
+        .interpolator(d3.interpolateHcl("hsl(152,80%,80%)", "hsl(228,30%,40%)"));
 
-          const pack = (data) => d3.pack()
-            .size([width, height])
-            .padding(3)
-            (d3.hierarchy(data)
-              .sum((d) => d.value)
-              .sort((a, b) => (b.value || 0) - (a.value || 0)));
+      const pack = (data) => d3.pack()
+        .size([width, height])
+        .padding(3)
+        (d3.hierarchy(data)
+          .sum((d) => d.value)
+          .sort((a, b) => (b.value || 0) - (a.value || 0)));
 
+      fetch('/json/skills.json')
+        .then(response => response.json())
+        .then((data) => {
           const root = pack(data);
 
           svg.attr("viewBox", `-${width / 2} -${height / 2} ${width} ${height}`)
@@ -64,7 +85,7 @@ const CirclePacking = () => {
           let view;
 
           const zoomTo = (v) => {
-            const k = width / v[2];
+            const k = Math.min(width / v[2], height / v[2]);
 
             view = v;
 
@@ -94,11 +115,17 @@ const CirclePacking = () => {
           }
 
           zoomTo([focus.x, focus.y, focus.r * 2]);
-        }
-      });
-  }, []);
+        });
+    }
 
-  return <svg className="mx-auto" ref={ref} />;
+    // Cleanup function
+    return () => {
+      const svg = d3.select(currentRef);
+      svg.selectAll("*").remove();
+    };
+  }, [dimensions]); // Re-run effect when dimensions change
+
+  return <div className="mx-auto"><svg ref={ref} /></div>;
 };
 
 export default CirclePacking;
