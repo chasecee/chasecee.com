@@ -44,7 +44,7 @@ const ForceGraph: React.FC = () => {
         const width = 1280;
         const height = 500;
 
-        const color = scaleOrdinal<string>().domain(skills.map((d) => d.cluster.toString())).range(["#ff0000", "#5e35b1", "#0000ff"]);
+        const color = scaleOrdinal<string>().domain(skills.map((d) => d.cluster.toString())).range(["#075985", "#3730a3", "#1d4ed8"]);
 
         const nodes: Skill[] = skills.map((skill, i) => {
             const calculatedRadius = Math.max(skill.years * 5, 30);
@@ -75,15 +75,15 @@ const ForceGraph: React.FC = () => {
         const simulation = forceSimulation(nodes)
             .force(
                 'collide', 
-                forceCollide().radius((d: any) => (d.radius || 0) + 2).strength(1)
+                forceCollide().radius((d: any) => (d.radius || 0) + 2).strength(2)
             )
-            .force('charge', forceManyBody().strength(-150))
+            .force('charge', forceManyBody().strength(-250))
             .force('center', forceCenter(width / 2, height / 2)) // Center force for all nodes
             .force(
                 'cluster',
                 forceCluster<Skill>() // Add the forceCluster here
                     .centers(Object.values(clusterCenters))
-                    .strength(3) // Increase the strength to keep nodes in their clusters
+                    .strength(5) // Increase the strength to keep nodes in their clusters
             )
             .force('x', forceX<Skill>().strength(0.1).x((d: Skill) => clusterCenters[d.cluster].x)) // Horizontal force based on cluster center
             .force('y', forceY<Skill>().strength(0.1).y((d: Skill) => clusterCenters[d.cluster].y)) // Vertical force based on cluster center

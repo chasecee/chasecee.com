@@ -4,6 +4,13 @@
 
 #my_dataviz text, #d3viz text{
   pointer-events: none;
+  fill:black;
+}
+@media (prefers-color-scheme: dark) {
+  #my_dataviz text, #d3viz text{
+    pointer-events: none;
+    fill:white;
+  }
 }
 /* :root {
   --foreground-rgb: 0, 0, 0;
