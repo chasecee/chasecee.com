@@ -46,7 +46,7 @@ const ForceGraph: React.FC = () => {
 
         const color = scaleOrdinal<string>().domain(skills.map((d) => d.cluster.toString())).range(["#ff0000", "#5e35b1", "#0000ff"]);
 
-        const nodes: SimulationNodeDatum[] = skills.map((skill, i) => {
+        const nodes: Skill[] = skills.map((skill, i) => {
             const calculatedRadius = Math.max(skill.years * 5, 30);
             const minimumRadius = 15; // Set the minimum radius here
             const radius = Math.max(calculatedRadius, minimumRadius);
@@ -57,29 +57,36 @@ const ForceGraph: React.FC = () => {
             };
         });
 
-        const clusterCenters: { [key: number]: { x: number; y: number } } = {};
+        const clusterCenters: { [key: number]: { x: number; y: number; radius: number } } = {};
 
         // Find the largest node in each cluster and set its position as the cluster center
         nodes.forEach((node) => {
             const clusterId = node.cluster;
-            const center = clusterCenters[clusterId];
-            if (!center || node.radius! > center.radius!) {
-                clusterCenters[clusterId] = { x: node.x || 0, y: node.y || 0 };
+            const center = clusterCenters[clusterId] || { x: 0, y: 0, radius: 0 }; // Initialize center if not set
+            if (!clusterCenters[clusterId] || node.radius! > center.radius) {
+                clusterCenters[clusterId] = {
+                    x: node.x || 0,
+                    y: node.y || 0,
+                    radius: node.radius || 0,
+                };
             }
         });
 
         const simulation = forceSimulation(nodes)
-            .force('collide', forceCollide().radius((d: Skill) => (d.radius || 0) + 2).strength(isDragging.current ? 0 : 1)) // Set collide strength to 0 while dragging
-            .force('charge', forceManyBody().strength(-250))
+            .force(
+                'collide', 
+                forceCollide().radius((d: any) => (d.radius || 0) + 2).strength(1)
+            )
+            .force('charge', forceManyBody().strength(-150))
             .force('center', forceCenter(width / 2, height / 2)) // Center force for all nodes
             .force(
                 'cluster',
-                forceCluster() // Add the forceCluster here
-                    .centers((d: Skill) => clusterCenters[d.cluster])
-                    .strength(2.75) // Increase the strength to keep nodes in their clusters
+                forceCluster<Skill>() // Add the forceCluster here
+                    .centers(Object.values(clusterCenters))
+                    .strength(3) // Increase the strength to keep nodes in their clusters
             )
-            .force('x', forceX().strength(0.05).x((d: Skill) => clusterCenters[d.cluster].x)) // Horizontal force based on cluster center
-            .force('y', forceY().strength(0.05).y((d: Skill) => clusterCenters[d.cluster].y)) // Vertical force based on cluster center
+            .force('x', forceX<Skill>().strength(0.1).x((d: Skill) => clusterCenters[d.cluster].x)) // Horizontal force based on cluster center
+            .force('y', forceY<Skill>().strength(0.1).y((d: Skill) => clusterCenters[d.cluster].y)) // Vertical force based on cluster center
             .on('tick', ticked);
 
         const svg = select('#d3viz')
@@ -92,11 +99,11 @@ const ForceGraph: React.FC = () => {
             .selectAll('circle')
             .data(nodes)
             .join('circle')
-            .attr('r', (d: Skill) => d.radius)
+            .attr('r', (d: Skill) => d.radius || 0) // Add default value
             .attr('fill', (d: Skill) => color(d.cluster.toString()))
-            .attr('cx', (d: Skill) => d.x)
-            .attr('cy', (d: Skill) => d.y)
-            .call(drag(simulation));
+            .attr('cx', (d: Skill) => d.x || 0) // Add default value
+            .attr('cy', (d: Skill) => d.y || 0) // Add default value
+            .call(drag(simulation) as any);
 
         const labels = svg
             .append('g')
@@ -104,37 +111,37 @@ const ForceGraph: React.FC = () => {
             .data(nodes)
             .join('text')
             .text((d: Skill) => d.name)
-            .attr('x', (d: Skill) => d.x)
-            .attr('y', (d: Skill) => d.y)
+            .attr('x', (d: Skill) => d.x || 0) // Add default value
+            .attr('y', (d: Skill) => (d.y || 0) + 5) // Add default value
             .attr('text-anchor', 'middle')
             .attr('font-size', '.875rem');
 
         function ticked() {
-            circles.attr('cx', (d: Skill) => d.x).attr('cy', (d: Skill) => d.y);
-            labels.attr('x', (d: Skill) => d.x).attr('y', (d: Skill) => d.y + 5);
+            circles.attr('cx', (d: Skill) => d.x || 0).attr('cy', (d: Skill) => d.y || 0); // Add default values
+            labels.attr('x', (d: Skill) => d.x || 0).attr('y', (d: Skill) => (d.y || 0) + 5); // Add default values
         }
 
         function drag(simulation: any) {
-            function dragstarted(event: any) {
-                isDragging.current = true; // Set the dragging flag to true
+            function dragstarted(event: any, d: any) {
+                isDragging.current = true;
                 if (!event.active) simulation.alphaTarget(0.1).restart();
-                event.subject.fx = event.subject.x;
-                event.subject.fy = event.subject.y;
+                d.fx = d.x;
+                d.fy = d.y;
             }
-
-            function dragged(event: any) {
-                const radius = event.subject.radius || 0;
-                event.subject.fx = Math.max(radius, Math.min(width - radius, event.x));
-                event.subject.fy = Math.max(radius, Math.min(height - radius, event.y));
+        
+            function dragged(event: any, d: any) {
+                const radius = d.radius || 0;
+                d.fx = Math.max(radius, Math.min(width - radius, event.x));
+                d.fy = Math.max(radius, Math.min(height - radius, event.y));
             }
-
-            function dragended(event: any) {
-                isDragging.current = false; // Set the dragging flag back to false
+        
+            function dragended(event: any, d: any) {
+                isDragging.current = false;
                 if (!event.active) simulation.alphaTarget(0);
-                event.subject.fx = null;
-                event.subject.fy = null;
+                d.fx = null;
+                d.fy = null;
             }
-
+        
             return d3Drag()
                 .on('start', dragstarted)
                 .on('drag', dragged)
