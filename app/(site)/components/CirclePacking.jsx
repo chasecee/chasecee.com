@@ -1,57 +1,37 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
 const CirclePacking = () => {
   const ref = useRef(null);
-  const [dimensions, setDimensions] = useState({
-    width: typeof window !== 'undefined' && window.innerWidth <= 768 ? window.innerWidth : 1280,
-    height: typeof window !== 'undefined' && window.innerWidth <= 768 ? window.innerWidth : 800
-  });
-
-  // Update dimensions on window resize
-  useEffect(() => {
-    const handleResize = () => {
-      setDimensions({
-        width: typeof window !== 'undefined' && window.innerWidth <= 768 ? window.innerWidth : 1280,
-        height: typeof window !== 'undefined' && window.innerWidth <= 768 ? window.innerWidth : 800
-      });
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    // Cleanup
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
+  const breadcrumbRef = useRef(null); // Reference to the breadcrumb div
 
   useEffect(() => {
-    const currentRef = ref.current;
-    if (currentRef) {
-      const svg = d3.select(currentRef);
+    fetch('/json/skills.json')
+      .then(response => response.json())
+      .then((data) => {
+        if (ref.current) {
+          const svg = d3.select(ref.current);
 
-      const { width, height } = dimensions;
+          const width = 800;
+          const height = 800;
 
-      const color = d3.scaleSequential()
-        .domain([0, 5])
-        .interpolator(d3.interpolateHcl("hsl(152,80%,80%)", "hsl(228,30%,40%)"));
+          const color = d3.scaleSequential()
+            .domain([0, 5])
+            .interpolator(d3.interpolateHcl("hsl(152,80%,80%)", "hsl(228,30%,40%)"));
 
-      const pack = (data) => d3.pack()
-        .size([width, height])
-        .padding(3)
-        (d3.hierarchy(data)
-          .sum((d) => d.value)
-          .sort((a, b) => (b.value || 0) - (a.value || 0)));
+          const pack = (data) => d3.pack()
+            .size([width, height])
+            .padding(3)
+            (d3.hierarchy(data)
+              .sum((d) => d.value)
+              .sort((a, b) => (b.value || 0) - (a.value || 0)));
 
-      fetch('/json/skills.json')
-        .then(response => response.json())
-        .then((data) => {
           const root = pack(data);
 
           svg.attr("viewBox", `-${width / 2} -${height / 2} ${width} ${height}`)
             .attr("width", width.toString())
             .attr("height", height.toString())
-            .attr("style", `max-width: 100%; height: auto; display: block; background: transparent; cursor: pointer;`);
+            .attr("class","cursor-pointer block h-auto max-w-full");
 
           const node = svg.append("g")
             .selectAll("circle")
@@ -69,7 +49,8 @@ const CirclePacking = () => {
             });
 
           const label = svg.append("g")
-            .style("font", "15px sans-serif")
+            .style("font-size", "1rem")
+            .attr("class", "font-sans")
             .attr("pointer-events", "none")
             .attr("text-anchor", "middle")
             .selectAll("text")
@@ -78,14 +59,20 @@ const CirclePacking = () => {
             .style("fill-opacity", (d) => d.parent === root ? 1 : 0)
             .style("display", (d) => d.parent === root ? "inline" : "none")
             .text((d) => d.data.name)
-            .attr("dy", ".5em");
+            .attr("dy", ".5em")
+            .on("click", (event, d) => {
+              if (d.parent) {
+                zoom(event, d.parent);
+                event.stopPropagation();
+              }
+            });
 
           svg.on("click", (event) => zoom(event, root));
           let focus = root;
           let view;
 
           const zoomTo = (v) => {
-            const k = Math.min(width / v[2], height / v[2]);
+            const k = width / v[2];
 
             view = v;
 
@@ -94,13 +81,18 @@ const CirclePacking = () => {
             node.attr("r", (d) => (d.r * k).toString());
           }
 
-          const zoom = (event, d) => {
+          const zoom = (event = null, d) => {
             const focus0 = focus;
 
             focus = d;
+            updateBreadcrumb(focus); // Update the breadcrumb text with the current node and its ancestors
+
+            // Update rect dimensions based on text dimensions
+            const bbox = breadcrumbRef.current.getBoundingClientRect();
+            
 
             const transition = svg.transition()
-              .duration(event.altKey ? 7500 : 750)
+              .duration((event && event.altKey) ? 7500 : 750)
               .tween("zoom", d => {
                 const i = d3.interpolateZoom(view, [focus.x, focus.y, focus.r * 2]);
                 return (t) => zoomTo(i(t));
@@ -112,20 +104,61 @@ const CirclePacking = () => {
               .style("fill-opacity", (d) => d.parent === focus ? 1 : 0)
               .on("start", (d, i, groups) => { if (d.parent === focus) groups[i].style.display = "inline"; })
               .on("end", (d, i, groups) => { if (d.parent !== focus) groups[i].style.display = "none"; });
-          }
+          };
+
+          const updateBreadcrumb = (node) => {
+            let breadcrumbText = '';
+            while (node) {
+              breadcrumbText = `<span class="breadcrumb-node cursor-pointer" data-name="${node.data.name}">${node.data.name}</span>${breadcrumbText}`;
+              if (node.parent) {
+                breadcrumbText = `<span class="separator"> > </span>${breadcrumbText}`;
+              }
+              node = node.parent;
+            }
+            breadcrumbRef.current.innerHTML = breadcrumbText;
+
+            // Add click event handler to the breadcrumb nodes
+            const breadcrumbNodes = breadcrumbRef.current.querySelectorAll('.breadcrumb-node');
+            breadcrumbNodes.forEach((node) => {
+              node.addEventListener('click', () => {
+                const name = node.dataset.name;
+                const targetNode = findNodeByName(root, name);
+                if (targetNode) {
+                  zoom(null, targetNode);
+                }
+              });
+            });
+          };
+
+          const findNodeByName = (node, name) => {
+            if (node.data.name === name) {
+              return node;
+            }
+            if (node.children) {
+              for (const child of node.children) {
+                const foundNode = findNodeByName(child, name);
+                if (foundNode) {
+                  return foundNode;
+                }
+              }
+            }
+            return null;
+          };
 
           zoomTo([focus.x, focus.y, focus.r * 2]);
-        });
-    }
+          updateBreadcrumb(focus); // Show the breadcrumb for the initial node
+        }
+      });
+  }, []);
 
-    // Cleanup function
-    return () => {
-      const svg = d3.select(currentRef);
-      svg.selectAll("*").remove();
-    };
-  }, [dimensions]); // Re-run effect when dimensions change
-
-  return <div className="mx-auto"><svg ref={ref} /></div>;
+  return (
+    <div className='relative prose dark:prose-invert mx-auto rounded-3xl'>
+      <div className='text-center'>
+        <div className="breadcrumb flex justify-center bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white rounded-3xl py-2 px-4" ref={breadcrumbRef}></div>
+      </div>
+      <div className="rounded-3xl overflow-hidden bg-neutral-800"><svg ref={ref} /></div>
+    </div>
+  );
 };
 
 export default CirclePacking;

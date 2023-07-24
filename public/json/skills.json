@@ -87,6 +87,15 @@
         {"name": "After Effects", "value": 4},
         {"name": "Web Video", "value": 8}
     ]
+  },
+  {
+    "name": "Hobbies",
+    "children": [
+        {"name": "3D Printing", "value": 10},
+        {"name": "Ping Pong", "value": 6},
+        {"name": "Summer Grilling", "value": 4},
+        {"name": "Crock Pot Cookin'", "value": 4}
+    ]
   }
  ]
 }
