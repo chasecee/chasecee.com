@@ -50,7 +50,7 @@
     "children": [
         {"name": "AWS", "value": 8},
         {"name": "Cloudflare", "value": 7},
-        {"name": "Squarespace", "value": 2},
+        {"name": "Server Management", "value": 5},
         {"name": "Nginx", "value": 5},
         {"name": "Apache", "value": 4}
     ]
