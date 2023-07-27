@@ -11,7 +11,7 @@ export default function Footer() {
           Chase Cee
         </Link>
         </p>
-        <CirclePacking />
+        {/* <CirclePacking /> */}
     </footer>
   )
 }
