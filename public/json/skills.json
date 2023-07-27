@@ -12,19 +12,25 @@
       {"name": "React", "value": 5},
       {"name": "NextJS", "value": 3},
       {"name": "Typescript", "value": 3},
-      {"name": "API", "value": 3},
-      {"name": "Node.js", "value": 5},
-      {"name": "Build Tools", "value": 10},
-      {"name": "Grunt", "value": 4},
-      {"name": "Gulp", "value": 2},
-      {"name": "Webpack", "value": 5}
+      {"name": "API", "value": 3}
      ]
     },
     {
-     "name": "PHP",
+      "name": "Build Tools", 
+      "children": [
+        {"name": "Node.js", "value": 3},
+        {"name": "Grunt", "value": 2},
+        {"name": "Gulp", "value": 2},
+        {"name": "Webpack", "value": 5}
+       ]
+    },
+    {
+     "name": "Wordpress",
      "children": [
       {"name": "Wordpress Custom Themes", "value": 10},
-      {"name": "Wordpress Custom Plugins", "value": 9}
+      {"name": "Wordpress Custom Plugins", "value": 9},
+      {"name": "Woocommerce", "value": 5},
+      {"name": "Yoast SEO", "value": 4}
      ]
     },
     {
@@ -33,7 +39,7 @@
       {"name": "Tailwind", "value": 10},
       {"name": "SASS", "value": 7},
       {"name": "Build Tools", "value": 7},
-      {"name": "BEM Syntax", "value": 5},
+      {"name": "Bootstrap", "value": 5},
       {"name": "Centering a div", "value": 10}
      ]
     },
@@ -42,7 +48,8 @@
     "children": [
         {"name": "Wordpress", "value": 10},
         {"name": "Sanity.io", "value": 2},
-        {"name": "Squarespace", "value": 2}
+        {"name": "Squarespace", "value": 2},
+        {"name": "Hubspot", "value": 2}
     ]
     },
     {
@@ -52,9 +59,14 @@
         {"name": "Cloudflare", "value": 7},
         {"name": "Server Management", "value": 5},
         {"name": "Nginx", "value": 5},
-        {"name": "Apache", "value": 4}
+        {"name": "Apache", "value": 4},
+        {"name": "Netlify", "value": 7},
+        {"name": "Vercel", "value": 1}
     ]
-    }
+    },
+    {"name": "PHP", "value": 12},
+    {"name": "SEO", "value": 10},
+    {"name": "Pagespeed", "value": 8}
    ]
   },
   {

@@ -1,7 +1,7 @@
 "use client"
 import { HeartFilledIcon } from '@sanity/icons'
 import Link from 'next/link'
-import CirclePacking from './CirclePacking'
+import CirclePacking from './CirclePacking.client'
 export default function Footer() {
   return (
     <footer className="site-footer py-10">
@@ -11,7 +11,6 @@ export default function Footer() {
           Chase Cee
         </Link>
         </p>
-        <CirclePacking />
     </footer>
   )
 }

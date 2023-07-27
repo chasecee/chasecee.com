@@ -12,8 +12,8 @@ const CirclePacking = () => {
         if (ref.current) {
           const svg = d3.select(ref.current);
 
-          const width = 800;
-          const height = 800;
+          const width = 711;
+          const height = width;
 
           const color = d3.scaleSequential()
             .domain([0, 5])
@@ -38,6 +38,7 @@ const CirclePacking = () => {
             .data(root.descendants().slice(1))
             .join("circle")
             .attr("fill", (d) => d.children ? color(d.depth) : "white")
+            .attr("class","stroke-[2px]")
             .attr("pointer-events", (d) => !d.children ? "none" : null)
             .on("mouseover", function() { d3.select(this).attr("stroke", "#000"); })
             .on("mouseout", function() { d3.select(this).attr("stroke", null); })
@@ -49,8 +50,8 @@ const CirclePacking = () => {
             });
 
           const label = svg.append("g")
-            .style("font-size", "1rem")
-            .attr("class", "font-sans")
+            // .style("font-size", "1rem")
+            .attr("class", "font-sans text-[2rem] sm:text-[1.5rem] md:text-base")
             .attr("pointer-events", "none")
             .attr("text-anchor", "middle")
             .selectAll("text")
@@ -59,7 +60,7 @@ const CirclePacking = () => {
             .style("fill-opacity", (d) => d.parent === root ? 1 : 0)
             .style("display", (d) => d.parent === root ? "inline" : "none")
             .text((d) => d.data.name)
-            .attr("dy", ".5em")
+            .attr("dy", ".3em")
             .on("click", (event, d) => {
               if (d.parent) {
                 zoom(event, d.parent);
