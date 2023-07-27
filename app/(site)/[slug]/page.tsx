@@ -1,7 +1,7 @@
 import { getPage } from "@/sanity/sanity-utils"
 import Container from "../components/Container"
 import { PortableText } from "@portabletext/react"
-import CirclePacking from "../components/CirclePacking.client" // Import your component
+import CirclePacking from "../components/CirclePacking" // Import your component
 
 type PageProps = {
   title: string,
