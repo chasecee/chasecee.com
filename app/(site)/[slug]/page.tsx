@@ -13,6 +13,8 @@ type Props = {
   params: { slug: string }
 }
 
+export const runtime = 'edge'; 
+
 export default async function Page({ params }: Props) {
   const page: PageProps = await getPage(params.slug)
   
