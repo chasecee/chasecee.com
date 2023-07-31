@@ -29,22 +29,25 @@ export default async function Page({ params }: Props) {
             <h1>{page.subtitle ? page.subtitle : page.title}</h1>
           </header>
           <div>
-            {page.content.map((block: Block, index: number) => (
-              <PortableText 
-                key={index} 
-                value={[block]}
-                components={{
-                  types: {
-                    // Add a custom renderer for "skills"
-                    skills: () => <Skills /* pass any props you need here */ />,
-                    // Add more custom types if needed
-                  }
-                }}
-              />
-            ))}
+            {page.content.map((block: Block, index: number) => {
+              if (block._type === 'skills') {
+                return <Skills key={index} /* pass any props you need here */ />
+              }
+
+              return (
+                <PortableText 
+                  key={index} 
+                  value={[block]}
+                  components={{
+                    // Define other custom types if needed
+                  }}
+                />
+              )
+            })}
           </div>
         </div>
       </Container>
     </div>
   )
 }
+
