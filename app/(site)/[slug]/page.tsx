@@ -29,13 +29,19 @@ export default async function Page({ params }: Props) {
             <h1>{page.subtitle ? page.subtitle : page.title}</h1>
           </header>
           <div>
-            {page.content.flatMap((block: Block, index: number) => {
-              let components = [<PortableText key={`${index}-portable`} value={[block]} />]
-              if (block._type === 'skills') {
-                components.push(<Skills key={`${index}-skills`} /* pass any props you need here */ />)
-              }
-              return components
-            })}
+            {page.content.map((block: Block, index: number) => (
+              <PortableText 
+                key={index} 
+                value={[block]}
+                components={{
+                  types: {
+                    // Add a custom renderer for "skills"
+                    skills: () => <Skills /* pass any props you need here */ />,
+                    // Add more custom types if needed
+                  }
+                }}
+              />
+            ))}
           </div>
         </div>
       </Container>
