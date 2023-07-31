@@ -1,19 +1,22 @@
 import { getPage } from "@/sanity/sanity-utils"
 import Container from "../components/Container"
 import { PortableText } from "@portabletext/react"
-import CirclePacking from "../components/CirclePacking" // Import your component
+import Skills from "../components/Skills"
+
+type Block = {
+  _type: string,
+  // add any other properties that exist on your blocks
+}
 
 type PageProps = {
   title: string,
   subtitle?: string,
-  content: any
+  content: Block[]
 }
 
 type Props = {
   params: { slug: string }
 }
-
-export const runtime = 'edge'; 
 
 export default async function Page({ params }: Props) {
   const page: PageProps = await getPage(params.slug)
@@ -26,9 +29,14 @@ export default async function Page({ params }: Props) {
             <h1>{page.subtitle ? page.subtitle : page.title}</h1>
           </header>
           <div>
-            <PortableText value={page.content} />
+            {page.content.flatMap((block: Block, index: number) => {
+              let components = [<PortableText key={`${index}-portable`} value={[block]} />]
+              if (block._type === 'skills') {
+                components.push(<Skills key={`${index}-skills`} /* pass any props you need here */ />)
+              }
+              return components
+            })}
           </div>
-          {params.slug === 'about' && <CirclePacking />}
         </div>
       </Container>
     </div>

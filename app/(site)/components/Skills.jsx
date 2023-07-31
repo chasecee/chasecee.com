@@ -2,7 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
-const CirclePacking = () => {
+const Skills = () => {
   const ref = useRef(null);
   const breadcrumbRef = useRef(null); // Reference to the breadcrumb div
 
@@ -163,4 +163,4 @@ const CirclePacking = () => {
   );
 };
 
-export default CirclePacking;
+export default Skills;
