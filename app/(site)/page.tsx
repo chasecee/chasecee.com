@@ -26,7 +26,7 @@ export default async function Home() {
             >
             {project.image && (
               <Image
-                src={urlFor(project.image).width(622).height(414).dpr(1.5).url()}
+                src={urlFor(project.image).width(622).height(622).dpr(1.5).url()}
                 alt={project.name}
                 width={622}
                 height={622}
