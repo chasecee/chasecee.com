@@ -6,9 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "export": "next export",
-    "prebuild": "npm install next @tailwindcss/typography"
+    "lint": "next lint"
   },
   "dependencies": {
     "@portabletext/react": "^3.0.4",

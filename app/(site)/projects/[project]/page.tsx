@@ -6,7 +6,6 @@ type Props = {
     params: { project: string };
 }
 
-export const runtime = 'edge'; 
 
 export default async function Project( { params }: Props ) {
     const slug = params.project;
