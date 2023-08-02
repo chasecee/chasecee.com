@@ -1,6 +1,6 @@
 import Draggable from 'react-draggable';
 
-export default function MyComponent() {
+export default function DraggableComponent() {
   return (
     <Draggable>
       <div>
