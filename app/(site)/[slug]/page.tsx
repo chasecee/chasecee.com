@@ -3,7 +3,11 @@ import Container from "../components/Container"
 import { PortableText } from "@portabletext/react"
 import Skills from "../components/Skills"
 
-type Block = {
+type SkillBlock = {
+  _type: string,
+}
+
+type TextBlock = {
   _type: string,
   // add any other properties that exist on your blocks
 }
@@ -11,7 +15,7 @@ type Block = {
 type PageProps = {
   title: string,
   subtitle?: string,
-  content: Block[]
+  content: (SkillBlock | TextBlock)[]
 }
 
 type Props = {
@@ -36,9 +40,9 @@ export default async function Page({ params }: Props) {
               <h1>{page.subtitle ? page.subtitle : page.title}</h1>
             </header>
             <div>
-              {page.content.map((block: Block, index: number) => {
+              {page.content.map((block, index) => {
                 if (block._type === 'skills') {
-                  return <Skills key={index} /* pass any props you need here */ />
+                  return <Skills key={index} />
                 }
     
                 if (block._type === 'block') {
