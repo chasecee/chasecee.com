@@ -40,7 +40,7 @@ export default async function Page({ params }: Props) {
               <h1>{page.subtitle ? page.subtitle : page.title}</h1>
             </header>
             <div>
-              {/* {page.content.map((block, index) => {
+              {page.content.map((block, index) => {
                 if (block._type === 'skills') {
                   return <Skills key={index} />
                 }
@@ -58,8 +58,7 @@ export default async function Page({ params }: Props) {
                 }
                 // Handle unrecognized block types
                 return null
-              })} */}
-              <PortableText value={page.content} />
+              })}
             </div>
           </div>
         </Container>
