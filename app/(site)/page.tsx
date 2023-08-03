@@ -27,6 +27,7 @@ export default async function Home() {
           <IntersectionObserverComponent key={project._id}
             inViewClass="in-view" 
             notInViewClass="not-in-view"
+            className="project-item"
             >
           <Link 
             key={project._id} 
@@ -59,9 +60,9 @@ export default async function Home() {
                     />
                   ))}
                 </div>
-              <div className="
+              <div className="view-actor-image
               absolute top-[100%] translate-y-0 left-[10%] right-[10%] 
-              group-hover:-translate-y-[75%] group-active::scale-95 rounded-xl transition-transform duration-300">
+              group-hover:-translate-y-[75%] group-active:scale-95 rounded-xl transition-transform duration-300">
                   {project.image && (
                     <Image
                       src={urlFor(project.image).width(622).height(622).dpr(1.5).url()}
@@ -74,12 +75,11 @@ export default async function Home() {
               </div>
               
               {project.svgcode && (
-                <div className="absolute inset-0 view-actor">
-                  <div className="group-hover:-translate-y-[28%] group-hover:duration-300 duration-500 delay-[25ms] transition-transform absolute inset-0">
+                
+                  <div className="view-actor group-hover:-translate-y-[28%] group-hover:duration-300 duration-500 delay-[25ms] transition-transform absolute inset-0">
                     <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1/2 h-1/2 svg-parent' 
                     dangerouslySetInnerHTML={{ __html: project.svgcode.code }} />
                   </div>
-                </div>
               )}
             </div>
             <div className="relative group-hover:-translate-y-0 transition-transform duration-300">

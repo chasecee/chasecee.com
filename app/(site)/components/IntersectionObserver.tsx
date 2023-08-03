@@ -5,6 +5,7 @@ type Props = {
   children: React.ReactNode;
   inViewClass: string;
   notInViewClass: string;
+  className: string;
 };
 
 const IntersectionObserverComponent: React.FC<Props> = ({ children, inViewClass, notInViewClass }) => {
@@ -37,7 +38,7 @@ const IntersectionObserverComponent: React.FC<Props> = ({ children, inViewClass,
   return (
     <div
       ref={ref}
-      className={` ${
+      className={`project-item ${
         inView ? inViewClass : notInViewClass
       }`}
     >
