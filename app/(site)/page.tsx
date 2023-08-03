@@ -46,7 +46,7 @@ export default async function Home() {
               </div>
 
               {project.svgcode && (
-                <div className="group-hover:-translate-y-[30%] group-hover:duration-300 duration-500 delay-[25ms] transition-transform absolute inset-0">
+                <div className="group-hover:-translate-y-[28%] group-hover:duration-300 duration-500 delay-[25ms] transition-transform absolute inset-0">
                   <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1/2 h-1/2 svg-parent' 
                   dangerouslySetInnerHTML={{ __html: project.svgcode.code }} />
                 </div>
@@ -55,6 +55,11 @@ export default async function Home() {
             <div className="relative group-hover:-translate-y-0 transition-transform duration-300">
               <span className="inline-block px-2 py-1 rounded bg-white dark:bg-neutral-900 text-xl">
                 {project.name}
+                {project.subtitle && (
+                  <span className="opacity-30">
+                    &nbsp;-&nbsp;{project.subtitle}
+                  </span>
+                )}
               </span>
             </div>
           </Link>

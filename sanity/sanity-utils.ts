@@ -13,6 +13,7 @@ export async function getProjects(): Promise<Project[]> {
             "image": image.asset->url,
             "logo": logo.asset->url,
             svgcode,
+            subtitle,
             color,
             url,
             content

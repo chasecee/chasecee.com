@@ -23,6 +23,7 @@ export type Project = {
   logo: string;
   svgcode: CodeField;
   color: ColorField;
+  subtitle: string;
   url: string;
   content: PortableTextBlock[];
 }
