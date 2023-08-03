@@ -28,6 +28,32 @@ const project = {
             ]
         },
         {
+            type: 'code',
+            name: 'svgcode',
+            title: 'SVG Code for Logo',
+            options: {
+              language: 'xml', // SVG is XML-based
+            },
+        },
+        {
+            name: 'color',
+            title: 'Color',
+            type: 'color',
+        },
+        {
+            name: 'logo',
+            title: 'Logo',
+            type: 'image',
+            options: { hotspot: true },
+            fields: [
+                {
+                    name: 'alt',
+                    title: 'Alt',
+                    type: 'string'
+                }
+            ]
+        },
+        {
             name: 'url',
             title: 'URL',
             type: 'url'

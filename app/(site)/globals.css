@@ -16,3 +16,7 @@
   margin: 0 5px;
   opacity: 0.5;
 }
+.svg-parent svg{
+  width: 100%;
+  height: 100%;
+}

@@ -11,6 +11,9 @@ export async function getProjects(): Promise<Project[]> {
             name,
             "slug": slug.current,
             "image": image.asset->url,
+            "logo": logo.asset->url,
+            svgcode,
+            color,
             url,
             content
         }`
