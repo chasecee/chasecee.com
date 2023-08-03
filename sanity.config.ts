@@ -11,5 +11,6 @@ export const config = defineConfig ({
     apiVersion: "2023-07-12",
     basePath: "/studio",
     plugins: [deskTool(),codeInput(),colorInput()],
-    schema: { types: schemas }
+    schema: { types: schemas },
+    useCdn: false,
 })
