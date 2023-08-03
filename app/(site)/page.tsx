@@ -9,14 +9,15 @@ export default async function Home() {
   
 
   const projects = await getProjects();
-  console.log(projects);
   return (
     <Container>
       <HomeHero 
       text="Pixel perfection one line of code at a time." 
       paragraph="Hi, I'm Chase. I've been a coder and designer for over 8 years. I have a passion for building with effective design. Learn more about me and my skillset." 
       />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-20">
+      <div className="grid grid-cols-1 md:grid-cols-2 
+      gap-10 xl:gap-20 
+      mx-auto">
         {projects.map((project) => (
          
           <Link 
@@ -31,8 +32,8 @@ export default async function Home() {
                   <div className="absolute inset-0 rounded-xl" style={{ backgroundColor: project.color.hex }}></div>
                 )}
               <div className="
-              absolute top-[99.9%] translate-y-0 left-[10%] right-[10%] 
-              group-hover:-translate-y-[75%] rounded-xl transition-transform duration-300">
+              absolute top-[100%] translate-y-0 left-[10%] right-[10%] 
+              group-hover:-translate-y-[75%] group-active::scale-95 rounded-xl transition-transform duration-300">
                   {project.image && (
                     <Image
                       src={urlFor(project.image).width(622).height(622).dpr(1.5).url()}
@@ -45,7 +46,7 @@ export default async function Home() {
               </div>
 
               {project.svgcode && (
-                <div className="group-hover:-translate-y-[25%] duration-300 delay-[25ms] transition-transform absolute inset-0">
+                <div className="group-hover:-translate-y-[30%] group-hover:duration-300 duration-500 delay-[25ms] transition-transform absolute inset-0">
                   <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1/2 h-1/2 svg-parent' 
                   dangerouslySetInnerHTML={{ __html: project.svgcode.code }} />
                 </div>

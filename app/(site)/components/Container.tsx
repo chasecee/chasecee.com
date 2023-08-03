@@ -7,7 +7,7 @@ export default function Container({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="root w-full min-h-screen bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white font-normal">
-      <div className="container px-4 lg:px-0">
+      <div className="container px-4">
         <Header />
         <main>{children}</main>
         <Footer />
