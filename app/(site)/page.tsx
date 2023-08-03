@@ -31,7 +31,7 @@ export default async function Home() {
                   <div className="absolute inset-0 rounded-xl" style={{ backgroundColor: project.color.hex }}></div>
                 )}
               <div className="
-              absolute top-full translate-y-0 left-[10%] right-[10%] 
+              absolute top-[99.9%] translate-y-0 left-[10%] right-[10%] 
               group-hover:-translate-y-[75%] rounded-xl transition-transform duration-300">
                   {project.image && (
                     <Image
