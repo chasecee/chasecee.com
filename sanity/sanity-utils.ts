@@ -55,7 +55,13 @@ export async function getPage(slug: string): Promise<Page> {
             title,
             subtitle,
             "slug": slug.current,
-            content
+            content[]{
+                ...,
+                _type == "image" => {
+                    "imageUrl": asset->url,
+                    "alt": alt
+                }
+            }
         }`,
         { slug }
     )

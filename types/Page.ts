@@ -5,6 +5,12 @@ type Skills = {
   placeholder: string;
 };
 
+type ImageBlock = {
+  _type: 'image';
+  imageUrl: string;
+  alt: string;
+};
+
 export type Page = {
   name: string;
   _id: string;
@@ -12,5 +18,5 @@ export type Page = {
   title: string;
   subtitle: string;
   slug: string;
-  content: (PortableTextBlock | Skills)[];
+  content: (PortableTextBlock | Skills | ImageBlock)[];
 };

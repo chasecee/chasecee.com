@@ -29,6 +29,22 @@ const page = {
             of: [
                 { type: "block" },
                 { type: 'skills' },
+                {
+                    type: 'image',
+                    options: {
+                        hotspot: true, // enable hotspot
+                    },
+                    fields: [
+                      {
+                        name: 'alt',
+                        type: 'string',
+                        title: 'Alt Text',
+                        options: {
+                          isHighlighted: true
+                        }
+                      }
+                    ]
+                  },
             ],
         }
     ]

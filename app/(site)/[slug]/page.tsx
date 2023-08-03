@@ -2,6 +2,8 @@ import { getPage } from "@/sanity/sanity-utils"
 import Container from "../components/Container"
 import { PortableText } from "@portabletext/react"
 import Skills from "../components/Skills"
+import Image from 'next/image'
+import urlFor from "@/sanity/sanity.image"
 
 type SkillBlock = {
   _type: string,
@@ -12,10 +14,16 @@ type TextBlock = {
   // add any other properties that exist on your blocks
 }
 
+type ImageBlock = {
+  _type: string,
+  imageUrl: string,
+  alt: string,
+}
+
 type PageProps = {
   title: string,
   subtitle?: string,
-  content: (SkillBlock | TextBlock)[]
+  content: (SkillBlock | TextBlock | ImageBlock)[]
 }
 
 type Props = {
@@ -54,6 +62,22 @@ export default async function Page({ params }: Props) {
                         // Define other custom types if needed
                       }}
                     />
+                  )
+                }
+
+                if (block._type === 'image') {
+                  const imageBlock = block as ImageBlock;
+                  return (
+                    <div key={index} className="rounded-xl lg:w-[120%] lg:-ml-[10%] lg:-mr-[10%]">
+                      <Image 
+                        src={urlFor(imageBlock.imageUrl).width(800).height(450).dpr(1.5).url()}
+                        alt={imageBlock.alt} 
+                        layout="responsive"
+                        width={800} // adjust these values according to your needs
+                        height={450}
+                        className="rounded-xl w-full"
+                      />
+                    </div>
                   )
                 }
                 // Handle unrecognized block types

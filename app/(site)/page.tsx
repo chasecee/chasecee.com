@@ -46,6 +46,7 @@ export default async function Home() {
                 transform-gpu
                 -translate-y-[20%] scale-y-120
                 group-hover:translate-y-0 group-hover:scale-y-100 group-hover:duration-1000
+                group-active:scale-95
                 duration-500 
                 transition-all 
                  opacity-30">
