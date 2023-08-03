@@ -10,6 +10,17 @@
       @apply text-opacity-100;
     }
 }
+@layer components {
+  .in-view .view-actor {
+    @apply scale-100 duration-300 delay-200;
+  }
+  .not-in-view .view-actor {
+    @apply scale-75;
+  }
+  .view-actor {
+    @apply transition-transform duration-500;
+  }
+}
 #my_dataviz text, #d3viz text{
   pointer-events: none;
   fill:black;
