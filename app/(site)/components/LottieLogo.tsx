@@ -13,7 +13,6 @@ function App() {
       src="anim2.lottie"
       hover
       loop
-      mode={bounce}
       class="h-[4.5rem] w-[4.5rem] overflow-hidden rounded-xl"
     />
   );
