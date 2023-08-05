@@ -39,9 +39,6 @@ const page = {
                         name: 'alt',
                         type: 'string',
                         title: 'Alt Text',
-                        options: {
-                          isHighlighted: true
-                        }
                       }
                     ]
                   },
