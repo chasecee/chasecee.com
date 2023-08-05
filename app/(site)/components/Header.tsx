@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Logo from "./logo";
+import LogoDelay from "./svg/logo";
 import { getPages } from "@/sanity/sanity-utils";
 import LottieLogo from "./LottieLogo";
 
@@ -31,7 +32,8 @@ export default async function Header() {
       <Link className="header__title" href="/">
         <div className="sr-only">Chase Cee</div>
         {/* <Logo /> */}
-        <LottieLogo />
+        {/* <LottieLogo /> */}
+        <LogoDelay />
       </Link>
     </header>
   );

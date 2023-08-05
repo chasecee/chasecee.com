@@ -10,6 +10,29 @@
       @apply text-opacity-100;
     }
 }
+@layer components {
+  .logo-delay:hover .logoPath{
+    @apply scale-150;
+  }
+  .logo-delay:hover .logoPath:not(.logoMain){
+    @apply fill-[#b12725];
+  }
+  .logoPath {
+    @apply transition-all duration-500 origin-center;
+  }
+  .logoMain {
+    @apply fill-white;
+  }
+  /* .logo-delay:hover .logoBg,
+  .logo-delay:hover .logoMask {
+    @apply  rotate-90;
+  } */
+  /* .logoBg,
+  .logoMask {
+    @apply  origin-center transition-transform;
+  } */
+
+}
 @layer utilities {
   .in-view .view-actor {
     @apply -translate-y-[28%] duration-300;

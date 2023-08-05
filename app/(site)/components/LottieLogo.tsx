@@ -6,12 +6,15 @@ import type { DotLottiePlayer } from "@johanaarstein/dotlottie-player";
 
 function App() {
   const animation = useRef<DotLottiePlayer | null>(null);
+  const bounce = "bounce";
   return (
     <dotlottie-player
       ref={animation}
-      src="anim.lottie"
-      autoplay
-      class="overflow-hidden rounded-xl"
+      src="anim2.lottie"
+      hover
+      loop
+      mode={bounce}
+      class="h-[4.5rem] w-[4.5rem] overflow-hidden rounded-xl"
     />
   );
 }
