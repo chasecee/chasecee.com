@@ -76,6 +76,7 @@ export default async function Home() {
                         alt={project.name}
                         width={622}
                         height={622}
+                        priority={true}
                         className="rounded-xl object-cover"
                       />
                     )}
