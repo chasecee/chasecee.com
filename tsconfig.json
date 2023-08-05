@@ -30,9 +30,7 @@
     ".next/types/**/*.ts",
     "app/(site)/components/Skills.jsx",
     "app/(site)/[slug]/page.tsx",
-    "app/(site)/components/svg/doxyme.jsx",
-    "app/(site)/components/LottieLogo.jsx",
-    "app/(site)/components/LottieLogo.jsx"
+    "app/(site)/components/svg/doxyme.jsx"
   ],
   "exclude": ["node_modules"]
 }

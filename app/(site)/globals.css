@@ -12,13 +12,13 @@
 }
 @layer components {
   .logo-delay:hover .logoPath{
-    @apply scale-125;
+    @apply scale-110;
   }
   .logo-delay:hover .logoPath:not(.logoMain){
     @apply fill-[#b12725];
   }
   .logoPath {
-    @apply transition-all duration-500 origin-center;
+    @apply transition-all duration-500 origin-center transform-gpu;
   }
   .logoMain {
     @apply fill-white;
@@ -34,6 +34,7 @@
 
 }
 @layer utilities {
+  /* SCROLL VIEW */
   .in-view .view-actor {
     @apply -translate-y-[28%] duration-300;
   }
@@ -49,7 +50,44 @@
   .project-item:nth-child(even) .view-actor-image {
     @apply md:delay-200;
   }
-  
+  /* ANIMATIONS */
+
+  @keyframes fadein {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+
+  .fade-in {
+      animation: fadein 2s;
+      animation-delay: 0.25s;
+      animation-fill-mode: both;
+  }
+
+  @keyframes fadeinup {
+    0% {
+        opacity: 0;
+        transform: translateY(2rem);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+  }
+  .fade-in-up {
+    animation: fadeinup 2s;
+    animation-delay: 0.25s;
+    animation-fill-mode: both;
+  }
+
+  .a-delay-500ms { animation-delay: 500ms; }
+  .a-delay-1000ms { animation-delay: 1000ms; }
+  .a-delay-1500ms { animation-delay: 1500ms; }
+  .a-delay-2000ms { animation-delay: 2000ms; }
+  .a-delay-2500ms { animation-delay: 2500ms; }
+  .a-delay-3000ms { animation-delay: 3000ms; }
+  .a-delay-3500ms { animation-delay: 3500ms; }
+  .a-delay-4000ms { animation-delay: 4000ms; }
+
 }
 #my_dataviz text, #d3viz text{
   pointer-events: none;

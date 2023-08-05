@@ -2,7 +2,7 @@ import { getProjects } from "@/sanity/sanity-utils";
 import Image from "next/image";
 import Link from "next/link";
 import Container from "./components/Container";
-import HomeHero from "./components/HomeHero";
+import HomeHero from "./components/hero/HomeHero";
 import urlFor from "@/sanity/sanity.image";
 import generateColorPalette from "./utils/colorUtils";
 import IntersectionObserverComponent from "./components/IntersectionObserver";
@@ -12,8 +12,10 @@ export default async function Home() {
   return (
     <Container>
       <HomeHero
-        text="Pixel perfection one line of code at a time."
-        paragraph="Hi, I'm Chase. I've been a coder and designer for over 8 years. I have a passion for building with effective design. Learn more about me and my skillset."
+        text="Shaping pixels "
+        textB="into possibilities."
+        paragraph="Hi, I'm Chase. I've been a coder and designer for over 8 years. I have a passion for building with effective design. "
+        paragraphCTA="Learn more about me and my skillset."
       />
       <div
         className="mx-auto grid grid-cols-1 
