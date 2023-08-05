@@ -12,7 +12,7 @@
 }
 @layer components {
   .logo-delay:hover .logoPath{
-    @apply scale-150;
+    @apply scale-125;
   }
   .logo-delay:hover .logoPath:not(.logoMain){
     @apply fill-[#b12725];

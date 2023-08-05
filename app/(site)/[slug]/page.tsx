@@ -68,13 +68,12 @@ export default async function Page({ params }: Props) {
                 if (block._type === 'image') {
                   const imageBlock = block as ImageBlock;
                   return (
-                    <div key={index} className="rounded-xl lg:w-[120%] lg:-ml-[10%] lg:-mr-[10%]">
+                    <div key={index} className="rounded-xl">
                       <Image 
-                        src={urlFor(imageBlock.imageUrl).width(800).height(450).dpr(1.5).url()}
-                        alt={imageBlock.alt} 
-                        layout="responsive"
+                        src={urlFor(imageBlock.imageUrl).width(800).height(800).dpr(1.5).url()}
+                        alt={imageBlock.alt}
                         width={800} // adjust these values according to your needs
-                        height={450}
+                        height={800}
                         className="rounded-xl w-full"
                       />
                     </div>
