@@ -18,9 +18,9 @@ export default async function Home() {
         paragraphCTA="Learn more about me and my skillset."
       />
       <div
-        className="mx-auto grid grid-cols-1 
-      gap-10 md:grid-cols-2 
-      xl:gap-20"
+        className="fade-in-up a-delay-3000ms mx-auto grid grid-cols-1 gap-10
+      opacity-0 md:grid-cols-2 xl:gap-20
+      "
       >
         {projects.map((project) => {
           // Use the project's hex color as the baseColor for generating the palette

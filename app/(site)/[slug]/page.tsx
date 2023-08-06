@@ -72,18 +72,17 @@ export default async function Page({ params }: Props) {
                   const imageBlock = block as ImageBlock;
                   return (
                     <div key={index} className="rounded-xl">
-                      
-                        <Image
-                          src={urlFor(imageBlock.imageUrl)
-                            .width(800)
-                            .height(350)
-                            .dpr(2)
-                            .url()}
-                          alt={imageBlock.alt}
-                          width={800} // adjust these values according to your needs
-                          height={350}
-                          className="w-full rounded-xl"
-                        />
+                      <Image
+                        src={urlFor(imageBlock.imageUrl)
+                          .width(800)
+                          .height(450)
+                          .dpr(2)
+                          .url()}
+                        alt={imageBlock.alt}
+                        width={800} // adjust these values according to your needs
+                        height={550}
+                        className="w-full rounded-xl"
+                      />
                     </div>
                   );
                 }

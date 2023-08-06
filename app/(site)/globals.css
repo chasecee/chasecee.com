@@ -9,6 +9,9 @@
     prose a:hover {
       @apply text-opacity-100;
     }
+    a:active {
+      @apply translate-y-px;
+    }
 }
 @layer components {
   .logo-delay:hover .logoPath{
@@ -106,4 +109,7 @@
 .svg-parent svg{
   width: 100%;
   height: 100%;
+}
+.header__menu .header__item {
+  @apply hover:underline underline-offset-4;
 }
