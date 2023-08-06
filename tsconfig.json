@@ -32,7 +32,8 @@
     "app/(site)/[slug]/page.tsx",
     "app/(site)/components/svg/doxyme.jsx",
     "firebase.js",
-    "app/(site)/components/FireComponent.jsx"
+    "app/(site)/components/FireComponent.jsx",
+    "app/(site)/components/DraggableDiv.jsx"
   ],
   "exclude": ["node_modules"]
 }
