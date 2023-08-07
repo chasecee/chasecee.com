@@ -11,12 +11,12 @@ export default function Contact() {
             <h1>Success!</h1>
           </header>
           <p>
-            Can&apos;t wait to chat! Until then, learn more
+            Can&apos;t wait to chat! Until then, learn more{" "}
             <Link href="/about" title="About me">
               about me
             </Link>
             , or check out my{" "}
-            <Link href="/about" title="recent chasecee work">
+            <Link href="/" title="recent chasecee work">
               recent work.
             </Link>
             .

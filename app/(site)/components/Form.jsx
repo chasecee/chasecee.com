@@ -53,9 +53,9 @@ export const Form = () => {
             </label>
             <textarea name="message" id="message" required></textarea>
           </div>
-          <div className="form-row">
+          {/* <div className="form-row">
             <div className="h-captcha" data-captcha="true"></div>
-          </div>
+          </div> */}
           <div className="mt-4">
             <button
               type="submit"
