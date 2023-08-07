@@ -53,6 +53,11 @@ const project = {
       type: "url",
     },
     {
+      title: "Archived",
+      name: "archived",
+      type: "boolean",
+    },
+    {
       name: "content",
       title: "Content",
       type: "array",

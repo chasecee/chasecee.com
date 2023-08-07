@@ -6,24 +6,39 @@ export type CodeField = {
   highlightedLines: number[];
   code: string;
   filename: string;
-}
+};
 
 export type ColorField = {
+  _type: string;
+  hex: string;
+};
+
+export type LinkField = {
+  _type: string;
+  href: string;
+  blank: boolean;
+};
+
+export type InternalLinkField = {
+  _type: string;
+  reference: {
     _type: string;
-    hex: string;
-}
-  
+    _ref: string;
+  };
+};
 
 export type Project = {
   _id: string;
   _createdAt: Date;
   name: string;
-  slug: string;
+  slug: {
+    current: string;
+  };
+  subtitle: string;
   image: string;
-  logo: string;
   svgcode: CodeField;
   color: ColorField;
-  subtitle: string;
   url: string;
-  content: PortableTextBlock[];
-}
+  archived: boolean;
+  content: (PortableTextBlock | LinkField | InternalLinkField)[];
+};

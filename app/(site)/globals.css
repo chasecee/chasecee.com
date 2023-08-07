@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 @layer base {
-    .prose a {
+    .prose a:not(.not-prose) {
       /* @apply text-opacity-70 text-black dark:text-white; */
-      @apply text-opacity-100 text-[#f26666] hover:underline underline-offset-2;
+      @apply text-opacity-100 text-[#f26666] underline underline-offset-2;
     }
     .prose a:hover {
       @apply text-opacity-100 text-[#f26666] underline-offset-4;

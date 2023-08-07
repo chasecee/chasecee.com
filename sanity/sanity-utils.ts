@@ -12,6 +12,7 @@ export async function getProjects(): Promise<Project[]> {
             "slug": slug.current,
             "image": image.asset->url,
             "logo": logo.asset->url,
+            archived,
             svgcode,
             subtitle,
             color,
@@ -30,6 +31,7 @@ export async function getProject(slug: string): Promise<Project> {
             "slug": slug.current,
             "image": image.asset->url,
             url,
+            archived,
             "content": content[]{
                 ...,
                 markDefs[]{
