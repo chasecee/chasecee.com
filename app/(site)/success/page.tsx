@@ -17,7 +17,7 @@ export default function Contact() {
             </Link>
             , or check out my{" "}
             <Link href="/" title="recent chasecee work">
-              recent work.
+              recent work
             </Link>
             .
           </p>
