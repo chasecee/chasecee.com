@@ -27,32 +27,29 @@
   .logoMain {
     @apply fill-white;
   }
-  /* .logo-delay:hover .logoBg,
-  .logo-delay:hover .logoMask {
-    @apply  rotate-90;
-  } */
-  /* .logoBg,
-  .logoMask {
-    @apply  origin-center transition-transform;
-  } */
 
 }
 @layer utilities {
   /* SCROLL VIEW */
-  .in-view .view-actor {
-    @apply -translate-y-[28%] duration-300;
-  }
-  .in-view .view-actor-image {
-    @apply -translate-y-[75%];
-  }
   .view-actor {
     @apply transition-transform duration-500;
   }
-  .project-item:nth-child(even) .view-actor {
-    @apply md:delay-100;
+  .in-view {
+    .view-actor {
+      @apply -translate-y-[28%] duration-300;
+    }
+    .view-actor-image {
+      @apply -translate-y-[75%];
+    }
   }
-  .project-item:nth-child(even) .view-actor-image {
-    @apply md:delay-200;
+ 
+  .project-item:nth-child(even) {
+    .view-actor {
+      @apply md:delay-100;
+    }
+    .view-actor-image {
+      @apply md:delay-200;
+    }
   }
   /* ANIMATIONS */
 
@@ -118,10 +115,10 @@
 /* FORM */
 .form-row {
   @apply flex flex-col;
-}
-.form-row input, .form-row textarea {
-  @apply rounded-xl bg-gray-500/10;
-}
-.form-row label {
-  @apply block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300
+  input, textarea {
+    @apply rounded-xl bg-gray-500/10;
+  }
+  label {
+    @apply block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300
+  }
 }
