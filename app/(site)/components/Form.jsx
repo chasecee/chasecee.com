@@ -37,7 +37,7 @@ export const Form = () => {
           type="checkbox"
           name="botcheck"
           class="hidden"
-          style="display: none;"
+          style={{ display: "none" }}
         ></input>
 
         <div className="flex flex-col gap-8">
@@ -65,7 +65,7 @@ export const Form = () => {
           <div className="mt-4">
             <button
               type="submit"
-              className="item-center group inline-flex flex-row gap-2 rounded-xl border-current bg-blue-800 p-4 px-6 text-white dark:text-white"
+              className="item-center group inline-flex flex-row gap-2 rounded-xl border-current bg-blue-800 p-4 px-6 text-white active:translate-y-px dark:text-white"
             >
               Submit Form
               <ArrowRightIcon className="text-[1.6rem] transition-transform group-hover:translate-x-2" />
