@@ -14,7 +14,7 @@ interface Page {
 export default function HeaderMenu() {
   const [pages, setPages] = useState<Page[] | null>(null);
   const pathname = usePathname();
-  const activeClass = "active border-b header__item";
+  const activeClass = "active border-b header__item no-underline";
   const inactiveClass =
     "transition-colors inactive border-b border-b-transparent dark:hover:border-b-white/50 hover:border-b-neutral-900";
 

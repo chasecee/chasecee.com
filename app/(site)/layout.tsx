@@ -1,13 +1,17 @@
 import { getPages } from "@/sanity/sanity-utils";
 import "./globals.css";
 import type { Metadata } from "next";
-import { DM_Sans } from "next/font/google";
+import { DM_Sans, Inter } from "next/font/google";
 
-const dmSans = DM_Sans({
+const font = DM_Sans({
   weight: ["400", "500"],
   style: ["normal", "italic"],
   subsets: ["latin"],
 });
+// const font = Inter({
+//   subsets: ["latin"],
+//   display: "swap",
+// });
 const bodyClass =
   " w-full min-h-screen bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white font-normal";
 
@@ -28,7 +32,7 @@ export default async function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={dmSans.className + bodyClass}>{children}</body>
+      <body className={font.className + bodyClass}>{children}</body>
     </html>
   );
 }
