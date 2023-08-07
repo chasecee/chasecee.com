@@ -33,6 +33,12 @@ export const Form = () => {
           name="redirect"
           value="https://chasecee.com/success"
         ></input>
+        <input
+          type="checkbox"
+          name="botcheck"
+          class="hidden"
+          style="display: none;"
+        ></input>
 
         <div className="flex flex-col gap-8">
           <div className="form-row">

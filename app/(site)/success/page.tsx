@@ -6,7 +6,7 @@ export default function Contact() {
   return (
     <div>
       <Container>
-        <div className="prose mx-auto max-w-[46ch] dark:prose-invert">
+        <div className="prose mx-auto dark:prose-invert">
           <header>
             <h1>Success!</h1>
           </header>
