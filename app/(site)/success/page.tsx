@@ -1,5 +1,4 @@
 import Container from "@/app/(site)/components/Container";
-import { Form } from "../components/Form";
 import Link from "next/link";
 
 export default function Contact() {

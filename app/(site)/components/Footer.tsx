@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="site-footer py-10">
+    <footer className="site-footer mt-10 py-10">
       <p className="footer__text text-uppercase group prose flex flex-row items-center gap-[0.5ch] text-sm dark:prose-invert">
         Made with{" "}
         <HeartFilledIcon className="fill-current text-2xl transition group-hover:scale-125 group-hover:text-red-400" />
