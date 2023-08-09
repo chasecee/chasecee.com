@@ -12,9 +12,9 @@ export default async function Home() {
   return (
     <Container>
       <HomeHero
-        text="Shaping pixels "
-        textB="into possibilities."
-        paragraph="Hi, I'm Chase. I've been a coder and designer for over 8 years. I have a passion for building with effective design. "
+        text="Shaping pixels. "
+        textB="Shipping solutions."
+        paragraph="Hi, I'm Chase. I've been a coder and designer for over a decade. I have a passion for building with effective design. "
         paragraphCTA="Learn more about me and my skillset."
       />
       <div
