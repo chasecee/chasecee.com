@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import "./CursorOverlay.css";
 
 const CursorOverlay = () => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
