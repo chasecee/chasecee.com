@@ -17,44 +17,50 @@ export default function HeaderMenu() {
   const activeClass = "item_active" + " " + baseClass;
   const inactiveClass = "item_inactive" + " " + baseClass;
   const barClass =
-    "header_item_bar h-px bg-transparent transition-colors opacity-40";
+    "header_item_bar h-[2px] bg-transparent transition-colors opacity-40";
 
   useEffect(() => {
     getPages().then(setPages);
   }, []);
 
-  if (!pages)
-    return (
-      <div className="header_menu flex flex-row gap-5">
-        <Link href="/" className={baseClass}>
-          Work<div className={barClass}></div>
-        </Link>
-        <Link href="/about" className={baseClass}>
-          About <div className={barClass}></div>
-        </Link>
-        <Link href="/contact" className={baseClass}>
-          Contact <div className={barClass}></div>
-        </Link>
-      </div>
-    );
-
+  // if (!pages)
   return (
     <div className="header_menu flex flex-row gap-5">
-      {/* <Cursor /> */}
-      <Link className={pathname === "/" ? activeClass : inactiveClass} href="/">
-        Work
-        <div className={barClass}></div>
+      <Link href="/" className={pathname === "/" ? activeClass : inactiveClass}>
+        Work<div className={barClass}></div>
       </Link>
-      {pages.map((page) => (
-        <Link
-          className={pathname === `/${page.slug}` ? activeClass : inactiveClass}
-          key={page._id}
-          href={`/${page.slug}`}
-        >
-          {page.title}
-          <div className={barClass}></div>
-        </Link>
-      ))}
+      <Link
+        href="/about"
+        className={pathname === "/about" ? activeClass : inactiveClass}
+      >
+        About <div className={barClass}></div>
+      </Link>
+      <Link
+        href="/contact"
+        className={pathname === "/contact" ? activeClass : inactiveClass}
+      >
+        Contact <div className={barClass}></div>
+      </Link>
     </div>
   );
+
+  // return (
+  //   <div className="header_menu flex flex-row gap-5">
+  //     {/* <Cursor /> */}
+  //     <Link className={pathname === "/" ? activeClass : inactiveClass} href="/">
+  //       Work
+  //       <div className={barClass}></div>
+  //     </Link>
+  //     {pages.map((page) => (
+  //       <Link
+  //         className={pathname === `/${page.slug}` ? activeClass : inactiveClass}
+  //         key={page._id}
+  //         href={`/${page.slug}`}
+  //       >
+  //         {page.title}
+  //         <div className={barClass}></div>
+  //       </Link>
+  //     ))}
+  //   </div>
+  // );
 }

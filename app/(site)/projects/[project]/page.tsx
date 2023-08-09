@@ -28,7 +28,7 @@ export default async function Project({ params }: Props) {
                   title={project.name}
                   target="_blank"
                   className="not-prose group inline-flex rounded-xl border border-current px-3 py-0 pr-2 
-                  text-sm text-black no-underline opacity-80 hover:opacity-100 dark:text-white/90"
+                   text-black no-underline opacity-80 hover:opacity-100 dark:text-white/90"
                 >
                   {project.archived ? (
                     <span className="flex h-[2.1rem] flex-row items-center justify-normal gap-1">
