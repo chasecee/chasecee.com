@@ -17,7 +17,7 @@ export default function HeaderMenu() {
   const activeClass = "item_active" + " " + baseClass;
   const inactiveClass = "item_inactive" + " " + baseClass;
   const barClass =
-    "header_item_bar h-px bg-transparent transition-colors duration-1000 opacity-40";
+    "header_item_bar h-px bg-transparent transition-colors opacity-40";
 
   useEffect(() => {
     getPages().then(setPages);
