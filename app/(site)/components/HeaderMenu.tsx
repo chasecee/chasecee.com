@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { getPages } from "@/sanity/sanity-utils";
+import { ContactModal } from "./ContactModal";
 
 interface Page {
   _id: string;
   title: string;
   slug: string;
-  // other fields...
 }
 
 export default function HeaderMenu() {
@@ -16,7 +16,7 @@ export default function HeaderMenu() {
   const pathname = usePathname();
   const activeClass = "active border-b header__item no-underline";
   const inactiveClass =
-    "transition-colors inactive border-b border-b-transparent dark:hover:border-b-white/50 hover:border-b-neutral-900";
+    "transition-colors inactive border-b dark:hover:text-opacity-50 hover:text-opacity-50";
 
   useEffect(() => {
     getPages().then(setPages);

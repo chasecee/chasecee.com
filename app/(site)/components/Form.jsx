@@ -36,7 +36,7 @@ export const Form = () => {
         <input
           type="checkbox"
           name="botcheck"
-          class="hidden"
+          className="hidden"
           style={{ display: "none" }}
         ></input>
 
