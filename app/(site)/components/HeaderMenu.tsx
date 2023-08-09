@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { getPages } from "@/sanity/sanity-utils";
-import { ContactModal } from "./ContactModal";
 
 interface Page {
   _id: string;
