@@ -13,9 +13,11 @@ interface Page {
 export default function HeaderMenu() {
   const [pages, setPages] = useState<Page[] | null>(null);
   const pathname = usePathname();
-  const activeClass = "active border-b header__item no-underline";
-  const inactiveClass =
-    "transition-colors inactive border-b dark:hover:text-opacity-50 hover:text-opacity-50";
+  const baseClass = "header_item no-underline transition-colors group ";
+  const activeClass = "item_active" + " " + baseClass;
+  const inactiveClass = "item_inactive" + " " + baseClass;
+  const barClass =
+    "header_item_bar h-px bg-transparent transition-colors duration-1000 opacity-40";
 
   useEffect(() => {
     getPages().then(setPages);
@@ -23,22 +25,25 @@ export default function HeaderMenu() {
 
   if (!pages)
     return (
-      <div className="header__menu flex flex-row gap-5">
-        <Link
-          className={pathname === "/" ? activeClass : inactiveClass}
-          href="/"
-        >
-          Work
+      <div className="header_menu flex flex-row gap-5">
+        <Link href="/" className={baseClass}>
+          Work<div className={barClass}></div>
         </Link>
-        <Link href="/about">About</Link>
-        <Link href="/contact">Contact</Link>
+        <Link href="/about" className={baseClass}>
+          About <div className={barClass}></div>
+        </Link>
+        <Link href="/contact" className={baseClass}>
+          Contact <div className={barClass}></div>
+        </Link>
       </div>
     );
 
   return (
-    <div className="header__menu flex flex-row gap-5">
+    <div className="header_menu flex flex-row gap-5">
+      {/* <Cursor /> */}
       <Link className={pathname === "/" ? activeClass : inactiveClass} href="/">
         Work
+        <div className={barClass}></div>
       </Link>
       {pages.map((page) => (
         <Link
@@ -47,6 +52,7 @@ export default function HeaderMenu() {
           href={`/${page.slug}`}
         >
           {page.title}
+          <div className={barClass}></div>
         </Link>
       ))}
     </div>

@@ -118,9 +118,20 @@
   width: 100%;
   height: 100%;
 }
-/* .header__menu .header__item {
-  @apply hover:underline underline-offset-4;
-} */
+/* HEADER MENU */
+.header_menu .header_item {
+  .header_item_bar {
+    @apply relative;
+  }
+  &.item_active {
+    .header_item_bar {
+      @apply bg-current;
+    }
+  }
+  &:not(.item_active):hover{
+    @apply opacity-50;
+  }
+}
 
 /* FORM */
 .form-row {

@@ -2,7 +2,6 @@ import { getPages } from "@/sanity/sanity-utils";
 import "./globals.css";
 import type { Metadata } from "next";
 import { DM_Sans, Inter } from "next/font/google";
-import Cursor from "./components/cursor/Cursor";
 
 const font = DM_Sans({
   weight: ["400", "500"],
@@ -33,7 +32,6 @@ export default async function RootLayout({
 }) {
   return (
     <html lang="en">
-      <Cursor />
       <body className={font.className + bodyClass}>{children}</body>
     </html>
   );
