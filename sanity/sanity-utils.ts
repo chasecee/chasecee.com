@@ -22,8 +22,12 @@ export async function getProjects(): Promise<Project[]> {
   );
 }
 
-export async function getProject(slug: string): Promise<Project> {
-  return createClient(clientConfig).fetch(
+export async function getProject(slug: string): Promise<{
+  project?: Project;
+  nextProject?: Project;
+  prevProject?: Project;
+}> {
+  const project = await createClient(clientConfig).fetch(
     groq`*[_type == "project" && slug.current == $slug][0]{
             _id,
             _createdAt,
@@ -32,19 +36,46 @@ export async function getProject(slug: string): Promise<Project> {
             "image": image.asset->url,
             url,
             archived,
+            orderRank,
             "content": content[]{
+              ...,
+              markDefs[]{
                 ...,
-                markDefs[]{
-                  ...,
-                  _type == "internalLink" => {
-                    "slug": @.reference->slug.current,
-                    "refType": @.reference->_type
-                  }
+                _type == "internalLink" => {
+                  "slug": @.reference->slug.current,
+                  "refType": @.reference->_type
                 }
               }
+            }
         }`,
     { slug },
   );
+
+  if (project) {
+    const nextProject = await createClient(clientConfig).fetch(
+      groq`*[_type == "project" && orderRank > $orderRank] | order(orderRank) [0] {
+              _id,
+              name,
+              "slug": slug.current,
+              "image": image.asset->url // Include this field
+          }`,
+      { orderRank: project.orderRank },
+    );
+
+    const prevProject = await createClient(clientConfig).fetch(
+      groq`*[_type == "project" && orderRank < $orderRank] | order(orderRank desc) [0] {
+              _id,
+              name,
+              "slug": slug.current,
+              "image": image.asset->url // Include this field
+          }`,
+      { orderRank: project.orderRank },
+    );
+
+    return { project, nextProject, prevProject };
+  }
+
+  return {};
 }
 
 export async function getPages(): Promise<Page[]> {

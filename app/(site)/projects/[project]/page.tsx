@@ -5,15 +5,18 @@ import urlFor from "@/sanity/sanity.image";
 import { Body } from "@/app/(site)/components/Body";
 import Link from "next/link";
 import { ArrowTopRightIcon } from "@sanity/icons";
-
+import ProjectLink from "./ProjectLink";
 type Props = {
   params: { project: string };
 };
 
 export default async function Project({ params }: Props) {
   const slug = params.project;
-  const project = await getProject(slug);
-  //console.log(project);
+  const { project, nextProject, prevProject } = await getProject(slug);
+
+  if (!project) {
+    return <div>Project not found</div>;
+  }
   return (
     <div>
       <Container>
@@ -47,15 +50,25 @@ export default async function Project({ params }: Props) {
           </header>
           {project.image && (
             <Image
-              src={urlFor(project.image).width(622).height(622).dpr(1.5).url()}
+              src={urlFor(project.image).width(722).height(452).dpr(1.5).url()}
               alt={project.name}
-              width={622}
-              height={622}
+              width={722}
+              height={452}
               className="rounded-xl object-cover"
             />
           )}
-          <div>
-            <Body value={project.content} />
+          {project.content && (
+            <div>
+              <Body value={project.content} />
+            </div>
+          )}
+          <div className="not-prose grid gap-4  md:grid-cols-2">
+            {prevProject && (
+              <ProjectLink project={prevProject} direction="prev" />
+            )}
+            {nextProject && (
+              <ProjectLink project={nextProject} direction="next" />
+            )}
           </div>
         </div>
       </Container>
