@@ -46,10 +46,10 @@
   }
   .in-view {
     .view-actor {
-      @apply -translate-y-[28%] duration-300;
+      @apply -translate-y-[28%] lg:translate-y-0 duration-300;
     }
     .view-actor-image {
-      @apply -translate-y-[75%];
+      @apply -translate-y-[75%] lg:translate-y-0;
     }
   }
  

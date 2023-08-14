@@ -18,7 +18,7 @@ export default async function Home() {
         paragraphCTA="Learn more about me and my skillset."
       />
       <div
-        className="fade-in-up a-delay-3000ms mx-auto grid grid-cols-1 gap-10
+        className="fade-in-up a-delay-2000ms mx-auto grid grid-cols-1 gap-10
       opacity-0 md:grid-cols-2 xl:gap-20
       "
       >
@@ -44,29 +44,24 @@ export default async function Home() {
                       style={{ backgroundColor: project.color.hex }}
                     ></div>
                   )}
+                  {project.color && (
+                    <div className="absolute inset-0 -bottom-10 -top-10 flex-col flex-nowrap gap-0 overflow-hidden rounded-xl opacity-[15%] transition-all duration-500">
+                      {colorPalette.map((color, index) => (
+                        <div
+                          key={index}
+                          className="color-div absolute h-36 w-full transition-transform duration-[500ms] group-hover:translate-y-10"
+                          style={{
+                            backgroundColor: color,
+                            top: `${Math.round(
+                              (index / colorPalette.length) * 100,
+                            )}%`,
+                            transitionDelay: `${index * 100}ms`,
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
 
-                  <div
-                    className="scale-y-120 absolute inset-0 hidden -translate-y-[20%] transform-gpu 
-                flex-col 
-                flex-nowrap
-                gap-0 opacity-30
-                mix-blend-overlay transition-all duration-500
-                group-hover:translate-y-0
-                group-hover:scale-y-100 
-                group-hover:duration-1000 
-                 group-active:scale-95"
-                  >
-                    {colorPalette.map((color, index) => (
-                      <div
-                        key={index}
-                        className="color-div absolute h-36 w-full"
-                        style={{
-                          backgroundColor: color,
-                          top: `${(index / colorPalette.length) * 95}%`,
-                        }}
-                      />
-                    ))}
-                  </div>
                   <div className="view-actor-image absolute left-[10%] right-[10%] top-[100%] translate-y-0 rounded-xl transition-transform duration-300 group-hover:-translate-y-[75%] group-active:scale-95">
                     {project.image && (
                       <Image
@@ -87,7 +82,7 @@ export default async function Home() {
                   {project.svgcode && (
                     <div className="view-actor absolute inset-0 transition-transform delay-[25ms] duration-500 group-hover:-translate-y-[28%] group-hover:duration-300">
                       <div
-                        className="svg-parent absolute left-1/2 top-1/2 h-1/2 w-1/2 -translate-x-1/2 -translate-y-1/2"
+                        className="svg-parent absolute left-1/2 top-1/2 h-1/2 w-1/2 -translate-x-1/2 -translate-y-1/2 text-white"
                         dangerouslySetInnerHTML={{
                           __html: project.svgcode.code,
                         }}
