@@ -62,6 +62,9 @@ export default async function Project({ params }: Props) {
               <Body value={project.content} />
             </div>
           )}
+          <h3 className="mb-4 mt-20 text-xl">
+            Thanks for reading! Check out more:
+          </h3>
           <div className="not-prose grid gap-4  md:grid-cols-2">
             {prevProject && (
               <ProjectLink project={prevProject} direction="prev" />

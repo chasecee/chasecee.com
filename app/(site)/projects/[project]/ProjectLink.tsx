@@ -11,7 +11,7 @@ type ProjectLinkProps = {
 
 const ProjectLink = ({ project, direction }: ProjectLinkProps) => {
   return (
-    <div className={`${direction}-post flex-grow`}>
+    <div className={`${direction}-post flex-grow `}>
       <Link
         href={`/projects/${project.slug}`}
         className={`${
@@ -19,12 +19,12 @@ const ProjectLink = ({ project, direction }: ProjectLinkProps) => {
         } not-prose group relative flex items-center justify-between gap-4 overflow-hidden rounded-xl bg-gray-500/30 no-underline  transition-colors hover:bg-gray-500/10 `}
       >
         {project.image && (
-          <div className="absolute inset-0 z-0 w-full blur-md brightness-50 filter">
+          <div className="flex-none">
             <Image
-              src={urlFor(project.image).width(500).height(100).dpr(1.5).url()}
+              src={urlFor(project.image).width(150).height(150).dpr(1.5).url()}
               alt={project.name}
-              width={500}
-              height={100}
+              width={150}
+              height={150}
               className="w-full flex-none transition-opacity group-hover:opacity-90"
             />
           </div>
