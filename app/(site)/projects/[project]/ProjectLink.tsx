@@ -37,9 +37,9 @@ const ProjectLink = ({ project, direction }: ProjectLinkProps) => {
             <span className="text-2xl">{project.name}</span>
           </div>
         </div>
-        <div className="justify-self-end text-[4rem]">
+        {/* <div className="justify-self-end text-[4rem]">
           {direction === "prev" ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-        </div>
+        </div> */}
       </Link>
     </div>
   );
