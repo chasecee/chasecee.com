@@ -74,13 +74,13 @@ export default async function Page({ params }: Props) {
                     <div key={index} className="rounded-xl">
                       <Image
                         src={urlFor(imageBlock.imageUrl)
-                          .width(800)
-                          .height(450)
+                          .width(711)
+                          .height(711)
                           .dpr(2)
                           .url()}
                         alt={imageBlock.alt}
-                        width={800} // adjust these values according to your needs
-                        height={550}
+                        width={711} // adjust these values according to your needs
+                        height={711}
                         className="w-full rounded-xl"
                       />
                     </div>
