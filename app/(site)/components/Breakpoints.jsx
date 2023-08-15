@@ -25,9 +25,7 @@ const ScreenSizeDisplay = () => {
   }, []);
 
   return (
-    <div className="fixed left-0 top-0 p-1 text-[.8rem] opacity-0 hover:opacity-40">
-      {size}
-    </div>
+    <div className="fixed left-0 top-0 p-1 text-[.8rem] opacity-30">{size}</div>
   );
 };
 
