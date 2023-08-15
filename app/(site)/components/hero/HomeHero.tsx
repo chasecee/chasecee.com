@@ -13,7 +13,7 @@ export default function HomeHero({
   paragraphCTA,
 }: HomeHeroProps) {
   return (
-    <div className="mx-auto my-20 md:my-24 lg:mx-[20vw] lg:my-32 lg:mb-36 xl:mx-[7vw]">
+    <div className="mx-auto my-20 md:my-24 lg:mx-[7vw]">
       <div className="prose max-w-none dark:prose-invert">
         <h1 className="lg:text-[4.1rem]">
           <span className="fade-in opacity-0">{text}</span>

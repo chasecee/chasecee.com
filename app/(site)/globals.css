@@ -27,7 +27,27 @@
   .logoMain {
     @apply fill-white;
   }
+  .project-item{
+    .project-gradient-bg{
+      .color-div {
+        @apply absolute h-36 w-full;
+      }
+    }
+    &.project-strider-intel {
+      .project-gradient-bg{
+        transform: rotate(45deg) scale(1.4);
+      }
+    }
+    &.project-inmoment {
+      .project-gradient-bg .color-div {
+        @apply rounded-full w-auto h-[5.6rem] left-4 right-4;
+      }
+    }
+  }
   
+  .scrolled-down{
+    @apply bg-red-600;
+  }
 }
 @layer utilities {
   /* SCROLL VIEW */
