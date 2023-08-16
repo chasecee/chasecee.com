@@ -48,9 +48,9 @@ export default function ProjectsList({ projects }: ProjectsListProps) {
                       {colorPalette.map((color, index) => (
                         <div
                           key={index}
-                          className={`color-div transform-gpu transition-transform duration-[500ms] ${
+                          className={`color-div transform-gpu transition-transform duration-[300ms] ${
                             project.name === "InMoment.com"
-                              ? "translate-x-0 group-hover:translate-x-1/2"
+                              ? "translate-x-0 group-hover:-translate-y-1/2 group-hover:scale-x-75"
                               : "group-hover:translate-y-10"
                           }`}
                           style={{
