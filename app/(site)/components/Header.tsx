@@ -6,7 +6,7 @@ import Breakpoints from "./Breakpoints";
 export default function Header() {
   return (
     <header className="header mb-10 flex items-center justify-between py-4">
-      <Breakpoints />
+      {/* <Breakpoints /> */}
 
       <HeaderMenu />
       <Link className="header__title" href="/">

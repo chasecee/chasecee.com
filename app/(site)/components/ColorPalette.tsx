@@ -6,7 +6,7 @@ type ColorPaletteProps = {
 };
 export function ColorPalette({ colorPalette, project }: ColorPaletteProps) {
   return (
-    <>
+    <div className="project-gradient-bg absolute inset-0 -bottom-10 -top-10 flex-col flex-nowrap gap-0 overflow-hidden rounded-xl opacity-[20%] transition-all duration-500">
       {colorPalette.map((color, index) => (
         <div
           key={index}
@@ -21,6 +21,6 @@ export function ColorPalette({ colorPalette, project }: ColorPaletteProps) {
           }}
         />
       ))}
-    </>
+    </div>
   );
 }

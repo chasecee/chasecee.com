@@ -14,10 +14,10 @@ type ProjectsListProps = {
 export default function ProjectsList({ projects }: ProjectsListProps) {
   return (
     <IntersectionObserverComponent
-      inViewClass="opacity-100"
-      notInViewClass="opacity-10"
-      threshold={0.1}
-      className="project-list transition-opacity"
+      inViewClass="scale-100"
+      notInViewClass="scale-95"
+      threshold={0.01}
+      className="project-list transition-transform"
     >
       <div className="mx-auto grid grid-cols-1 gap-10 md:grid-cols-2 xl:gap-20">
         {projects.map((project: Project, index: number) => {
@@ -45,12 +45,10 @@ export default function ProjectsList({ projects }: ProjectsListProps) {
                     ></div>
                   )}
                   {project.color && (
-                    <div className="project-gradient-bg absolute inset-0 -bottom-10 -top-10 flex-col flex-nowrap gap-0 overflow-hidden rounded-xl opacity-[15%] transition-all duration-500">
-                      <ColorPalette
-                        colorPalette={generateColorPalette(project.color.hex)}
-                        project={project}
-                      />
-                    </div>
+                    <ColorPalette
+                      colorPalette={generateColorPalette(project.color.hex)}
+                      project={project}
+                    />
                   )}
 
                   <div className="view-actor-image absolute left-[10%] right-[10%] top-[100%] translate-y-0 rounded-xl transition-transform duration-300 group-hover:-translate-y-[75%] group-active:scale-95">
@@ -82,10 +80,11 @@ export default function ProjectsList({ projects }: ProjectsListProps) {
                   )}
                 </div>
                 <div className="relative">
-                  <span className="mt-3 inline-block rounded bg-white px-2 py-1 text-xl dark:bg-neutral-900">
-                    {project.name}
+                  <span className="mt-3 inline-block text-base">
+                    <span className="font-bold">{project.name}</span>
+
                     {project.subtitle && (
-                      <span className="opacity-40">
+                      <span className="opacity-40 font-light">
                         &nbsp;-&nbsp;{project.subtitle}
                       </span>
                     )}

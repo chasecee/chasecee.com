@@ -1,20 +1,24 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 
 const ScreenSizeDisplay = () => {
   const [size, setSize] = useState("xs");
+  const router = useRouter();
 
   const updateSize = () => {
-    if (window.innerWidth >= 1280) {
-      setSize("xl");
-    } else if (window.innerWidth >= 1024) {
-      setSize("lg");
-    } else if (window.innerWidth >= 768) {
-      setSize("md");
-    } else if (window.innerWidth >= 640) {
-      setSize("sm");
-    } else {
-      setSize("xs");
+    if (typeof window !== "undefined") {
+      if (window.innerWidth >= 1280) {
+        setSize("xl");
+      } else if (window.innerWidth >= 1024) {
+        setSize("lg");
+      } else if (window.innerWidth >= 768) {
+        setSize("md");
+      } else if (window.innerWidth >= 640) {
+        setSize("sm");
+      } else {
+        setSize("xs");
+      }
     }
   };
 
@@ -25,7 +29,7 @@ const ScreenSizeDisplay = () => {
   }, []);
 
   // Check if the current URL is not "https://chasecee.com" before rendering
-  if (window.location.href !== "https://chasecee.com") {
+  if (router.asPath !== "https://chasecee.com") {
     return (
       <div className="fixed left-0 top-0 p-1 text-[.8rem] opacity-10">{size}</div>
     );
