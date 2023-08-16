@@ -24,9 +24,14 @@ const ScreenSizeDisplay = () => {
     return () => window.removeEventListener("resize", updateSize);
   }, []);
 
-  return (
-    <div className="fixed left-0 top-0 p-1 text-[.8rem] opacity-10">{size}</div>
-  );
+  // Check if the current URL is not "https://chasecee.com" before rendering
+  if (window.location.href !== "https://chasecee.com") {
+    return (
+      <div className="fixed left-0 top-0 p-1 text-[.8rem] opacity-10">{size}</div>
+    );
+  } else {
+    return null;
+  }
 };
 
 export default ScreenSizeDisplay;
