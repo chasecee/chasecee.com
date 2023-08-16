@@ -3,7 +3,9 @@ import Image from "next/image";
 import IntersectionObserverComponent from "./IntersectionObserver";
 import urlFor from "@/sanity/sanity.image";
 import generateColorPalette from "../utils/colorUtils";
-import { Project } from "@/types/Project"; // Import the Project type
+import { Project } from "@/types/Project";
+import { ColorPalette } from "./ColorPalette";
+
 
 type ProjectsListProps = {
   projects: Project[];
@@ -26,9 +28,8 @@ export default function ProjectsList({ projects }: ProjectsListProps) {
               inViewClass="in-view"
               notInViewClass="not-in-view"
               threshold={0.1}
-              className={`project-item project-${index + 1} project-${
-                project.slug
-              }`}
+              className={`project-item project-${index + 1} project-${project.slug
+                }`}
             >
               <Link
                 key={project._id}
@@ -45,24 +46,10 @@ export default function ProjectsList({ projects }: ProjectsListProps) {
                   )}
                   {project.color && (
                     <div className="project-gradient-bg absolute inset-0 -bottom-10 -top-10 flex-col flex-nowrap gap-0 overflow-hidden rounded-xl opacity-[15%] transition-all duration-500">
-                      {colorPalette.map((color, index) => (
-                        <div
-                          key={index}
-                          className={`color-div transform-gpu transition-transform duration-[300ms] ${
-                            project.name === "InMoment.com"
-                              ? "translate-x-0 group-hover:-translate-y-1/2 group-hover:scale-x-75"
-                              : "group-hover:translate-y-10"
-                          }`}
-                          style={{
-                            backgroundColor: color,
-                            top: `${(
-                              (index / colorPalette.length) *
-                              100
-                            ).toFixed(2)}%`,
-                            transitionDelay: `${index * 100}ms`,
-                          }}
-                        />
-                      ))}
+                      <ColorPalette
+                        colorPalette={generateColorPalette(project.color.hex)}
+                        project={project}
+                      />
                     </div>
                   )}
 
