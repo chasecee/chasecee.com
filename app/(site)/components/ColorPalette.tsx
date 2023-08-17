@@ -10,9 +10,9 @@ export function ColorPalette({ colorPalette, project }: ColorPaletteProps) {
       {colorPalette.map((color, index) => (
         <div
           key={index}
-          className={`color-div transform-gpu transition-transform duration-[300ms] ${project.name === "InMoment.com"
-            ? "translate-x-0 group-hover:-translate-y-1/2 group-hover:scale-x-75"
-            : "group-hover:translate-y-10"
+          className={`color-div transform-gpu transition-transform duration-[200ms] ${project.name === "InMoment.com"
+            ? "translate-x-0 group-hover:-translate-y-[2rem]"
+            : "group-hover:translate-y-[20%]"
             }`}
           style={{
             backgroundColor: color,

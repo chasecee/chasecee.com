@@ -39,8 +39,11 @@
       }
     }
     &.project-inmoment {
-      .project-gradient-bg .color-div {
-        @apply rounded-full w-auto h-[5.6rem] left-4 right-4;
+      .project-gradient-bg {
+        @apply top-0 bottom-0 scale-[140%];
+        .color-div {
+        @apply rounded-full w-full h-full left-0 right-0;
+        }
       }
     }
   }
