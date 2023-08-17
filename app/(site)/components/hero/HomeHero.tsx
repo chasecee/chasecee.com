@@ -15,7 +15,7 @@ export default function HomeHero({
   return (
     <div className="mx-auto my-20 md:my-24 lg:mx-[7vw]">
       <div className="prose max-w-none dark:prose-invert">
-        <h1 className="lg:text-[4.1rem]">
+        <h1 className="lg:text-[6rem] sm:text-[4rem]">
           <span className="fade-in opacity-0 block">{text}</span>
           <span className="fade-in opacity-0 block xl:inline">{textB}</span>
         </h1>
