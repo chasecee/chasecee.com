@@ -2,12 +2,12 @@ import * as React from "react";
 const SvgComponent = (
   props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>,
 ) => (
-  <div className="group relative transition-transform transform-gpu active:scale-95 hover:scale-105">
+  <div className="group relative">
     <svg
       viewBox="0 0 70 70"
       xmlns="http://www.w3.org/2000/svg"
-      width={70}
-      height={70}
+      width={60}
+      height={60}
       fill="none"
       className="logo-delay relative transition-transform duration-500"
       {...props}
@@ -37,7 +37,7 @@ const SvgComponent = (
             d="M0 18.12c0-5.704 0-8.556.95-10.8A12 12 0 0 1 7.32.95C9.565 0 12.417 0 18.12 0h33.76c5.704 0 8.556 0 10.8.95a12 12 0 0 1 6.37 6.37c.95 2.244.95 5.096.95 10.8v33.76c0 5.704 0 8.556-.95 10.8a12 12 0 0 1-6.37 6.37c-2.244.95-5.096.95-10.8.95H18.12c-5.704 0-8.556 0-10.8-.95a12 12 0 0 1-6.37-6.37C0 60.435 0 57.583 0 51.88V18.12Z"
           />
           <path
-            className="logoBg-gradient group-hover:opacity-30 opacity-0 mix-blend-overlay duration-500 transition-opacity"
+            className="logoBg-gradient opacity-0 mix-blend-overlay transition-opacity duration-500 group-hover:opacity-30"
             fill="url(#grad1)"
             d="M0 18.12c0-5.704 0-8.556.95-10.8A12 12 0 0 1 7.32.95C9.565 0 12.417 0 18.12 0h33.76c5.704 0 8.556 0 10.8.95a12 12 0 0 1 6.37 6.37c.95 2.244.95 5.096.95 10.8v33.76c0 5.704 0 8.556-.95 10.8a12 12 0 0 1-6.37 6.37c-2.244.95-5.096.95-10.8.95H18.12c-5.704 0-8.556 0-10.8-.95a12 12 0 0 1-6.37-6.37C0 60.435 0 57.583 0 51.88V18.12Z"
           />
@@ -153,10 +153,9 @@ const SvgComponent = (
           <path fill="#fff" d="M0 0h70v70H0z" />
         </clipPath>
         <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style={{stopColor:"black", stopOpacity:1}} />
-          <stop offset="100%" style={{stopColor:"white", stopOpacity:1}} />
+          <stop offset="0%" style={{ stopColor: "black", stopOpacity: 1 }} />
+          <stop offset="100%" style={{ stopColor: "white", stopOpacity: 1 }} />
         </linearGradient>
-
       </defs>
     </svg>
   </div>
