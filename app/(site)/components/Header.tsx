@@ -5,8 +5,8 @@ import Breakpoints from "./Breakpoints";
 
 export default function Header() {
   return (
-    <div className="fixed left-0 right-0 top-4 z-40">
-      <header className="header container mb-10 flex items-center justify-between rounded-xl border border-[#FFFFFF]/[0.16] bg-neutral-900/30 px-6 py-4 backdrop-blur-md">
+    <div className="fixed left-2 right-2 top-2 z-40 md:left-4 md:right-4 md:top-4">
+      <header className="header container flex items-center justify-between rounded-xl border border-neutral-900/30 bg-white/30 px-6 py-4 backdrop-blur-md dark:bg-neutral-900/30">
         {/* <Breakpoints /> */}
 
         <HeaderMenu />
