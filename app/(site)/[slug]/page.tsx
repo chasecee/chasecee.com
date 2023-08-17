@@ -5,6 +5,7 @@ import Skills from "../components/Skills";
 import Image from "next/image";
 import urlFor from "@/sanity/sanity.image";
 import Draggable from "react-draggable";
+import NotFound from "./not-found";
 
 type SkillBlock = {
   _type: string;
@@ -38,7 +39,7 @@ export default async function Page({ params }: Props) {
     if (!page) {
       // Handle the case where page data could not be fetched
       // This could be a redirect or a "Page not found" component
-      return <div>Page not found</div>;
+      return <NotFound />;
     }
 
     return (
