@@ -22,10 +22,8 @@ const tailwindString =
 
 const RenderDiamond = React.memo(({ position, delay, hue }) => (
   <div
-    className={`
-    absolute h-0 w-full origin-center rotate-45
-    bg-gradient-to-bl from-fuchsia-900 to-transparent pt-[100%] 
-    left-[${position}%] top-0 -translate-x-1/2 transition-[filter] delay-${delay} duration-100`}
+    className={`absolute h-[40rem] w-[40rem] origin-center rotate-45 rounded-3xl bg-gradient-to-bl from-fuchsia-900/50 to-transparent
+    left-[${position}%] top-1/2 -translate-x-1/2 -translate-y-1/2 transition-[filter] delay-${delay} duration-100`}
     style={{ filter: `hue-rotate(${hue}deg)` }}
   />
 ));
@@ -38,18 +36,18 @@ const HueRotateComponent = () => {
   const handleMouseMove = (e) => {
     const xRatio = e.clientX / window.innerWidth;
     const yRatio = e.clientY / window.innerHeight;
-    const newHue = (xRatio + yRatio) * 180; // Adjust the multiplier as needed
+    const newHue = (xRatio + yRatio) * 270; // Adjust the multiplier as needed
     setHue(newHue.toFixed(0));
   };
 
-  const throttledMouseMove = useMemo(() => throttle(handleMouseMove, 30), []); // Adjust the throttle limit as needed
+  const throttledMouseMove = useMemo(() => throttle(handleMouseMove, 2), []); // Adjust the throttle limit as needed
 
   return (
     <div
-      className="relative flex h-auto flex-col justify-center overflow-hidden pt-32 md:h-[80dvh] md:pt-[10rem] lg:h-[90dvh] lg:min-h-[30rem] lg:pt-[5rem]"
+      className="relative flex h-auto flex-col justify-center overflow-hidden pt-32 md:h-[80dvh] md:pt-[10rem] lg:h-[95dvh] lg:min-h-[30rem] lg:pt-[5rem]"
       onMouseMove={throttledMouseMove}
     >
-      <div className="absolute inset-0 w-full">
+      <div className="absolute inset-0 w-full opacity-40 dark:opacity-100">
         {Array.from({ length: 6 }, (_, i) => (
           <RenderDiamond key={i} position={i * 20} delay={i * 100} hue={hue} />
         ))}
@@ -64,7 +62,7 @@ const HueRotateComponent = () => {
         />
       </div>
 
-      <div className="absolute -bottom-px left-0 right-0 z-0 h-1/4 bg-gradient-to-b from-transparent to-neutral-900"></div>
+      <div className="absolute -bottom-px left-0 right-0 z-0 h-[30rem] bg-gradient-to-b from-transparent to-neutral-100 dark:to-neutral-900"></div>
     </div>
   );
 };
