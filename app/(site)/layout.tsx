@@ -13,7 +13,7 @@ const font = DM_Sans({
 //   display: "swap",
 // });
 const bodyClass =
-  " w-full min-h-screen bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white font-normal";
+  " w-full min-h-screen bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-white font-normal";
 
 export const metadata: Metadata = {
   title: "Chase Cee - Work",

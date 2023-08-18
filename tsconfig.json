@@ -33,7 +33,8 @@
     "app/(site)/components/svg/doxyme.jsx",
     "firebase.js",
     "app/(site)/components/FireComponent.jsx",
-    "app/(site)/components/DraggableDiv.jsx"
+    "app/(site)/components/DraggableDiv.jsx",
+    "app/(site)/components/HueMove.jsx"
   ],
   "exclude": ["node_modules"]
 }

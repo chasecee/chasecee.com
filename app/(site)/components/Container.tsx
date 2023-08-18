@@ -1,10 +1,15 @@
 import Footer from "./Footer";
 import Header from "./Header";
 
-export default function Container({ children }: { children: React.ReactNode }) {
+type ContainerProps = {
+  children: React.ReactNode;
+  className?: string;
+};
+
+export default function Container({ children, className }: ContainerProps) {
   return (
-    <div className="root min-h-screen w-full bg-white font-normal text-neutral-900 dark:bg-neutral-900 dark:text-white">
-      <div className="container mt-24 overflow-hidden px-8">
+    <div className={`root min-h-screen w-full  font-normal ${className}`}>
+      <div className="container overflow-hidden px-8 pt-24">
         <Header />
         <main>{children}</main>
         <Footer />

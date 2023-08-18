@@ -13,7 +13,6 @@ type SkillBlock = {
 
 type TextBlock = {
   _type: string;
-  // add any other properties that exist on your blocks
 };
 
 type ImageBlock = {
@@ -37,8 +36,6 @@ export default async function Page({ params }: Props) {
     const page: PageProps = await getPage(params.slug);
 
     if (!page) {
-      // Handle the case where page data could not be fetched
-      // This could be a redirect or a "Page not found" component
       return <NotFound />;
     }
 
