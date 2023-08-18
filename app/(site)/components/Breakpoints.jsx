@@ -1,10 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
 
 const ScreenSizeDisplay = () => {
   const [size, setSize] = useState("xs");
-  const router = useRouter();
 
   const updateSize = () => {
     if (typeof window !== "undefined") {
@@ -29,13 +27,10 @@ const ScreenSizeDisplay = () => {
   }, []);
 
   // Check if the current URL is not "https://chasecee.com" before rendering
-  if (router.asPath !== "https://chasecee.com") {
-    return (
-      <div className="fixed left-0 top-0 p-1 text-[.8rem] opacity-10">{size}</div>
-    );
-  } else {
-    return null;
-  }
+
+  return (
+    <div className="fixed left-0 top-0 p-1 text-[.8rem] opacity-10">{size}</div>
+  );
 };
 
 export default ScreenSizeDisplay;

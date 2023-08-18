@@ -20,7 +20,7 @@ export default async function Home() {
         <Diamond className="absolute right-0 top-10" />
       </div> */}
       <HueMove />
-      <Container className="relative z-0">
+      <Container className="relative z-10">
         {/* <HomeHero
           text="Shaping pixels. "
           textB="Shipping solutions."
