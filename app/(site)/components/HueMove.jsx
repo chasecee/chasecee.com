@@ -1,29 +1,16 @@
 "use client";
-
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { throttle } from "lodash"; // Import throttle from Lodash
 import HomeHero from "./hero/HomeHero";
 import Diamond from "./svg/Diamond2";
 
-// Throttle function to limit the frequency of function execution
-const throttle = (func, limit) => {
-  let inThrottle;
-  return function () {
-    const args = arguments;
-    const context = this;
-    if (!inThrottle) {
-      func.apply(context, args);
-      inThrottle = true;
-      setTimeout(() => (inThrottle = false), limit);
-    }
-  };
-};
 const tailwindString =
-  "left-[0%] left-[100%] left-[20%] left-[40%] left-[60%] left-[80%] hidden delay-100 delay-200 delay-300 delay-400 delay-500";
+  "left-[0%] left-[100%] left-[20%] left-[40%] left-[60%] left-[80%] hidden delay-[50ms] delay-[100ms] delay-[150ms] delay-[200ms] delay-[250ms]";
 
 const RenderDiamond = React.memo(({ position, delay, hue }) => (
   <div
     className={`absolute h-[35rem] w-[35rem] origin-center rotate-45 rounded-3xl bg-gradient-to-bl from-emerald-300/50 to-transparent dark:from-fuchsia-900/50
-    left-[${position}%] top-1/2 -translate-x-1/2 -translate-y-1/2 transition-[filter] delay-${delay} duration-0`}
+    left-[${position}%] top-1/2 -translate-x-1/2 -translate-y-1/2 transition-[filter] delay-[${delay}ms] duration-100`}
     style={{
       filter: `hue-rotate(${hue}deg)`,
     }}
@@ -42,7 +29,14 @@ const HueRotateComponent = () => {
     setHue(newHue.toFixed(0));
   };
 
-  const throttledMouseMove = useMemo(() => throttle(handleMouseMove, 2), []); // Adjust the throttle limit as needed
+  const throttledMouseMove = useMemo(() => throttle(handleMouseMove, 10), []);
+
+  useEffect(() => {
+    // Return a cleanup function to remove the event listener
+    return () => {
+      throttledMouseMove.cancel(); // Cancel any pending execution
+    };
+  }, [throttledMouseMove]);
 
   return (
     <div
@@ -54,7 +48,7 @@ const HueRotateComponent = () => {
         style={{}}
       >
         {Array.from({ length: 6 }, (_, i) => (
-          <RenderDiamond key={i} position={i * 20} delay={i * 100} hue={hue} />
+          <RenderDiamond key={i} position={i * 20} delay={i * 50} hue={hue} />
         ))}
       </div>
       <div className="container relative z-10">
