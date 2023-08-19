@@ -55,13 +55,13 @@ export default function ProjectsList({ projects }: ProjectsListProps) {
                     {project.image && (
                       <Image
                         src={urlFor(project.image)
-                          .width(515)
-                          .height(515)
+                          .width(314)
+                          .height(314)
                           .dpr(1.5)
                           .url()}
                         alt={project.name}
-                        width={515}
-                        height={515}
+                        width={314}
+                        height={314}
                         priority={true}
                         sizes="(max-width: 640) 314px, 515px"
                         className="rounded-xl object-cover"
