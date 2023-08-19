@@ -18,10 +18,10 @@ export default function HomeHero({
     <div className={`mx-auto lg:mx-[7vw] ${className}`}>
       <div className="prose max-w-none dark:prose-invert">
         <h1 className="mb-[2rem] sm:text-[4rem] lg:text-[6rem]">
-          <span className="block opacity-0">{text}</span>
-          <span className=" block opacity-0 xl:inline">{textB}</span>
+          <span className="block ">{text}</span>
+          <span className=" block xl:inline">{textB}</span>
         </h1>
-        <div className="max-w-[65ch] opacity-0">
+        <div className="max-w-[65ch]">
           <p className="md:text-[1.2rem]">
             {paragraph}&nbsp;
             <Link href="/about" className="underline underline-offset-2">
