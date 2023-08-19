@@ -63,7 +63,7 @@ export default function ProjectsList({ projects }: ProjectsListProps) {
                         width={515}
                         height={515}
                         priority={true}
-                        sizes="(max-width: 420px) 314px, 515px"
+                        sizes="(max-width: 640) 314px, 515px"
                         className="rounded-xl object-cover"
                       />
                     )}
