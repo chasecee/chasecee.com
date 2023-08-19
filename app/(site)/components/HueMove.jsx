@@ -22,9 +22,11 @@ const tailwindString =
 
 const RenderDiamond = React.memo(({ position, delay, hue }) => (
   <div
-    className={`absolute h-[40rem] w-[40rem] origin-center rotate-45 rounded-3xl bg-gradient-to-bl from-fuchsia-900/50 to-transparent
-    left-[${position}%] top-1/2 -translate-x-1/2 -translate-y-1/2 transition-[filter] delay-${delay} duration-100`}
-    style={{ filter: `hue-rotate(${hue}deg)` }}
+    className={`absolute h-[35rem] w-[35rem] origin-center rotate-45 rounded-3xl bg-gradient-to-bl from-fuchsia-900/50 to-transparent
+    left-[${position}%] top-1/2 -translate-x-1/2 -translate-y-1/2 transition-[filter] delay-${delay} duration-0`}
+    style={{
+      filter: `hue-rotate(${hue}deg)`,
+    }}
   />
 ));
 
@@ -47,7 +49,10 @@ const HueRotateComponent = () => {
       className="relative flex h-auto flex-col justify-center overflow-hidden pt-32 md:h-[80dvh] md:pt-[10rem] lg:h-[95dvh] lg:min-h-[30rem] lg:pt-[5rem]"
       onMouseMove={throttledMouseMove}
     >
-      <div className="absolute inset-0 w-full opacity-40 dark:opacity-100">
+      <div
+        className="absolute inset-0 w-full opacity-40 dark:opacity-100"
+        style={{}}
+      >
         {Array.from({ length: 6 }, (_, i) => (
           <RenderDiamond key={i} position={i * 20} delay={i * 100} hue={hue} />
         ))}
