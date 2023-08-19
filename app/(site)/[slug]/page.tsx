@@ -40,8 +40,8 @@ export default async function Page({ params }: Props) {
     }
 
     return (
-      <div>
-        <Container>
+      <>
+        <Container className="pt-24">
           <div className="prose mx-auto dark:prose-invert">
             <header>
               <h1>{page.subtitle ? page.subtitle : page.title}</h1>
@@ -90,7 +90,7 @@ export default async function Page({ params }: Props) {
             </div>
           </div>
         </Container>
-      </div>
+      </>
     );
   } catch (err) {
     // Add a basic error handling for any exceptions

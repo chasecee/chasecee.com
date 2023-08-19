@@ -6,7 +6,6 @@ import generateColorPalette from "../utils/colorUtils";
 import { Project } from "@/types/Project";
 import { ColorPalette } from "./ColorPalette";
 
-
 type ProjectsListProps = {
   projects: Project[];
 };
@@ -28,8 +27,9 @@ export default function ProjectsList({ projects }: ProjectsListProps) {
               inViewClass="in-view"
               notInViewClass="not-in-view"
               threshold={0.1}
-              className={`project-item project-${index + 1} project-${project.slug
-                }`}
+              className={`project-item project-${index + 1} project-${
+                project.slug
+              }`}
             >
               <Link
                 key={project._id}
@@ -63,6 +63,7 @@ export default function ProjectsList({ projects }: ProjectsListProps) {
                         width={515}
                         height={515}
                         priority={true}
+                        sizes="(max-width: 640px) 314px, 515px"
                         className="rounded-xl object-cover"
                       />
                     )}
@@ -84,7 +85,7 @@ export default function ProjectsList({ projects }: ProjectsListProps) {
                     <span className="font-bold">{project.name}</span>
 
                     {project.subtitle && (
-                      <span className="opacity-40 font-light">
+                      <span className="font-light opacity-40">
                         &nbsp;-&nbsp;{project.subtitle}
                       </span>
                     )}
