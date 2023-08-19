@@ -62,7 +62,6 @@ export default function ProjectsList({ projects }: ProjectsListProps) {
                         alt={project.name}
                         width={314}
                         height={314}
-                        layout="fill"
                         sizes="(max-width: 640) 314px, 515px"
                         className="rounded-xl object-cover"
                       />
