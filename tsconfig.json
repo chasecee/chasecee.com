@@ -34,7 +34,8 @@
     "firebase.js",
     "app/(site)/components/FireComponent.jsx",
     "app/(site)/components/DraggableDiv.jsx",
-    "app/(site)/components/HueMove.jsx"
+    "app/(site)/components/HueMove.jsx",
+    "app/(site)/components/HueAnimation.jsx"
   ],
   "exclude": ["node_modules"]
 }

@@ -59,6 +59,14 @@
   .scrolled-down{
     @apply bg-red-600;
   }
+  @keyframes hue-rotate {
+    0% { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(360deg); }
+  }
+  
+  .hue-rotate-animation {
+    animation: hue-rotate 4s linear infinite;
+  }
 }
 @layer utilities {
   /* SCROLL VIEW */

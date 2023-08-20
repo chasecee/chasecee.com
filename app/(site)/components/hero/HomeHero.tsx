@@ -16,8 +16,8 @@ export default function HomeHero({
 }: HomeHeroProps) {
   return (
     <div className={`mx-auto lg:mx-[7vw] ${className}`}>
-      <div className="prose max-w-none dark:prose-invert">
-        <h1 className="mb-[2rem] sm:text-[4rem] lg:text-[6rem]">
+      <div className="prose mx-auto dark:prose-invert">
+        <h1 className="mb-[2rem] tracking-tight sm:text-[4rem] lg:text-[5rem]">
           <span className="block ">{text}</span>
           <span className=" block xl:inline">{textB}</span>
         </h1>

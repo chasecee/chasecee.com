@@ -6,7 +6,7 @@ import { Suspense } from "react";
 import LoadingSkeleton from "./components/LoadingSkeleton";
 import Diamond from "./components/svg/Diamond2";
 import Noise from "./components/svg/Noise";
-import HueMove from "./components/HueMove";
+import HueAnimation from "./components/HueAnimation";
 
 export default async function Home() {
   const projects = await getProjects();
@@ -19,7 +19,7 @@ export default async function Home() {
         <Diamond className="absolute left-[50%] top-0 z-10 -translate-x-1/2" />
         <Diamond className="absolute right-0 top-10" />
       </div> */}
-      <HueMove />
+      <HueAnimation />
       <Container className="relative z-10">
         {/* <HomeHero
           text="Shaping pixels. "
