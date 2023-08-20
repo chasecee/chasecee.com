@@ -40,8 +40,8 @@ const HueRotateComponent = () => {
         /> */}
         <HomeHero2
           text="Hi I'm Chase."
-          textB="I have a passion for building with effective design."
-          paragraphCTA="Learn more about me and my skillset."
+          textB="Crafting digital experiences through effective design."
+          paragraphCTA="Explore my skills and discover what I can create for you."
           className="relative"
         />
       </div>
