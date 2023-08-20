@@ -21,7 +21,8 @@ const HueRotateComponent = () => {
         className={`absolute inset-0 mix-blend-color-dodge dark:mix-blend-color-burn`}
         style={{
           backgroundImage: `url('/noise1.png')`, // Path to the noise image in the /public folder
-          backgroundRepeat: "repeat", // Allow the image to repea
+          backgroundRepeat: "repeat",
+          backgroundSize: "180px",
         }}
       />
       <div className="absolute inset-0 w-full opacity-40 dark:opacity-100">
