@@ -2,6 +2,7 @@ import Link from "next/link";
 import LogoDelay from "./logo/logo";
 import HeaderMenu from "./HeaderMenu";
 import Breakpoints from "./Breakpoints";
+import JacksLogo from "./logo/JacksLogo";
 
 export default function Header() {
   return (
@@ -10,7 +11,13 @@ export default function Header() {
         {/* <Breakpoints /> */}
 
         <HeaderMenu />
-        <Link className="header__title" href="/">
+        <Link
+          className="header__title flex flex-row items-center gap-2"
+          href="/"
+        >
+          <div className="h-6 w-6">
+            <JacksLogo />
+          </div>
           <div className="sr-only">Chase Cee Logo</div>
           {/* <LogoDelay /> */}
           <span className="">Chase Cee</span>
