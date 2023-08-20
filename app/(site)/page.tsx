@@ -1,5 +1,5 @@
 import { getProjects } from "@/sanity/sanity-utils";
-import Container from "./components/Container";
+import Container from "./components/ContainerHome";
 import HomeHero from "./components/hero/HomeHero";
 import ProjectsList from "./components/ProjectsList";
 import { Suspense } from "react";
@@ -20,7 +20,7 @@ export default async function Home() {
         <Diamond className="absolute right-0 top-10" />
       </div> */}
       <HueAnimation />
-      <Container className="relative z-10">
+      <Container className="container relative z-10">
         {/* <HomeHero
           text="Shaping pixels. "
           textB="Shipping solutions."

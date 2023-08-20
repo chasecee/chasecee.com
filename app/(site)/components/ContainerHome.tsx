@@ -8,11 +8,9 @@ type ContainerProps = {
 
 export default function Container({ children, className }: ContainerProps) {
   return (
-    <div
-      className={`root min-h-screen w-full  font-normal ${className} px-4 pt-24 lg:pt-32`}
-    >
+    <div className={`root min-h-screen w-full  font-normal ${className} px-0 `}>
+      <Header />
       <div className="container overflow-hidden ">
-        <Header />
         <main>{children}</main>
         <Footer />
       </div>
