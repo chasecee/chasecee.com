@@ -4,7 +4,7 @@ import HomeHero from "./hero/HomeHero";
 
 const RenderDiamond = React.memo(({ position, delay }) => (
   <div
-    className={`absolute h-[35rem] w-[35rem] origin-center rotate-45 rounded-3xl bg-gradient-to-bl from-emerald-500/50 to-transparent dark:from-fuchsia-900/50
+    className={`absolute h-[35rem] w-[35rem] origin-center rotate-45 rounded-3xl bg-gradient-to-bl from-emerald-500/50  to-transparent dark:from-fuchsia-900/30 dark:via-transparent
   left-[${position}%] hue-rotate-animation top-1/2 -translate-x-1/2 -translate-y-1/2`}
     style={{
       animationDelay: `${delay}ms`,
@@ -18,11 +18,11 @@ const HueRotateComponent = () => {
   return (
     <div className="relative flex h-auto flex-col justify-center overflow-hidden pt-32 md:h-[80dvh] md:pt-[10rem] lg:h-[95dvh] lg:min-h-[30rem] lg:pt-[5rem]">
       <div
-        className={`absolute inset-0 mix-blend-color-dodge dark:mix-blend-color-burn`}
+        className={`absolute inset-0 mix-blend-overlay`}
         style={{
           backgroundImage: `url('/noise1.png')`, // Path to the noise image in the /public folder
           backgroundRepeat: "repeat",
-          backgroundSize: "180px",
+          backgroundSize: "150px",
         }}
       />
       <div className="absolute inset-0 w-full opacity-40 dark:opacity-100">
