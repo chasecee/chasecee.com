@@ -21,7 +21,7 @@ export default async function Project({ params }: Props) {
     <div>
       <Container>
         <div className="prose mx-auto dark:prose-invert">
-          <header className="flex items-center justify-between">
+          <header className="flex flex-col flex-wrap justify-start gap-6 sm:flex-row sm:flex-nowrap sm:items-center sm:justify-between">
             <h1 className="mb-0">{project.name}</h1>
 
             {project.url && (
