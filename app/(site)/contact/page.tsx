@@ -1,5 +1,6 @@
 import Container from "@/app/(site)/components/Container";
 import { Form } from "../components/Form";
+import Link from "next/link";
 
 export default function Contact() {
   return (
@@ -7,7 +8,19 @@ export default function Contact() {
       <Container>
         <div className="prose mx-auto max-w-[46ch] dark:prose-invert">
           <header>
-            <h1>Contact</h1>
+            <h1>Let&apos;s talk.</h1>
+            <p className="text-xl">
+              New work, feedback, or mentorship? I&apos;m down for all of it.
+              Fill out the form, or reach out on my{" "}
+              <Link href="https://github.com/chasecee/" target="_blank">
+                Github
+              </Link>
+              , or&nbsp;
+              <Link href="https://twitter.com/ChaseCee" target="_blank">
+                Twitter
+              </Link>
+              . Have a nice day!
+            </p>
           </header>
           <Form />
         </div>
