@@ -25,7 +25,7 @@ export default function Header() {
             <span className="">Chase Cee</span>
           </Link>
 
-          <span className="opacity-40">// Develop and Design</span>
+          <span className="opacity-40">&#47;&#47; Develop and Design</span>
         </div>
         <HeaderMenu />
       </header>
