@@ -1,0 +1,41 @@
+import Link from "next/link";
+interface HomeHeroProps {
+  text: string;
+  textB: string;
+  paragraphCTA: string;
+  className?: string;
+}
+
+export default function HomeHero({
+  text,
+  textB,
+  paragraphCTA,
+  className,
+}: HomeHeroProps) {
+  return (
+    <div
+      className={`my-20 flex flex-col justify-center rounded-xl bg-gradient-radial from-neutral-700 to-neutral-800 px-4  py-24 lg:h-screen lg:max-h-[80dvh] lg:min-h-[31rem] lg:py-0 ${className}`}
+    >
+      <div
+        className="absolute inset-0 rounded-xl bg-fixed bg-repeat mix-blend-multiply"
+        style={{
+          backgroundImage: `url('/noise1.png')`,
+          backgroundSize: "200px",
+        }}
+      ></div>
+      <div className="prose relative mx-auto max-w-none dark:prose-invert xl:max-w-[59rem]">
+        <p className="text-xl">{text}</p>
+        <h1 className="mb-[2rem] leading-tight tracking-tight sm:text-[4rem] lg:text-[4.7rem]">
+          <span className=" block xl:inline">{textB}</span>
+        </h1>
+        <div className="max-w-[65ch]">
+          <p className="text-xl">
+            <Link href="/about" className="underline underline-offset-2">
+              {paragraphCTA}
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
