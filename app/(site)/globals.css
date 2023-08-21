@@ -67,6 +67,18 @@
   .hue-rotate-animation {
     animation: hue-rotate 4s linear infinite;
   }
+  @keyframes border-animation{
+    0% { border:20px dotted blueviolet; }
+    20% { border:20px double green; }
+    40% { border:20px dotted red; }
+    60% { border:20px dashed yellow; }
+    80% { border:20px outset pink; }
+    100% { border:20px dotted blueviolet; }
+  }
+  
+  .border-animation {
+    animation: border-animation 4s linear infinite;
+  }
 }
 @layer utilities {
   /* SCROLL VIEW */
