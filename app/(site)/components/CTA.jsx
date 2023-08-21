@@ -12,7 +12,7 @@ export default function Example({
       <div
         className="absolute inset-0 rounded-xl bg-fixed bg-repeat opacity-20"
         style={{
-          backgroundImage: `url('/noise1.png')`,
+          backgroundImage: `url('/noise1.webp')`,
           backgroundSize: "200px",
         }}
       ></div>

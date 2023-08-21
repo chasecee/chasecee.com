@@ -19,7 +19,7 @@ export default function HomeHero({
       <div
         className="absolute inset-0 hidden rounded-xl bg-fixed bg-repeat opacity-20 md:block"
         style={{
-          backgroundImage: `url('/noise1.png')`,
+          backgroundImage: `url('/noise1.webp')`,
           backgroundSize: "200px",
         }}
       ></div>
@@ -30,7 +30,7 @@ export default function HomeHero({
         </h1>
         <div className="max-w-[65ch]">
           <p className="text-xl">
-            <Link href="/about" className="underline underline-offset-2">
+            <Link href="/about" className="py-4 underline underline-offset-2">
               {paragraphCTA} <span aria-hidden="true">→</span>
             </Link>
           </p>
