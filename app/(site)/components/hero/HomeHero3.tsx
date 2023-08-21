@@ -14,10 +14,10 @@ export default function HomeHero({
 }: HomeHeroProps) {
   return (
     <div
-      className={`my-20 flex flex-col justify-center rounded-xl bg-gradient-radial from-neutral-700 to-neutral-800 px-4  py-24 lg:h-screen lg:max-h-[80dvh] lg:min-h-[31rem] lg:py-0 ${className}`}
+      className={`my-20 flex flex-col justify-center rounded-xl bg-gradient-radial from-neutral-100 to-neutral-200 px-4 py-24 dark:from-neutral-700  dark:to-neutral-800 lg:h-screen lg:max-h-[80dvh] lg:min-h-[31rem] lg:py-0 ${className}`}
     >
       <div
-        className="absolute inset-0 rounded-xl bg-fixed bg-repeat mix-blend-multiply"
+        className="absolute inset-0 rounded-xl bg-fixed bg-repeat opacity-20"
         style={{
           backgroundImage: `url('/noise1.png')`,
           backgroundSize: "200px",
@@ -31,7 +31,7 @@ export default function HomeHero({
         <div className="max-w-[65ch]">
           <p className="text-xl">
             <Link href="/about" className="underline underline-offset-2">
-              {paragraphCTA}
+              {paragraphCTA} <span aria-hidden="true">→</span>
             </Link>
           </p>
         </div>

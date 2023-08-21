@@ -13,7 +13,7 @@ export default async function Home() {
         <HomeHero3
           text="Hi I'm Chase."
           textB="Crafting digital experiences through effective design."
-          paragraphCTA="Explore my skills and discover what I can create for you."
+          paragraphCTA="Explore my skills and discover what I can create for you"
           className="relative"
         />
         <Suspense fallback={<LoadingSkeleton />}>

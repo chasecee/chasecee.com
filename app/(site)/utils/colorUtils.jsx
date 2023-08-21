@@ -67,7 +67,7 @@ const generateColorPalette = (baseColor) => {
   let [h, s, l] = rgbToHsl(R, G, B);
 
   // Adjust hue by a fixed amount
-  h = (h + 0.05) % 1; // Adjust this value to get a different analogous color
+  h = (h + 0.1) % 1; // Adjust this value to get a different analogous color
 
   for (let i = 0; i <= 1; i += 0.1) {
     // Adjust lightness by percent

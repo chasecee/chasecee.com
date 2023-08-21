@@ -13,8 +13,8 @@ type ProjectsListProps = {
 export default function ProjectsList({ projects }: ProjectsListProps) {
   return (
     <IntersectionObserverComponent
-      inViewClass="scale-100"
-      notInViewClass="scale-100"
+      inViewClass=""
+      notInViewClass=""
       threshold={0.01}
       className="project-list transition-transform"
     >

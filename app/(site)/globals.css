@@ -7,7 +7,7 @@
       /* @apply text-opacity-70 text-black dark:text-white; */
       @apply text-opacity-100 text-[#477fe7] underline underline-offset-2;
     }
-    .prose a:hover {
+    .prose a:not(.not-prose):hover {
       @apply text-opacity-100 text-[#5584dc] underline-offset-4;
     }
     a:active {

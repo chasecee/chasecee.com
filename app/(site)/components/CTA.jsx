@@ -7,14 +7,16 @@ export default function Example({
 }) {
   return (
     <div
-      className={`bg-lg my-20 rounded-xl bg-neutral-800 bg-blend-multiply ${outerClass}`}
-      style={{
-        backgroundImage: `url('/noise1.png')`, // Path to the noise image in the /public folder
-        backgroundRepeat: "repeat",
-        backgroundSize: "150px",
-      }}
+      className={`relative my-20 overflow-hidden rounded-xl bg-gradient-radial from-neutral-100 to-neutral-200 dark:from-neutral-700  dark:to-neutral-800 ${outerClass}`}
     >
-      <div className="px-6 py-24 sm:px-6 sm:py-32 lg:px-8">
+      <div
+        className="absolute inset-0 rounded-xl bg-fixed bg-repeat opacity-20"
+        style={{
+          backgroundImage: `url('/noise1.png')`,
+          backgroundSize: "200px",
+        }}
+      ></div>
+      <div className="relative px-4 py-16">
         <div className="prose mx-auto text-center dark:prose-invert">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
             {title}
@@ -25,14 +27,11 @@ export default function Example({
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <a
               href={primaryLink}
-              className="rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-indigo-600 shadow-sm hover:bg-indigo-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="not-prose item-center group inline-flex flex-row gap-2 rounded-xl border-current bg-blue-800 p-4 px-6 text-white no-underline hover:bg-blue-700 hover:text-white active:translate-y-px dark:text-white"
             >
               Get started
             </a>
-            <a
-              href={secondaryLink}
-              className="text-sm font-semibold leading-6 text-white"
-            >
+            <a href={secondaryLink} className="not-prose no-underline">
               Learn more <span aria-hidden="true">→</span>
             </a>
           </div>
