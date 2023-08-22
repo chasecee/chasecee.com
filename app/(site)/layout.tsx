@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { DM_Sans, Inter } from "next/font/google";
 
 const font = DM_Sans({
-  weight: ["400", "500"],
+  weight: ["400", "700"],
   style: ["normal", "italic"],
   subsets: ["latin"],
 });
