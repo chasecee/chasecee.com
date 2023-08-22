@@ -3,7 +3,7 @@ import LogoDelay from "./logo/logo";
 import HeaderMenu from "./HeaderMenu";
 import Breakpoints from "./Breakpoints";
 import JacksLogo from "./logo/JacksLogo";
-import { BulbOutlineIcon, BulbFilledIcon } from "@sanity/icons";
+import { BulbOutlineIcon, BulbFilledIcon, SunIcon } from "@sanity/icons";
 export default function Header() {
   return (
     <div className="fixed left-2 right-2 top-2 z-40 md:left-4 md:right-4 md:top-4">
@@ -17,6 +17,9 @@ export default function Header() {
               <JacksLogo />
             </div> */}
             <div className="relative h-6 w-6 text-[1.5rem]">
+              <div className="spin-animation relative top-[0.7rem] opacity-70">
+                <SunIcon className="absolute left-1/2 top-[43%] -translate-x-1/2 -translate-y-1/2 text-[2.4rem] text-yellow-400 opacity-0 transition-opacity group-hover:opacity-100" />
+              </div>
               <BulbFilledIcon
                 className="absolute inset-0 text-yellow-500 opacity-0 transition-opacity group-hover:opacity-100"
                 style={{
