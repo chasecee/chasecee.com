@@ -23,12 +23,12 @@ export default function HomeHero({
           backgroundSize: "200px",
         }}
       ></div>
-      <div className="prose relative mx-auto max-w-none dark:prose-invert lg:max-w-[61rem]">
+      <div className="blur-in prose relative mx-auto max-w-none dark:prose-invert lg:max-w-[61rem]">
         <p className="text-xl">{text}</p>
-        <h1 className="mb-[2rem] leading-tight tracking-tight sm:text-[4rem] lg:text-[4.7rem]">
+        <h1 className=" mb-[2rem] leading-tight tracking-tight sm:text-[4rem] lg:text-[4.7rem]">
           <span className=" block xl:inline">{textB}</span>
         </h1>
-        <div className="max-w-[65ch]">
+        <div className="fade-in-up a-delay-2000ms max-w-[65ch]">
           <p className="text-xl">
             <Link href="/about" className="py-4 underline underline-offset-2">
               {paragraphCTA} <span aria-hidden="true">→</span>
