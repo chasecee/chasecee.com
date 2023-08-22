@@ -23,7 +23,7 @@ export default function HomeHero({
           backgroundSize: "200px",
         }}
       ></div>
-      <div className="prose relative mx-auto max-w-none dark:prose-invert lg:max-w-[59rem]">
+      <div className="prose relative mx-auto max-w-none dark:prose-invert lg:max-w-[61rem]">
         <p className="text-xl">{text}</p>
         <h1 className="mb-[2rem] leading-tight tracking-tight sm:text-[4rem] lg:text-[4.7rem]">
           <span className=" block xl:inline">{textB}</span>
