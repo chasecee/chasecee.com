@@ -22,11 +22,11 @@ export default function Container({
         <main>{children}</main>
         {showCTA && (
           <CTA
-            title="Boost your productivity. Start using our app today."
-            subtitle="Incididunt sint fugiat pariatur cupidatat consectetur sit cillum anim id veniam aliqua proident excepteur commodo do ea."
-            primaryLink="#"
-            secondaryLink="#"
-            outerClass="bg-gray-400"
+            title="Let's build something spectacular."
+            subtitle="I build powerful and beautiful applications for businesses of all sizes. I'm available for work, let's get started!"
+            primaryLink="/contact"
+            secondaryLink="/about"
+            outerClass=""
           />
         )}
         <Footer />

@@ -1,5 +1,6 @@
 import Container from "@/app/(site)/components/Container";
 import Link from "next/link";
+import CTA from "../components/CTA";
 
 export default function Contact() {
   return (
@@ -7,9 +8,9 @@ export default function Contact() {
       <Container>
         <div className="prose mx-auto dark:prose-invert">
           <header>
-            <h1>Success!</h1>
+            <h1>Success! Your form was sent straight to my inbox.</h1>
           </header>
-          <p>
+          {/* <p>
             Can&apos;t wait to chat! Until then, learn more{" "}
             <Link href="/about" title="About me">
               about me
@@ -19,8 +20,15 @@ export default function Contact() {
               recent work
             </Link>
             .
-          </p>
+          </p> */}
         </div>
+        <CTA
+          title="Thanks for reaching out. Now what?"
+          subtitle="Learn more about me, or check out my projects."
+          primaryLink="/"
+          secondaryLink="/about"
+          outerClass=""
+        />
       </Container>
     </div>
   );

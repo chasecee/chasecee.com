@@ -41,7 +41,7 @@ export default async function Page({ params }: Props) {
 
     return (
       <>
-        <Container className="pt-24">
+        <Container className="pt-24" showCTA={true}>
           <div className="prose mx-auto dark:prose-invert">
             <header>
               <h1>{page.subtitle ? page.subtitle : page.title}</h1>
