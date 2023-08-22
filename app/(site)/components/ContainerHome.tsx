@@ -22,7 +22,7 @@ export default function Container({
         <main>{children}</main>
         {showCTA && (
           <CTA
-            title="Seen enough? Let's get to work."
+            title="Let's get to work."
             subtitle="I build powerful and beautiful applications for businesses of all sizes. I'm available for work, let's get started!"
             primaryLink="/contact"
             secondaryLink="/about"
