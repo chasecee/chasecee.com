@@ -17,7 +17,12 @@ export default function Header() {
               <JacksLogo />
             </div> */}
             <div className="relative h-6 w-6 text-[1.5rem]">
-              <BulbFilledIcon className="absolute inset-0 text-yellow-500 opacity-0 group-hover:opacity-100" />
+              <BulbFilledIcon
+                className="absolute inset-0 text-yellow-500 opacity-0 transition-opacity group-hover:opacity-100"
+                style={{
+                  filter: `drop-shadow(-1px 0px 16px yellow)`,
+                }}
+              />
               <BulbOutlineIcon className="absolute inset-0 opacity-100 group-hover:opacity-100" />
             </div>
             <div className="sr-only">Chase Cee Logo</div>
