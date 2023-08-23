@@ -3,15 +3,15 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { DM_Sans, Inter } from "next/font/google";
 
-const font = DM_Sans({
-  weight: ["400", "700"],
-  style: ["normal", "italic"],
-  subsets: ["latin"],
-});
-// const font = Inter({
+// const font = DM_Sans({
+//   weight: ["400", "700"],
+//   style: ["normal", "italic"],
 //   subsets: ["latin"],
-//   display: "swap",
 // });
+const font = Inter({
+  subsets: ["latin"],
+  display: "swap",
+});
 const bodyClass =
   " w-full min-h-screen bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-white font-normal";
 

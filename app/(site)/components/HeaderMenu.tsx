@@ -23,9 +23,8 @@ export default function HeaderMenu() {
     getPages().then(setPages);
   }, []);
 
-  // if (!pages)
   return (
-    <div className="header_menu flex flex-row gap-5">
+    <div className="header_menu flex flex-row gap-4 sm:gap-5">
       <Link href="/" className={pathname === "/" ? activeClass : inactiveClass}>
         Work<div className={barClass}></div>
       </Link>
@@ -43,24 +42,4 @@ export default function HeaderMenu() {
       </Link>
     </div>
   );
-
-  // return (
-  //   <div className="header_menu flex flex-row gap-5">
-  //     {/* <Cursor /> */}
-  //     <Link className={pathname === "/" ? activeClass : inactiveClass} href="/">
-  //       Work
-  //       <div className={barClass}></div>
-  //     </Link>
-  //     {pages.map((page) => (
-  //       <Link
-  //         className={pathname === `/${page.slug}` ? activeClass : inactiveClass}
-  //         key={page._id}
-  //         href={`/${page.slug}`}
-  //       >
-  //         {page.title}
-  //         <div className={barClass}></div>
-  //       </Link>
-  //     ))}
-  //   </div>
-  // );
 }

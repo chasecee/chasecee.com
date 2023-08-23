@@ -24,7 +24,7 @@ export default function Example({
           <p className="mx-auto mt-6 max-w-xl text-lg leading-8 opacity-90">
             {subtitle}
           </p>
-          <div className="mt-10 flex items-center justify-center gap-x-6">
+          <div className="mt-10 flex flex-col items-center justify-center gap-6 sm:flex-row">
             <a
               href={primaryLink}
               className="not-prose item-center group inline-flex flex-row gap-2 rounded-xl border-current bg-blue-800 p-4 px-6 text-white no-underline hover:bg-blue-700 hover:text-white active:translate-y-px dark:text-white"

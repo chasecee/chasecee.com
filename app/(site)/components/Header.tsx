@@ -13,9 +13,6 @@ export default function Header() {
             className="header__title group flex flex-row items-center gap-2"
             href="/"
           >
-            {/* <div className="h-6 w-6">
-              <JacksLogo />
-            </div> */}
             <div className="relative h-6 w-6 text-[1.5rem]">
               <div className="spin-animation relative top-[0.7rem] opacity-70">
                 <SunIcon className="absolute left-1/2 top-[43%] -translate-x-1/2 -translate-y-1/2 text-[2.4rem] text-yellow-400 opacity-0 transition-opacity group-hover:opacity-100" />
@@ -30,7 +27,7 @@ export default function Header() {
             </div>
             <div className="sr-only">Chase Cee Logo</div>
             {/* <LogoDelay /> */}
-            <span className="">Chase Cee</span>
+            <span className="whitespace-nowrap">Chase Cee</span>
           </Link>
 
           <span className="hidden opacity-40 sm:block">
