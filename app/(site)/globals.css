@@ -100,8 +100,10 @@
     }
   }
   
-  .blur-in {
-    animation: blurAnimation 2s ease-out forwards;
+  @screen md{
+    .blur-in {
+      animation: blurAnimation 2s ease-out forwards;
+    }
   }
 }
 @layer utilities {
