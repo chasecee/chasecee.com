@@ -1,4 +1,3 @@
-import { getPages } from "@/sanity/sanity-utils";
 import "./globals.css";
 import type { Metadata } from "next";
 import { DM_Sans, Inter } from "next/font/google";
@@ -16,7 +15,7 @@ const bodyClass =
   " w-full min-h-screen bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-white font-normal";
 
 export const metadata: Metadata = {
-  title: "Chase Cee - Work",
+  title: "Work - Chase Cee",
   description: "Web Designer and Developer",
   icons: {
     icon: "/icons/site/favicon.ico",

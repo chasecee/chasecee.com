@@ -1,6 +1,12 @@
 import Container from "@/app/(site)/components/Container";
 import { Form } from "../components/Form";
 import Link from "next/link";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Contact - Chase Cee",
+  description: "Web Designer and Developer",
+};
 
 export default function Contact() {
   return (

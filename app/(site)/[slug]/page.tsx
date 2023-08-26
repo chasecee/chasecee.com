@@ -6,6 +6,8 @@ import Image from "next/image";
 import urlFor from "@/sanity/sanity.image";
 import Draggable from "react-draggable";
 import NotFound from "./not-found";
+import { Metadata } from "next";
+import { Page } from "@/types/Page";
 
 type SkillBlock = {
   _type: string;
@@ -30,15 +32,27 @@ type PageProps = {
 type Props = {
   params: { slug: string };
 };
+// Dynamic metadata for SEO
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const page: Page = await getPage(params.slug);
 
-export default async function Page({ params }: Props) {
+  return {
+    title: `${page.title} | Chase Cee`,
+    description: page.subtitle,
+    // openGraph: {
+    //   images: project.coverImage?.image || "add-a-fallback-project-image-here",
+    //   title: project.name,
+    //   description: project.tagline,
+    // },
+  };
+}
+export default async function GenPage({ params }: Props) {
   try {
     const page: PageProps = await getPage(params.slug);
 
     if (!page) {
       return <NotFound />;
     }
-
     return (
       <>
         <Container className="pt-24" showCTA={true}>
@@ -77,9 +91,9 @@ export default async function Page({ params }: Props) {
                           .dpr(2)
                           .url()}
                         alt={imageBlock.alt}
-                        width={711} // adjust these values according to your needs
+                        width={711}
                         height={711}
-                        className="w-full rounded-xl"
+                        className="w-full rounded-full"
                       />
                     </div>
                   );

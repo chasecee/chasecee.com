@@ -1,8 +1,14 @@
 import Container from "@/app/(site)/components/Container";
 import Link from "next/link";
 import CTA from "../components/CTA";
+import { Metadata } from "next";
 
-export default function Contact() {
+export const metadata: Metadata = {
+  title: "Success - Chase Cee",
+  description: "Web Designer and Developer",
+};
+
+export default function Success() {
   return (
     <div>
       <Container>
