@@ -14,7 +14,7 @@ export default function HomeHero({
 }: HomeHeroProps) {
   return (
     <div
-      className={`mb-10 flex flex-col justify-center overflow-hidden from-neutral-100 to-neutral-200 py-20 dark:from-neutral-800 dark:to-neutral-900 md:mt-24 md:rounded-xl md:bg-gradient-radial md:px-4 md:py-24 lg:h-screen lg:max-h-[75dvh] lg:min-h-[31rem] lg:py-0 ${className}`}
+      className={`mb-10 flex flex-col justify-center overflow-hidden from-neutral-100 to-neutral-200 py-20 dark:from-neutral-800 dark:to-neutral-900 md:mt-24 md:rounded-xl md:bg-gradient-radial md:px-4 md:py-24 lg:h-screen lg:max-h-[75dvh] lg:min-h-[31rem] lg:py-0 xl:mb-20 ${className}`}
     >
       <div
         className="absolute inset-0 hidden rounded-xl bg-fixed bg-repeat opacity-20 md:block"
