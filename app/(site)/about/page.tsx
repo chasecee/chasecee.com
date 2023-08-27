@@ -21,7 +21,7 @@ export default function Contact() {
       {/* <Arrows /> */}
       <div className="prose mx-auto mt-6 dark:prose-invert">
         <div className="relative mb-10 flex w-full flex-col justify-between sm:flex-row sm:items-center">
-          <div className="group relative w-2/3 sm:w-1/4">
+          <div className="group relative w-2/3 max-w-[260px] sm:w-1/4">
             <Image
               src={profilePic}
               alt={alt}
