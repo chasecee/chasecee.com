@@ -27,7 +27,7 @@ export default function Contact() {
         </div>
 
         <p className="text-xl">
-          I&apos;m Chase, a designer and developer living in Salt Lake City,
+          I&apos;m Chase, a designer and developer based in Salt Lake City,
           Utah.
         </p>
 

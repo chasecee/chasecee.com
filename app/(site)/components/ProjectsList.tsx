@@ -5,7 +5,7 @@ import urlFor from "@/sanity/sanity.image";
 import generateColorPalette from "../utils/colorUtils";
 import { Project } from "@/types/Project";
 import { ColorPalette } from "./ColorPalette";
-
+import InMomentSpline from "./splines/InMomentSpline";
 type ProjectsListProps = {
   projects: Project[];
 };
@@ -21,6 +21,7 @@ export default function ProjectsList({ projects }: ProjectsListProps) {
       <div className="mx-auto grid grid-cols-1 gap-10 md:grid-cols-2 xl:gap-20">
         {projects.map((project: Project, index: number) => {
           const colorPalette = generateColorPalette(project.color.hex);
+          const slugname = project.slug;
           return (
             <IntersectionObserverComponent
               key={project._id}
@@ -50,25 +51,25 @@ export default function ProjectsList({ projects }: ProjectsListProps) {
                       project={project}
                     />
                   )}
-
-                  <div className="view-actor-image absolute left-[10%] right-[10%] top-[100%] translate-y-0 rounded-xl transition-transform duration-300 group-hover:-translate-y-[75%] group-active:scale-95">
-                    {project.image && (
-                      <Image
-                        src={urlFor(project.image)
-                          .width(515)
-                          .height(515)
-                          .dpr(1.5)
-                          .url()}
-                        alt={project.name}
-                        width={515}
-                        height={515}
-                        priority={index < 2}
-                        sizes="(max-width: 640) 314px, 515px"
-                        className="rounded-xl object-cover"
-                      />
-                    )}
-                  </div>
-
+                  {project.name != "InMoment.com" && (
+                    <div className="view-actor-image absolute left-[10%] right-[10%] top-[100%] translate-y-0 rounded-xl transition-transform duration-300 group-hover:-translate-y-[75%] group-active:scale-95">
+                      {project.image && (
+                        <Image
+                          src={urlFor(project.image)
+                            .width(515)
+                            .height(515)
+                            .dpr(1.5)
+                            .url()}
+                          alt={project.name}
+                          width={515}
+                          height={515}
+                          priority={index < 2}
+                          sizes="(max-width: 640) 314px, 515px"
+                          className="rounded-xl object-cover"
+                        />
+                      )}
+                    </div>
+                  )}
                   {project.svgcode && (
                     <div className="view-actor absolute inset-0 transition-transform delay-[25ms] duration-500 group-hover:-translate-y-[28%] group-hover:duration-300">
                       <div
@@ -79,6 +80,8 @@ export default function ProjectsList({ projects }: ProjectsListProps) {
                       />
                     </div>
                   )}
+
+                  {project.name === "InMoment.com" ? <InMomentSpline /> : null}
                 </div>
                 <div className="relative">
                   <span className="mt-3 inline-block text-base">
