@@ -4,7 +4,7 @@ import Spline from "@splinetool/react-spline";
 export default function App() {
   return (
     <Spline
-      className="absolute inset-0 translate-y-1/2 transition-transform duration-200 group-hover:translate-y-[30%]"
+      className="spline3d absolute inset-0 origin-[60%_0%] translate-y-1/2 scale-125 transition-transform duration-200 md:group-hover:translate-y-[30%]"
       scene="https://prod.spline.design/k07IhAIEUaIDswER/scene.splinecode"
     />
   );

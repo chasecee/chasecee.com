@@ -42,7 +42,7 @@
     }
     &.project-inmoment {
       .project-gradient-bg {
-        @apply top-0 bottom-0 scale-[140%];
+        @apply top-0 bottom-0 scale-[150%];
         .color-div {
         @apply rounded-full w-full h-full left-0 right-0;
         }
@@ -50,7 +50,7 @@
     }
     &.project-yoli {
       .project-gradient-bg {
-        @apply top-0 bottom-0 scale-[110%] ;
+        @apply top-0 bottom-0 scale-[120%] ;
         .color-div {
         @apply w-full h-full;
         }
@@ -122,8 +122,13 @@
     .view-actor-image {
       @apply -translate-y-[75%] lg:translate-y-0;
     }
+    
   }
- 
+  @media (max-width: 767px) {
+    .in-view .spline3d {
+      @apply translate-y-[30%];
+    }
+  }
   .project-item:nth-child(even) {
     .view-actor {
       @apply md:delay-100;
