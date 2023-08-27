@@ -1,6 +1,6 @@
 import Footer from "./Footer";
 import Header from "./Header";
-import CTA from "./CTA"; // Make sure to import the Example component
+import CTA from "./CTA";
 
 type ContainerProps = {
   children: React.ReactNode;
@@ -17,7 +17,7 @@ export default function Container({
     <div
       className={`root min-h-screen w-full font-normal ${className} pt-24 lg:pt-32`}
     >
-      <div className="container overflow-hidden">
+      <div className="container">
         <Header />
         <main>{children}</main>
         {showCTA && (
