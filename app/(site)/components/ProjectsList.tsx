@@ -27,7 +27,7 @@ export default function ProjectsList({ projects }: ProjectsListProps) {
               key={project._id}
               inViewClass="in-view"
               notInViewClass="not-in-view"
-              threshold={0.1}
+              threshold={0.4}
               className={`project-item project-${index + 1} project-${
                 project.slug
               }`}
