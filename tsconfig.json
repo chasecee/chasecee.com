@@ -35,7 +35,8 @@
     "app/(site)/components/FireComponent.jsx",
     "app/(site)/components/DraggableDiv.jsx",
     "app/(site)/components/HueMove.jsx",
-    "app/(site)/components/HueAnimation.jsx"
+    "app/(site)/components/HueAnimation.jsx",
+    "app/(site)/about/ProfilePic.jsx"
   ],
   "exclude": ["node_modules"]
 }
