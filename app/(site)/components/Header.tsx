@@ -27,7 +27,8 @@ export default function Header() {
             </div>
             <div className="sr-only">Chase Cee Logo</div>
             {/* <LogoDelay /> */}
-            <span className="whitespace-nowrap">Chase Cee</span>
+            <span className="hidden whitespace-nowrap sm:block">Chase Cee</span>
+            <span className="sm:hidden">CC</span>
           </Link>
 
           <span className="hidden opacity-40 sm:block">

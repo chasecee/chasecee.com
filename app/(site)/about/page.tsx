@@ -20,23 +20,23 @@ export default function Contact() {
     <Container className="overflow-visible">
       {/* <Arrows /> */}
       <div className="prose mx-auto mt-6 dark:prose-invert">
-        <div className="relative mb-10 flex w-full flex-col justify-between gap-10 sm:flex-row sm:items-center">
-          <div className="w-30rem absolute bottom-[31%] left-[19%] z-10 rotate-[25deg] sm:bottom-0 sm:rotate-[-25deg]">
-            <ArrowsLottie />
-          </div>
-          <div className="group relative w-[200px] sm:w-1/4">
+        <div className="relative mb-10 flex w-full flex-col justify-between sm:flex-row sm:items-center">
+          <div className="group relative w-2/3 sm:w-1/4">
             <Image
               src={profilePic}
               alt={alt}
               width={500}
               height={500}
-              className=" m-0 w-full rounded-full"
+              className="m-0 w-full rounded-full"
             />
             <div className="absolute -inset-6  animate-[spin_5s_linear_infinite] rounded-full opacity-0 transition-opacity group-hover:opacity-100">
               <div className="border-animation h-full rounded-full"></div>
             </div>
           </div>
-          <h1 className="relative z-20 m-0 text-[3.7rem]">
+          <div className="w-30rem relative -top-[50px] left-[8rem] z-10  rotate-[-65deg] scale-x-[-100%] scale-y-[100%] self-start sm:-left-[2rem] sm:bottom-0 sm:top-0 sm:rotate-[-25deg] sm:scale-100 sm:self-end">
+            <ArrowsLottie />
+          </div>
+          <h1 className="xs:text-red relative z-20 m-0 text-[13vw] sm:text-[2.9rem] md:text-[3.3rem]">
             Hard worker. <br /> Fast learner.
           </h1>
         </div>
