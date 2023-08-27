@@ -23,6 +23,15 @@ export default function HomeHero({
           backgroundSize: "200px",
         }}
       ></div>
+      <video
+        className="absolute left-0 right-0 z-0 opacity-50"
+        loop
+        autoPlay
+        muted
+      >
+        <source src="/Stripe2.webm" type="video/webm" />
+        <source src="/Stripe2.mp4" type="video/mp4" />
+      </video>
       <div className="blur-in prose relative mx-auto max-w-none dark:prose-invert lg:max-w-[61rem]">
         <p className="text-xl">{text}</p>
         <h1 className=" mb-[2rem] leading-tight tracking-tight sm:text-[4rem] lg:text-[4.6rem]">
