@@ -35,7 +35,7 @@
     "firebase": "^10.1.0",
     "html-react-parser": "^4.2.0",
     "lodash": "^4.17.21",
-    "next": "^13.4.12",
+    "next": "^13.4.19",
     "next-sanity": "^5.1.5",
     "next-sanity-image": "^6.1.0",
     "postcss": "^8.4.25",

@@ -1,11 +1,7 @@
 import Container from "@/app/(site)/components/Container";
-import { Form } from "../components/Form";
-import Link from "next/link";
 import { Metadata } from "next";
 import Skills from "../components/Skills";
 import Image from "next/image";
-import urlFor from "@/sanity/sanity.image";
-import Arrows from "./Arrows";
 import profilePic from "@/public/me.jpeg";
 import ArrowsLottie from "./ArrowsLottie";
 
@@ -35,10 +31,10 @@ export default function Contact() {
           </div>
           <div className="w-30rem relative -top-[50px] left-[8rem] z-10 h-[84px] rotate-[-65deg]  scale-x-[-100%] scale-y-[100%] self-start sm:-left-[2rem] sm:bottom-0 sm:top-0 sm:h-auto sm:rotate-[-25deg] sm:scale-100 sm:self-end">
             <ArrowsLottie />
-            <div className=" sm:hidden"></div>
+            <div className="sm:hidden"></div>
           </div>
 
-          <h1 className="xs:text-red relative z-20 m-0 text-[13vw] sm:text-[2.9rem] md:text-[3.3rem]">
+          <h1 className="relative z-20 m-0 text-[13vw] sm:text-[2.9rem] md:text-[3.3rem]">
             Hard worker. <br /> Fast learner.
           </h1>
         </div>
