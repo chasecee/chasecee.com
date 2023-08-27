@@ -21,7 +21,7 @@ export default function Contact() {
       {/* <Arrows /> */}
       <div className="prose mx-auto mt-6 dark:prose-invert">
         <div className="relative mb-10 flex w-full flex-col justify-between sm:flex-row sm:items-center">
-          <div className="group relative w-2/3 max-w-[260px] sm:w-1/4">
+          <div className="group relative w-[260px] sm:w-1/4">
             <Image
               src={profilePic}
               alt={alt}
@@ -33,9 +33,11 @@ export default function Contact() {
               <div className="border-animation h-full rounded-full"></div>
             </div>
           </div>
-          <div className="w-30rem relative -top-[50px] left-[8rem] z-10  rotate-[-65deg] scale-x-[-100%] scale-y-[100%] self-start sm:-left-[2rem] sm:bottom-0 sm:top-0 sm:rotate-[-25deg] sm:scale-100 sm:self-end">
+          <div className="w-30rem relative -top-[50px] left-[8rem] z-10 h-[84px] rotate-[-65deg]  scale-x-[-100%] scale-y-[100%] self-start sm:-left-[2rem] sm:bottom-0 sm:top-0 sm:h-auto sm:rotate-[-25deg] sm:scale-100 sm:self-end">
             <ArrowsLottie />
+            <div className=" sm:hidden"></div>
           </div>
+
           <h1 className="xs:text-red relative z-20 m-0 text-[13vw] sm:text-[2.9rem] md:text-[3.3rem]">
             Hard worker. <br /> Fast learner.
           </h1>
