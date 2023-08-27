@@ -14,7 +14,7 @@ export default function HomeHero({
 }: HomeHeroProps) {
   return (
     <div
-      className={`mb-10 flex flex-col justify-center overflow-hidden from-neutral-100 to-neutral-200 py-20 dark:from-neutral-800 dark:to-neutral-900 md:mt-24 md:rounded-xl md:bg-gradient-radial md:px-4 md:py-24 lg:h-screen lg:max-h-[75dvh] lg:min-h-[31rem] lg:py-0 xl:mb-20 ${className}`}
+      className={`-mx-[1.5rem] mb-10 flex flex-col justify-center overflow-hidden from-neutral-100 to-neutral-200 px-6 py-20 dark:from-neutral-800 dark:to-neutral-900 md:mx-0 md:mt-24 md:rounded-xl md:bg-gradient-radial md:px-6 md:py-24 lg:h-screen lg:max-h-[75dvh] lg:min-h-[31rem] lg:py-0 xl:mb-20 ${className}`}
     >
       <div
         className="absolute inset-0 hidden rounded-xl bg-fixed bg-repeat opacity-20 md:block"
@@ -26,14 +26,14 @@ export default function HomeHero({
       <video
         className="absolute left-0 right-0 z-0 opacity-50"
         loop
-        autoPlay
+        autoPlay={true}
         muted
         playsInline
       >
         <source src="/Stripe2.webm" type="video/webm" />
         <source src="/Stripe2.mp4" type="video/mp4" />
       </video>
-      <div className="blur-in prose relative mx-auto max-w-none dark:prose-invert lg:max-w-[61rem]">
+      <div className="blur-in a-delay-1000ms prose relative mx-auto max-w-none dark:prose-invert md:opacity-0 lg:max-w-[61rem]">
         <p className="text-xl">{text}</p>
         <h1 className=" mb-[2rem] leading-tight tracking-tight sm:text-[4rem] lg:text-[4.6rem]">
           <span className=" block xl:inline">{textB}</span>
