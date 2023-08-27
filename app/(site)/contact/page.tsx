@@ -2,6 +2,7 @@ import Container from "@/app/(site)/components/Container";
 import { Form } from "../components/Form";
 import Link from "next/link";
 import { Metadata } from "next";
+import { FaGithub, FaTwitter } from "react-icons/fa";
 
 export const metadata: Metadata = {
   title: "Contact - Chase Cee",
@@ -12,23 +13,23 @@ export default function Contact() {
   return (
     <div>
       <Container>
-        <div className="prose mx-auto max-w-[46ch] dark:prose-invert">
+        <div className="prose mx-auto dark:prose-invert">
           <header>
             <h1>Let&apos;s talk.</h1>
             <p className="text-xl">
               New work, feedback, or mentorship? I&apos;m down for all of it.
-              Fill out the form, or reach out on my{" "}
-              <Link href="https://github.com/chasecee/" target="_blank">
-                Github
-              </Link>
-              , or&nbsp;
-              <Link href="https://twitter.com/ChaseCee" target="_blank">
-                Twitter
-              </Link>
-              . Have a nice day!
+              <div className="my-5 flex flex-row gap-5">
+                <Link href="https://github.com/chasecee/" target="_blank">
+                  <span className="sr-only">Github</span> <FaGithub size={48} />
+                </Link>
+                <Link href="https://twitter.com/ChaseCee" target="_blank">
+                  <span className="sr-only">Twitter</span>{" "}
+                  <FaTwitter size={48} />
+                </Link>
+              </div>
             </p>
           </header>
-          <Form />
+          {/* <Form /> */}
         </div>
       </Container>
     </div>
