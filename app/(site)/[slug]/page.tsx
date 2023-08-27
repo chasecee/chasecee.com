@@ -37,13 +37,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const page: Page = await getPage(params.slug);
 
   return {
-    title: `${page.title} | Chase Cee`,
+    title: `${page.title} - Chase Cee`,
     description: page.subtitle,
-    // openGraph: {
-    //   images: project.coverImage?.image || "add-a-fallback-project-image-here",
-    //   title: project.name,
-    //   description: project.tagline,
-    // },
   };
 }
 export default async function GenPage({ params }: Props) {
@@ -93,7 +88,7 @@ export default async function GenPage({ params }: Props) {
                         alt={imageBlock.alt}
                         width={711}
                         height={711}
-                        className="w-full rounded-full"
+                        className=" rounded-xl"
                       />
                     </div>
                   );

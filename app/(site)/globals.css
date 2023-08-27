@@ -68,17 +68,19 @@
     animation: hue-rotate 4s linear infinite;
   }
   @keyframes border-animation{
-    0% { border:20px dotted blueviolet; }
-    20% { border:20px double green; }
-    40% { border:20px dotted red; }
-    60% { border:20px dashed yellow; }
-    80% { border:20px outset pink; }
-    100% { border:20px dotted blueviolet; }
+    0% { border-style: dotted; border-color: blueviolet; }
+    20% { border-style: dashed; border-color: green; }
+    40% { border-style:dotted; border-color: red; }
+    60% { border-style: dashed; border-color: yellow; }
+    80% { border-style: dotted; border-color: pink; }
+    100% { border-style: dashed; border-color: rgb(43, 180, 226); }
   }
   
   .border-animation {
-    animation: border-animation 4s linear infinite;
+    animation: border-animation 10s linear infinite;
+    border-width: 1.5rem;
   }
+
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
