@@ -28,6 +28,7 @@ export default function HomeHero({
         loop
         autoPlay
         muted
+        playsInline
       >
         <source src="/Stripe2.webm" type="video/webm" />
         <source src="/Stripe2.mp4" type="video/mp4" />
