@@ -7,6 +7,7 @@
       /* @apply text-opacity-70 text-black dark:text-white; */
       /* @apply text-opacity-100 text-[#3767c2] dark:text-[#4077dd] underline underline-offset-2; */
       @apply text-opacity-100 text-indigo-600 dark:text-indigo-500 underline underline-offset-2;
+      @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600;
     }
     .prose a:not(.not-prose):hover {
       @apply text-opacity-100 text-indigo-500 dark:text-indigo-400 underline-offset-4;

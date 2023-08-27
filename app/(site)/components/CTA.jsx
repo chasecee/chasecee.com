@@ -1,3 +1,6 @@
+import { FaArrowRight } from "react-icons/fa";
+import Button from "./Button";
+
 export default function Example({
   outerClass,
   title,
@@ -25,15 +28,20 @@ export default function Example({
             {subtitle}
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-6 sm:flex-row">
-            <a
+            <Button
               href={primaryLink}
-              className="not-prose item-center group inline-flex flex-row gap-2 rounded-xl border-current bg-blue-800 p-4 px-6 text-white no-underline hover:bg-blue-700 hover:text-white active:translate-y-px dark:text-white"
+              target="_self"
+              className=" border-indigo-300 bg-indigo-600"
             >
               Get started
-            </a>
-            <a href={secondaryLink} className="not-prose no-underline">
-              Learn more <span aria-hidden="true">→</span>
-            </a>
+            </Button>
+            <Button
+              href={secondaryLink}
+              target="_self"
+              className="border-0 hover:bg-white/30"
+            >
+              Learn more <FaArrowRight />
+            </Button>
           </div>
         </div>
       </div>
