@@ -30,8 +30,8 @@ export default function HomeHero({
         muted
         playsInline
       >
-        <source src="/Stripe2.webm" type="video/webm" />
-        <source src="/Stripe2.mp4" type="video/mp4" />
+        <source src="/v/Stripe2_VP9.webm" type="video/webm" />
+        <source src="/v/Stripe2_H.264.mp4" type="video/mp4" />
       </video>
       <div className="blur-in a-delay-1000ms prose relative mx-auto max-w-none dark:prose-invert md:opacity-0 lg:max-w-[61rem]">
         <p className="text-xl">{text}</p>
