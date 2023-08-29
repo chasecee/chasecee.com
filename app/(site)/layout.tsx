@@ -12,7 +12,7 @@ const font = Inter({
   display: "swap",
 });
 const bodyClass =
-  " w-full min-h-screen bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-white font-normal";
+  " w-full min-h-screen bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-white";
 
 export const metadata: Metadata = {
   title: "Work - Chase Cee",

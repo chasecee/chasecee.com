@@ -15,7 +15,7 @@ export default function HomeHero({
 }: HomeHeroProps) {
   return (
     <div
-      className={`-mx-[1.5rem] mb-10 flex flex-col justify-center overflow-hidden from-neutral-100 to-neutral-200 px-6 py-20 dark:from-neutral-800 dark:to-neutral-900 md:mx-0 md:mt-24 md:rounded-xl md:bg-gradient-radial md:px-6 md:py-24 lg:h-screen lg:max-h-[75dvh] lg:min-h-[31rem] lg:py-0 xl:mb-20 ${className}`}
+      className={`-mx-[1.5rem] mb-10 flex flex-col justify-center from-neutral-100 to-neutral-200 px-6 py-20 dark:from-neutral-800 dark:to-neutral-900 sm:overflow-hidden md:mx-0 md:mt-24 md:rounded-xl md:bg-gradient-radial md:px-6 md:py-24 lg:h-screen lg:max-h-[75dvh] lg:min-h-[31rem] lg:py-0 xl:mb-20 ${className}`}
     >
       <div
         className="absolute inset-0 hidden rounded-xl bg-fixed bg-repeat opacity-20 md:block"
@@ -38,10 +38,12 @@ export default function HomeHero({
       <DynamicVideo />
       <div className="blur-in-off prose relative mx-auto max-w-none dark:prose-invert lg:max-w-[61rem]">
         <p className="text-xl">{text}</p>
-        <h1 className=" mb-[2rem] leading-tight tracking-tight sm:text-[4rem] lg:text-[4.6rem]">
+        <h1 className=" mb-[2rem] leading-tight tracking-tight  sm:text-[4rem] lg:text-[4.6rem]">
           <span className="hidden">{textB}</span>
-          Crafting digital experiences through{" "}
-          <span className="bg-gradient-to-r from-neutral-200 to-neutral-300 bg-clip-text text-transparent mix-blend-exclusion">
+          <span className="text-neutral-800 dark:text-neutral-300">
+            Crafting digital experiences through{" "}
+          </span>
+          <span className="inline text-neutral-900 dark:text-neutral-100 ">
             {" "}
             effective design.
           </span>

@@ -15,7 +15,7 @@ export default function Container({
 }: ContainerProps) {
   return (
     <div
-      className={`root min-h-screen w-full  font-normal ${className} mt-24 px-0 md:mt-0 `}
+      className={`root min-h-screen w-full ${className} mt-24 px-0 md:mt-0 `}
     >
       <div className="container relative z-0">
         <Header />

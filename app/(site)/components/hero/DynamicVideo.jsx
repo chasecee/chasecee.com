@@ -27,7 +27,7 @@ const DynamicLoadVideo = () => {
   return (
     <video
       ref={videoRef}
-      className="absolute left-0 right-0 z-0 opacity-50"
+      className="absolute inset-0 z-0 h-full w-full object-fill opacity-50"
       loop
       autoPlay={true}
       muted
