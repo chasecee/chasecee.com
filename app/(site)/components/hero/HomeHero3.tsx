@@ -1,5 +1,6 @@
 import Link from "next/link";
 import DynamicVideo from "./DynamicVideo";
+import HeroSpline from "../splines/HeroSpline";
 interface HomeHeroProps {
   text: string;
   textB: string;
@@ -35,10 +36,11 @@ export default function HomeHero({
         <source src="/v/Stripe2_VP9.webm" type="video/webm" />
         <source src="/v/Stripe2_H.264.mp4" type="video/mp4" />
       </video> */}
-      <DynamicVideo />
-      <div className="blur-in-off prose relative mx-auto max-w-none dark:prose-invert lg:max-w-[61rem]">
+      {/* <DynamicVideo /> */}
+      <HeroSpline />
+      <div className="blur-in-off prose pointer-events-none relative mx-auto max-w-none dark:prose-invert lg:max-w-[61rem]">
         <p className="text-xl">{text}</p>
-        <h1 className=" mb-[2rem] leading-tight tracking-tight  sm:text-[4rem] lg:text-[4.6rem]">
+        <h1 className=" pl:mb-[2rem] mb-0 leading-tight tracking-tight  sm:text-[4rem] lg:text-[4.6rem]">
           <span className="hidden">{textB}</span>
           <span className="text-neutral-800 dark:text-neutral-300">
             Crafting digital experiences through{" "}
@@ -48,7 +50,7 @@ export default function HomeHero({
             effective design.
           </span>
         </h1>
-        <div className="fade-in-up a-delay-2000ms max-w-[65ch]">
+        <div className="fade-in-up a-delay-2000ms hidden max-w-[65ch]">
           <p className="text-xl">
             <Link href="/about" className="py-4 underline underline-offset-2">
               {paragraphCTA} <span aria-hidden="true">→</span>
