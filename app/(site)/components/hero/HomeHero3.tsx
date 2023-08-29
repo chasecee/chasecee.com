@@ -1,4 +1,5 @@
 import Link from "next/link";
+import DynamicVideo from "./DynamicVideo";
 interface HomeHeroProps {
   text: string;
   textB: string;
@@ -23,20 +24,27 @@ export default function HomeHero({
           backgroundSize: "200px",
         }}
       ></div>
-      <video
+      {/* <video
         className="absolute left-0 right-0 z-0 opacity-50"
         loop
         autoPlay={true}
         muted
         playsInline
+        poster="/v/poster.jpg"
       >
         <source src="/v/Stripe2_VP9.webm" type="video/webm" />
         <source src="/v/Stripe2_H.264.mp4" type="video/mp4" />
-      </video>
-      <div className="blur-in a-delay-1000ms prose relative mx-auto max-w-none dark:prose-invert md:opacity-0 lg:max-w-[61rem]">
+      </video> */}
+      <DynamicVideo />
+      <div className="blur-in-off prose relative mx-auto max-w-none dark:prose-invert lg:max-w-[61rem]">
         <p className="text-xl">{text}</p>
         <h1 className=" mb-[2rem] leading-tight tracking-tight sm:text-[4rem] lg:text-[4.6rem]">
-          <span className=" block xl:inline">{textB}</span>
+          <span className="hidden">{textB}</span>
+          Crafting digital experiences through{" "}
+          <span className="bg-gradient-to-r from-neutral-200 to-neutral-300 bg-clip-text text-transparent mix-blend-exclusion">
+            {" "}
+            effective design.
+          </span>
         </h1>
         <div className="fade-in-up a-delay-2000ms max-w-[65ch]">
           <p className="text-xl">
