@@ -38,16 +38,15 @@ export default function HomeHero({
       </video> */}
       {/* <DynamicVideo /> */}
       <HeroSpline />
-      <div className="blur-in-off prose pointer-events-none relative mx-auto max-w-none dark:prose-invert lg:max-w-[61rem]">
+      <div className="blur-in-off prose relative mx-auto max-w-none dark:prose-invert lg:max-w-[61rem]">
         <p className="text-xl">{text}</p>
-        <h1 className=" pl:mb-[2rem] mb-0 leading-tight tracking-tight  sm:text-[4rem] lg:text-[4.6rem]">
-          <span className="hidden">{textB}</span>
+        <h1 className=" pl:mb-[2rem] mb-0 leading-tight tracking-tight  sm:text-[4rem] lg:text-[5rem]">
+          {/* <span className="hidden">{textB}</span> */}
           <span className="text-neutral-800 dark:text-neutral-300">
-            Crafting digital experiences through{" "}
-          </span>
-          <span className="inline text-neutral-900 dark:text-neutral-100 ">
-            {" "}
-            effective design.
+            <span className="">
+              <span className="font-semibold">Making websites</span>{" "}
+              <span className="font-black">sing.</span>
+            </span>
           </span>
         </h1>
         <div className="fade-in-up a-delay-2000ms hidden max-w-[65ch]">

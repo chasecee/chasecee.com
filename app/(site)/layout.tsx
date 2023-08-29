@@ -9,6 +9,7 @@ import { DM_Sans, Inter } from "next/font/google";
 // });
 const font = Inter({
   subsets: ["latin"],
+  style: ["normal"],
   display: "swap",
 });
 const bodyClass =
