@@ -12,22 +12,20 @@ type ProjectsListProps = {
 
 export default function ProjectsList({ projects }: ProjectsListProps) {
   return (
-    <IntersectionObserverComponent
-      inViewClass=""
-      notInViewClass=""
-      threshold={0.01}
-      className="project-list transition-transform"
-    >
+    // <IntersectionObserverComponent
+    //   inViewClass=""
+    //   notInViewClass=""
+    //   threshold={0.01}
+    //   className="project-list transition-transform"
+    // >
+    <div className="project-list">
       <div className="mx-auto grid grid-cols-1 gap-10 md:grid-cols-2 xl:gap-20">
         {projects.map((project: Project, index: number) => {
           const colorPalette = generateColorPalette(project.color.hex);
           const slugname = project.slug;
           return (
-            <IntersectionObserverComponent
+            <div
               key={project._id}
-              inViewClass="in-view"
-              notInViewClass="not-in-view"
-              threshold={0.4}
               className={`project-item project-${index + 1} project-${
                 project.slug
               }`}
@@ -95,10 +93,10 @@ export default function ProjectsList({ projects }: ProjectsListProps) {
                   </span>
                 </div>
               </Link>
-            </IntersectionObserverComponent>
+            </div>
           );
         })}
       </div>
-    </IntersectionObserverComponent>
+    </div>
   );
 }

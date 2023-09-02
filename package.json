@@ -19,7 +19,7 @@
     "@sanity/image-url": "^1.0.2",
     "@sanity/orderable-document-list": "^1.1.0",
     "@splinetool/react-spline": "^2.2.6",
-    "@splinetool/runtime": "^0.9.431",
+    "@splinetool/runtime": "^0.9.436",
     "@types/d3-force": "^3.0.4",
     "@types/d3-scale": "^4.0.3",
     "@types/d3-selection": "^3.0.5",
