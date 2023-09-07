@@ -2,7 +2,7 @@ import Container from "@/app/(site)/components/Container";
 import Link from "next/link";
 import CTA from "../components/CTA";
 import { Metadata } from "next";
-
+import FishSpline from "../components/splines/FishSpline";
 export const metadata: Metadata = {
   title: "Success - Chase Cee",
   description: "Web Designer and Developer",
@@ -12,7 +12,10 @@ export default function Success() {
   return (
     <div>
       <Container>
-        <div className="prose mx-auto dark:prose-invert">
+        <div className="fixed inset-0">
+          <FishSpline />
+        </div>
+        <div className="prose mx-auto pt-[170rem] dark:prose-invert">
           <header>
             <h1>Success! Your form was sent straight to my inbox.</h1>
           </header>
