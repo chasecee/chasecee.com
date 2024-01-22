@@ -28,6 +28,7 @@ export default function ProfilePic() {
             alt={alt}
             width={500}
             height={500}
+            priority={true}
             className="m-0 w-full rounded-full"
           />
         </div>
