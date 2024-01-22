@@ -1,8 +1,8 @@
 "use client";
 
 import { useRef } from "react";
-import "@johanaarstein/dotlottie-player";
-import type { DotLottiePlayer } from "@johanaarstein/dotlottie-player";
+import '@aarsteinmedia/dotlottie-player'
+import type { DotLottiePlayer } from "@aarsteinmedia/dotlottie-player";
 
 function App() {
   const animation = useRef<DotLottiePlayer | null>(null);
