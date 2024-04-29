@@ -30,7 +30,7 @@ const components = {
           className="link_external group inline-flex items-center gap-1"
         >
           {children}
-          <LaunchIcon className="group-hover:scale-125" />
+          <LaunchIcon className=" group-hover:scale-125" />
         </a>
       ) : (
         <a href={href}>{children}</a>
