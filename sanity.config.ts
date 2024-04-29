@@ -1,5 +1,5 @@
 import { defineConfig } from "sanity";
-import { deskTool, StructureBuilder } from "sanity/desk";
+import { structureTool } from "sanity/structure";
 import { codeInput } from "@sanity/code-input";
 import { colorInput } from "@sanity/color-input";
 import schemas from "./sanity/schemas";
@@ -30,7 +30,7 @@ export const config = defineConfig({
   apiVersion: "2023-07-12",
   basePath: "/studio",
   plugins: [
-    deskTool({
+    structureTool({
       structure: (S, context) => {
         return S.list()
           .title("Content")
