@@ -15,7 +15,7 @@ export default function Error({
   }, [error])
 
   return (
-    <div>
+    <div className='w-full h-screen flex flex-col gap-5 items-center justify-center'>
       <h2>Something went wrong!</h2>
       <button className='bg-red-800 hover:bg-gree-700 text-white font-bold py-2 px-4 rounded-xl mt-2'
         onClick={

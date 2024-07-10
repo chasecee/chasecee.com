@@ -7,7 +7,7 @@ interface HomeHeroProps {
   paragraphCTA: string;
   className?: string;
 }
-
+ 
 export default function HomeHero({
   text,
   textB,
