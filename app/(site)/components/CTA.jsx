@@ -10,7 +10,7 @@ export default function Example({
 }) {
   return (
     <div
-      className={`relative my-20 overflow-hidden rounded-xl bg-gradient-radial from-neutral-100 to-neutral-200 dark:from-neutral-700  dark:to-neutral-800 ${outerClass}`}
+      className={`relative my-20 overflow-hidden rounded-xl bg-gradient-radial from-neutral-100 to-neutral-200 dark:from-neutral-700 dark:to-neutral-800 ${outerClass}`}
     >
       <div
         className="absolute inset-0 rounded-xl bg-fixed bg-repeat opacity-20"
@@ -31,16 +31,16 @@ export default function Example({
             <Button
               href={primaryLink}
               target="_self"
-              className=" border-indigo-300 bg-indigo-600"
+              className="border-indigo-300 bg-indigo-600"
             >
-              Get started
+              Get Started
             </Button>
             <Button
               href={secondaryLink}
               target="_self"
               className="border-0 hover:bg-white/30"
             >
-              Learn more <FaArrowRight />
+              About Me <FaArrowRight />
             </Button>
           </div>
         </div>
