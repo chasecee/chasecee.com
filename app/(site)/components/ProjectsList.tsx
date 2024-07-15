@@ -79,7 +79,7 @@ export default function ProjectsList({ projects }: ProjectsListProps) {
                     </div>
                   )}
 
-                  {project.name === "InMoment.com" ? <InMomentSpline /> : null}
+                  {/* {project.name === "InMoment.com" ? <InMomentSpline /> : null} */}
                 </div>
                 <div className="relative">
                   <span className="mt-3 inline-block text-base">
