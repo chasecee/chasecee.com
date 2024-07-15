@@ -1,78 +1,74 @@
 "use client";
 import "./HomeHero7.css"; // Import the CSS file
-import React, { useEffect, useRef, useCallback } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useCallback,
+  useState,
+  useMemo,
+} from "react";
+import TypingText from "../TypingText/TypingText.jsx"; // Import the TypingText component
 
 const HomeHero7 = () => {
-  const blob1Ref = useRef(null);
-  const blob2Ref = useRef(null);
-  const blob3Ref = useRef(null);
-  const blob4Ref = useRef(null); // Added blob4Ref
-  const requestRef = useRef(null);
+  const [scrolled, setScrolled] = useState(false);
+  const blobRefs = useRef([
+    React.createRef(),
+    React.createRef(),
+    React.createRef(),
+    React.createRef(),
+  ]);
   const containerRef = useRef(null);
-  const mouseMoveRef = useRef({ clientX: 0, clientY: 0 });
+  const blobsContainerRef = useRef(null);
+  const requestRef = useRef(null);
 
-  const FACTOR = -0.05;
-  const FACTOR1 = -0.2;
+  const FACTORS = useMemo(() => [-0.2, -0.1, -0.16, 0.9], []);
 
-  const handleMouseMove = useCallback((event) => {
-    mouseMoveRef.current = { clientX: event.clientX, clientY: event.clientY };
-
-    // Add fade-in class to blobs
-    if (blob1Ref.current) blob1Ref.current.classList.add("fade-in");
-    if (blob2Ref.current) blob2Ref.current.classList.add("fade-in");
-    if (blob3Ref.current) blob3Ref.current.classList.add("fade-in");
-    if (blob4Ref.current) blob4Ref.current.classList.add("fade-in"); // Added blob4 fade-in
-  }, []);
-
-  const animate = useCallback(() => {
+  const handleScroll = useCallback(() => {
     if (!containerRef.current) return;
-    const { clientX, clientY } = mouseMoveRef.current;
-    const { left, top, width, height } =
-      containerRef.current.getBoundingClientRect();
-    const centerX = left + width / 2;
+    setScrolled(true);
+    const scrollY = window.scrollY;
+    const { top, height } = containerRef.current.getBoundingClientRect();
     const centerY = top + height / 2;
-    const offsetX = clientX - centerX;
-    const offsetY = clientY - centerY;
 
-    if (blob1Ref.current)
-      blob1Ref.current.style.transform = `translate(${offsetX * FACTOR}px, ${offsetY * FACTOR}px)`;
-    if (blob2Ref.current)
-      blob2Ref.current.style.transform = `translate(${offsetX * FACTOR1}px, ${offsetY * FACTOR1}px)`;
-    if (blob3Ref.current)
-      blob3Ref.current.style.transform = `translate(${offsetX * FACTOR}px, ${offsetY * FACTOR}px)`;
-    if (blob4Ref.current)
-      blob4Ref.current.style.transform = `translate(${offsetX * FACTOR}px, ${offsetY * FACTOR}px)`; // Added blob4 animation
+    blobRefs.current.forEach((blobRef, index) => {
+      if (blobRef.current) {
+        const offsetY = scrollY - centerY;
+        blobRef.current.style.transform = `translateY(${offsetY * FACTORS[index]}px)`;
+      }
+    });
+  }, [FACTORS]);
 
-    requestRef.current = requestAnimationFrame(animate);
-  }, []);
+  const debouncedHandleScroll = useCallback(() => {
+    if (requestRef.current) {
+      cancelAnimationFrame(requestRef.current);
+    }
+    requestRef.current = requestAnimationFrame(handleScroll);
+  }, [handleScroll]);
 
   useEffect(() => {
-    requestRef.current = requestAnimationFrame(animate);
-    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("scroll", debouncedHandleScroll);
     return () => {
-      cancelAnimationFrame(requestRef.current);
-      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("scroll", debouncedHandleScroll);
+      if (requestRef.current) {
+        cancelAnimationFrame(requestRef.current);
+      }
     };
-  }, [animate, handleMouseMove]);
+  }, [debouncedHandleScroll]);
 
   return (
     <div
       ref={containerRef}
-      className="center-container intro relative mb-20 mt-24 flex aspect-[16/6] flex-col items-center justify-center overflow-hidden rounded-xl [clip-path:inset(0)]"
+      className="center-container intro relative mb-20 mt-24 flex aspect-square max-h-[80vh] flex-col items-center justify-center overflow-hidden rounded-xl [clip-path:inset(0)] lg:aspect-[16/7]"
     >
-      <div className="blob-wrapper origin-[33%]">
-        <div id="blob1" className="blob" ref={blob1Ref}></div>
-      </div>
-      <div className="blob-wrapper origin-[50%]">
-        <div id="blob2" className="blob" ref={blob2Ref}></div>
-      </div>
-      <div className="blob-wrapper origin-[66%]">
-        <div id="blob3" className="blob" ref={blob3Ref}></div>
-      </div>
-      <div className="blob-wrapper origin-[66%]">
-        {" "}
-        {/* Added blob4 wrapper */}
-        <div id="blob4" className="blob" ref={blob4Ref}></div>
+      <div
+        ref={blobsContainerRef}
+        className={`blobs-container ${scrolled ? "fade-in-up" : ""}`}
+      >
+        {blobRefs.current.map((blobRef, index) => (
+          <div key={index} className="blob-wrapper origin-[33%]">
+            <div id={`blob${index + 1}`} className="blob" ref={blobRef}></div>
+          </div>
+        ))}
       </div>
       <div id="noiseLayer"></div>
       <svg
@@ -88,15 +84,13 @@ const HomeHero7 = () => {
             numOctaves="3"
             stitchTiles="stitch"
           />
-          <feDiffuseLighting in="noise" lighting-color="black" surfaceScale="2">
+          {/* <feDiffuseLighting in="noise" lighting-color="black" surfaceScale="2">
             <feDistantLight azimuth="45" elevation="600" />
-          </feDiffuseLighting>
+          </feDiffuseLighting> */}
         </filter>
       </svg>
-      <h1 className="title relative z-[1] text-[40px]">
-        <span className="block text-[2em] font-medium">
-          Making websites <span className="font-extrabold">sing.</span>
-        </span>
+      <h1 className="title relative z-[1] text-center text-[clamp(20px,7vw,100px)]">
+        <TypingText text="Making websites sing." />
       </h1>
     </div>
   );
