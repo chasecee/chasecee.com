@@ -26,7 +26,7 @@ export function ColorPalette({ colorPalette, project }: ColorPaletteProps) {
           style={{
             backgroundColor: color,
             top: `${((index / colorPalette.length) * 100).toFixed(2)}%`,
-            transitionDelay: `${index * 50}ms`,
+            transitionDelay: `${index * 20}ms`,
             left:
               project.name === "Yoli"
                 ? `${((index / colorPalette.length) * 100).toFixed(2)}%`
