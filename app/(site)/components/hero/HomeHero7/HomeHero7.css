@@ -32,8 +32,8 @@
   opacity: 0;
   transform: translateY(50px); /* Initial state: slightly lower */
   transition:
-    transform 0.5s ease-in,
-    opacity 0.5s ease-in;
+    transform 1s ease-in-out,
+    opacity 1s ease-in-out;
 }
 
 .blobs-container.fade-in-up {
@@ -83,7 +83,7 @@
   border-radius: 45% 40%;
   position: absolute;
   top: -20%;
-  opacity: 0.1;
+  opacity: 0.34;
   left: 20%;
   height: 20%;
   /* background-color: rgb(199, 196, 222); */
