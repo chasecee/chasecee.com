@@ -16,7 +16,7 @@ const HomeHero7 = () => {
         className={`blobs-container ${animationComplete ? "fade-in-up" : ""}`}
       >
         {[...Array(4)].map((_, index) => (
-          <div key={index} className="blob-wrapper origin-[33%]">
+          <div key={index} className="blob-wrapper origin-[50%]">
             <div id={`blob${index + 1}`} className="blob"></div>
           </div>
         ))}
