@@ -12,7 +12,7 @@ const HomeHero7 = () => {
           </div>
         ))}
       </div>
-      <div id="noiseLayer"></div>
+      <div id="noiseLayer" className="hidden dark:block"></div>
       <svg
         viewBox="0 0 500 500"
         preserveAspectRatio="none"
@@ -32,7 +32,7 @@ const HomeHero7 = () => {
         </filter>
       </svg>
       <div className="prose max-w-full">
-        <h1 className="title relative z-[1] text-center text-[clamp(20px,7vw,80px)] text-white">
+        <h1 className="title relative z-[1] text-center text-[clamp(20px,7vw,60px)] text-black dark:text-white">
           Making websites sing.
         </h1>
       </div>
