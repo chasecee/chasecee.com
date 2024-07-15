@@ -1,72 +1,23 @@
 "use client";
 import "./HomeHero7.css"; // Import the CSS file
-import React, {
-  useEffect,
-  useRef,
-  useCallback,
-  useState,
-  useMemo,
-} from "react";
+import React, { useState } from "react";
 import TypingText from "../TypingText/TypingText.jsx"; // Import the TypingText component
 
 const HomeHero7 = () => {
-  const [scrolled, setScrolled] = useState(false);
-  const blobRefs = useRef([
-    React.createRef(),
-    React.createRef(),
-    React.createRef(),
-    React.createRef(),
-  ]);
-  const containerRef = useRef(null);
-  const blobsContainerRef = useRef(null);
-  const requestRef = useRef(null);
+  const [animationComplete, setAnimationComplete] = useState(false);
 
-  const FACTORS = useMemo(() => [-0.2, -0.1, -0.16, 0.9], []);
-
-  const handleScroll = useCallback(() => {
-    if (!containerRef.current) return;
-    setScrolled(true);
-    const scrollY = window.scrollY;
-    const { top, height } = containerRef.current.getBoundingClientRect();
-    const centerY = top + height / 2;
-
-    blobRefs.current.forEach((blobRef, index) => {
-      if (blobRef.current) {
-        const offsetY = scrollY - centerY;
-        blobRef.current.style.transform = `translateY(${offsetY * FACTORS[index]}px)`;
-      }
-    });
-  }, [FACTORS]);
-
-  const debouncedHandleScroll = useCallback(() => {
-    if (requestRef.current) {
-      cancelAnimationFrame(requestRef.current);
-    }
-    requestRef.current = requestAnimationFrame(handleScroll);
-  }, [handleScroll]);
-
-  useEffect(() => {
-    window.addEventListener("scroll", debouncedHandleScroll);
-    return () => {
-      window.removeEventListener("scroll", debouncedHandleScroll);
-      if (requestRef.current) {
-        cancelAnimationFrame(requestRef.current);
-      }
-    };
-  }, [debouncedHandleScroll]);
+  const handleTypingComplete = () => {
+    setAnimationComplete(true);
+  };
 
   return (
-    <div
-      ref={containerRef}
-      className="center-container intro relative mb-20 mt-24 flex aspect-square max-h-[80vh] flex-col items-center justify-center overflow-hidden rounded-xl [clip-path:inset(0)] lg:aspect-[16/7]"
-    >
+    <div className="center-container intro relative mb-20 mt-24 flex aspect-square max-h-[80vh] flex-col items-center justify-center overflow-hidden rounded-xl [clip-path:inset(0)] lg:aspect-[16/7]">
       <div
-        ref={blobsContainerRef}
-        className={`blobs-container ${scrolled ? "fade-in-up" : ""}`}
+        className={`blobs-container ${animationComplete ? "fade-in-up" : ""}`}
       >
-        {blobRefs.current.map((blobRef, index) => (
+        {[...Array(4)].map((_, index) => (
           <div key={index} className="blob-wrapper origin-[33%]">
-            <div id={`blob${index + 1}`} className="blob" ref={blobRef}></div>
+            <div id={`blob${index + 1}`} className="blob"></div>
           </div>
         ))}
       </div>
@@ -90,7 +41,10 @@ const HomeHero7 = () => {
         </filter>
       </svg>
       <h1 className="title relative z-[1] text-center text-[clamp(20px,7vw,100px)]">
-        <TypingText text="Making websites sing." />
+        <TypingText
+          text="Making websites sing."
+          onComplete={handleTypingComplete}
+        />
       </h1>
     </div>
   );
