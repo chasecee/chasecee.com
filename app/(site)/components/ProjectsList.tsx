@@ -49,7 +49,7 @@ export default function ProjectsList({ projects }: ProjectsListProps) {
                       project={project}
                     />
                   )}
-                  {project.name != "InMoment.com" && (
+                  {project.name != "aInMoment.com" && (
                     <div className="view-actor-image absolute left-[10%] right-[10%] top-[100%] translate-y-0 rounded-xl transition-transform duration-300 group-hover:-translate-y-[75%] group-active:scale-95">
                       {project.image && (
                         <Image
