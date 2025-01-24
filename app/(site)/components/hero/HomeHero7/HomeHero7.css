@@ -12,7 +12,8 @@
 }
 
 .blob-wrapper {
-  @apply absolute inset-0 opacity-30;
+  @apply absolute opacity-30;
+  inset: 0;
   animation: breathe 5s ease-in-out infinite; /* Default animation */
   &:nth-child(1) {
     animation-direction: reverse;
@@ -93,6 +94,6 @@
 }
 
 #noiseLayer {
-  @apply absolute inset-0 z-[1] mix-blend-overlay;
+  @apply absolute inset-[0px] z-[1] mix-blend-overlay;
   filter: url(#noiseFilter) brightness(0.4) contrast(1.1);
 }

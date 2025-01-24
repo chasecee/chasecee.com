@@ -9,7 +9,7 @@ const tailwindString =
 
 const RenderDiamond = React.memo(({ position, delay, hue }) => (
   <div
-    className={`absolute h-[35rem] w-[35rem] origin-center rotate-45 rounded-3xl bg-gradient-to-bl from-emerald-300/50 to-transparent dark:from-fuchsia-900/50
+    className={`absolute h-[35rem] w-[35rem] origin-center rotate-45 rounded-3xl bg-linear-to-bl from-emerald-300/50 to-transparent dark:from-fuchsia-900/50
     left-[${position}%] top-1/2 -translate-x-1/2 -translate-y-1/2 transition-[filter] delay-[${delay}ms] duration-100`}
     style={{
       filter: `hue-rotate(${hue}deg)`,
@@ -61,7 +61,7 @@ const HueRotateComponent = () => {
         />
       </div>
 
-      <div className="absolute -bottom-px left-0 right-0 z-0 h-[30rem] bg-gradient-to-b from-transparent to-neutral-100 dark:to-neutral-900"></div>
+      <div className="absolute -bottom-px left-0 right-0 z-0 h-[30rem] bg-linear-to-b from-transparent to-neutral-100 dark:to-neutral-900"></div>
     </div>
   );
 };

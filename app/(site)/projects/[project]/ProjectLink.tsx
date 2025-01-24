@@ -11,7 +11,7 @@ type ProjectLinkProps = {
 
 const ProjectLink = ({ project, direction }: ProjectLinkProps) => {
   return (
-    <div className={`${direction}-post flex-grow `}>
+    <div className={`${direction}-post grow `}>
       <Link
         href={`/projects/${project.slug}`}
         className={`${
@@ -29,7 +29,7 @@ const ProjectLink = ({ project, direction }: ProjectLinkProps) => {
             />
           </div>
         )}
-        <div className="relative z-10 flex flex-grow justify-center">
+        <div className="relative z-10 flex grow justify-center">
           <div className="flex flex-col items-start gap-1">
             <span className="text-sm opacity-50">
               {direction === "prev" ? "Previous Project" : "Next Project"}

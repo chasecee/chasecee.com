@@ -1,73 +1,199 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@plugin '@tailwindcss/typography';
+@plugin '@tailwindcss/forms';
+
+@theme {
+  --transition-delay-400: 400ms;
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --background-image-gradient-radial: radial-gradient(var(--tw-gradient-stops));
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+  @media (width >= --theme(--breakpoint-sm)) {
+    max-width: none;
+  }
+  @media (width >= 1400px) {
+    max-width: 1400px;
+  }
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
+
+@utility logo-delay {
+  &:hover .logoPath {
+    @apply scale-110;
+  }
+  &:hover .logoPath:not(.logoMain) {
+    @apply fill-[#b12725];
+  }
+}
+@utility logoPath {
+  .logo-delay:hover & {
+    @apply scale-110;
+  }
+  .logo-delay:hover &:not(.logoMain) {
+    @apply fill-[#b12725];
+  }
+  @apply transition-all duration-500 origin-center transform-gpu;
+}
+@utility logoMain {
+  @apply fill-white;
+}
+@utility project-item {
+  .project-gradient-bg {
+    .color-div {
+      @apply absolute h-36 w-full;
+    }
+  }
+  &.project-strider-intel {
+    .project-gradient-bg {
+      transform: rotate(45deg) scale(1.4);
+    }
+  }
+  &.project-inmoment {
+    .project-gradient-bg {
+      @apply top-0 bottom-0 scale-[150%];
+      .color-div {
+        @apply rounded-full w-full h-full left-0 right-0;
+      }
+    }
+  }
+  &.project-yoli {
+    .project-gradient-bg {
+      @apply top-0 bottom-0 scale-[120%];
+      .color-div {
+        @apply w-full h-full;
+      }
+    }
+  }
+  &:nth-child(even) {
+    .view-actor {
+      @apply md:delay-100;
+    }
+    .view-actor-image {
+      @apply md:delay-200;
+    }
+  }
+}
+@utility scrolled-down {
+  @apply bg-red-600;
+}
+@utility hue-rotate-animation {
+  animation: hue-rotate 4s linear infinite;
+}
+@utility border-animation {
+  animation: border-animation 10s linear infinite;
+  border-width: 1.5rem;
+}
+@utility spin-animation {
+  animation: spin 4s linear infinite;
+}
+@utility blur-in {
+  @media (width >= theme(--breakpoint-md)) {
+    animation: blurAnimation 2s ease-out forwards;
+  }
+}
+@utility view-actor {
+  /* SCROLL VIEW */
+  @apply transition-transform duration-500;
+}
+@utility in-view {
+  .view-actor {
+    @apply -translate-y-[28%] lg:translate-y-0 duration-300;
+  }
+  .view-actor-image {
+    @apply -translate-y-[75%] lg:translate-y-0;
+  }
+  @media (max-width: 767px) {
+    & .spline3d {
+      @apply translate-y-[30%];
+    }
+  }
+}
+@utility spline3d {
+  @media (max-width: 767px) {
+    .in-view & {
+      @apply translate-y-[30%];
+    }
+  }
+}
+@utility fade-in {
+  /* ANIMATIONS */
+  animation: fadein 2s;
+  animation-delay: 0.25s;
+  animation-fill-mode: both;
+}
+@utility fade-in-up {
+  animation: fadeinup 2s;
+  animation-delay: 0.25s;
+  animation-fill-mode: both;
+}
+@utility a-delay-500ms {
+  animation-delay: 500ms;
+}
+@utility a-delay-1000ms {
+  animation-delay: 1000ms;
+}
+@utility a-delay-1500ms {
+  animation-delay: 1500ms;
+}
+@utility a-delay-2000ms {
+  animation-delay: 2000ms;
+}
+@utility a-delay-2500ms {
+  animation-delay: 2500ms;
+}
+@utility a-delay-3000ms {
+  animation-delay: 3000ms;
+}
+@utility a-delay-3500ms {
+  animation-delay: 3500ms;
+}
+@utility a-delay-4000ms {
+  animation-delay: 4000ms;
+}
 
 @layer base {
     .prose a:not(.not-prose) {
       /* @apply text-opacity-70 text-black dark:text-white; */
-      /* @apply text-opacity-100 text-[#3767c2] dark:text-[#4077dd] underline underline-offset-2; */
-      @apply text-opacity-100 text-indigo-600 dark:text-indigo-500 underline underline-offset-2;
+      /* @apply  text-[#3767c2] dark:text-[#4077dd] underline underline-offset-2; */
+      @apply  text-indigo-600 dark:text-indigo-500 underline underline-offset-2;
       @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600;
     }
     .prose a:not(.not-prose):hover {
-      @apply text-opacity-100 text-indigo-500 dark:text-indigo-400 underline-offset-4;
+      @apply  text-indigo-500 dark:text-indigo-400 underline-offset-4;
     }
     a:active {
       @apply translate-y-px;
     }
 }
 @layer components {
-  .logo-delay:hover .logoPath{
-    @apply scale-110;
-  }
-  .logo-delay:hover .logoPath:not(.logoMain){
-    @apply fill-[#b12725];
-  }
-  .logoPath {
-    @apply transition-all duration-500 origin-center transform-gpu;
-  }
-  .logoMain {
-    @apply fill-white;
-  }
-  .project-item{
-    .project-gradient-bg{
-      .color-div {
-        @apply absolute h-36 w-full;
-      }
-    }
-    &.project-strider-intel {
-      .project-gradient-bg{
-        transform: rotate(45deg) scale(1.4);
-      }
-    }
-    &.project-inmoment {
-      .project-gradient-bg {
-        @apply top-0 bottom-0 scale-[150%];
-        .color-div {
-        @apply rounded-full w-full h-full left-0 right-0;
-        }
-      }
-    }
-    &.project-yoli {
-      .project-gradient-bg {
-        @apply top-0 bottom-0 scale-[120%] ;
-        .color-div {
-        @apply w-full h-full;
-        }
-      }
-    }
-  }
-  
-  .scrolled-down{
-    @apply bg-red-600;
-  }
   @keyframes hue-rotate {
     0% { filter: hue-rotate(0deg); }
     100% { filter: hue-rotate(360deg); }
-  }
-  
-  .hue-rotate-animation {
-    animation: hue-rotate 4s linear infinite;
   }
   @keyframes border-animation{
     0% { border-style: dotted; border-color: blueviolet; }
@@ -77,19 +203,10 @@
     80% { border-style: dotted; border-color: pink; }
     100% { border-style: dashed; border-color: rgb(43, 180, 226); }
   }
-  
-  .border-animation {
-    animation: border-animation 10s linear infinite;
-    border-width: 1.5rem;
-  }
 
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
-  }
-  
-  .spin-animation {
-    animation: spin 4s linear infinite;
   }
   @keyframes blurAnimation {
     from {
@@ -103,51 +220,12 @@
       transform:scale3d(1,1,1);
     }
   }
-  
-  @screen md{
-    .blur-in {
-      animation: blurAnimation 2s ease-out forwards;
-    }
-  }
 }
 @layer utilities {
-  /* SCROLL VIEW */
-  .view-actor {
-    @apply transition-transform duration-500;
-  }
-  .in-view {
-    .view-actor {
-      @apply -translate-y-[28%] lg:translate-y-0 duration-300;
-    }
-    .view-actor-image {
-      @apply -translate-y-[75%] lg:translate-y-0;
-    }
-    
-  }
-  @media (max-width: 767px) {
-    .in-view .spline3d {
-      @apply translate-y-[30%];
-    }
-  }
-  .project-item:nth-child(even) {
-    .view-actor {
-      @apply md:delay-100;
-    }
-    .view-actor-image {
-      @apply md:delay-200;
-    }
-  }
-  /* ANIMATIONS */
 
   @keyframes fadein {
     0% { opacity: 0; }
     100% { opacity: 1; }
-  }
-
-  .fade-in {
-      animation: fadein 2s;
-      animation-delay: 0.25s;
-      animation-fill-mode: both;
   }
 
   @keyframes fadeinup {
@@ -160,20 +238,6 @@
         transform: translateY(0);
     }
   }
-  .fade-in-up {
-    animation: fadeinup 2s;
-    animation-delay: 0.25s;
-    animation-fill-mode: both;
-  }
-
-  .a-delay-500ms { animation-delay: 500ms; }
-  .a-delay-1000ms { animation-delay: 1000ms; }
-  .a-delay-1500ms { animation-delay: 1500ms; }
-  .a-delay-2000ms { animation-delay: 2000ms; }
-  .a-delay-2500ms { animation-delay: 2500ms; }
-  .a-delay-3000ms { animation-delay: 3000ms; }
-  .a-delay-3500ms { animation-delay: 3500ms; }
-  .a-delay-4000ms { animation-delay: 4000ms; }
 
 }
 #my_dataviz text, #d3viz text{
