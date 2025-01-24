@@ -20,7 +20,7 @@ export default function ProfilePic() {
     <>
       <Tilt
         options={defaultOptions}
-        className=" group relative flex items-center justify-center rounded-full text-center sm:w-1/4"
+        className="group relative flex items-center justify-center rounded-full text-center sm:w-1/4"
       >
         <div className="group w-[260px]">
           <Image
@@ -32,7 +32,7 @@ export default function ProfilePic() {
             className="m-0 w-full rounded-full"
           />
         </div>
-        <div className="absolute -inset-6  animate-[spin_5s_linear_infinite] rounded-full opacity-0 transition-opacity group-hover:opacity-100">
+        <div className="absolute -inset-6 hidden aspect-square animate-[spin_5s_linear_infinite] rounded-full opacity-0 transition-opacity group-hover:opacity-100 md:block">
           <div className="border-animation h-full rounded-full"></div>
         </div>
       </Tilt>
