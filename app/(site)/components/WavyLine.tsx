@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import "@aarsteinmedia/dotlottie-player";
-import type { DotLottiePlayer } from "@aarsteinmedia/dotlottie-player";
+import DotLottiePlayer from "@aarsteinmedia/dotlottie-player";
 
 function App() {
   const animation = useRef<DotLottiePlayer | null>(null);
