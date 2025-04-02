@@ -5,7 +5,7 @@ import Link from "next/link";
 import { BulbOutlineIcon, BulbFilledIcon, SunIcon } from "@sanity/icons";
 export default function Loading() {
   return (
-    <div className="fixed left-2 right-2 top-2 z-40 md:left-4 md:right-4 md:top-4">
+    <div className="fixed top-2 right-2 left-2 z-40 md:top-4 md:right-4 md:left-4">
       <header className="header container flex items-center justify-between rounded-full border border-neutral-100/30 bg-neutral-100/30 px-4 py-4 backdrop-blur-md sm:px-6 dark:border-neutral-900/30 dark:bg-neutral-900/30">
         <div className="flex flex-row gap-4">
           <Link
@@ -30,7 +30,7 @@ export default function Loading() {
             <span className="sm:hidden">CC</span>
           </Link>
 
-          <span className="hidden opacity-40 sm:block">Xvna # Bosipw</span>
+          <span className="hidden opacity-40 sm:block">Code & Design</span>
         </div>
         <HeaderMenu />
       </header>

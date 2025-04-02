@@ -16,12 +16,11 @@ export default function Contact() {
         <div className="prose dark:prose-invert mx-auto mt-10">
           <div className="relative mb-10 flex w-full flex-col justify-between sm:flex-row sm:items-center">
             <ProfilePic />
-            <div className="w-30rem pointer-events-none relative -top-[50px] left-[50%] z-10 h-[84px] rotate-[-65deg] scale-x-[-100%] scale-y-[100%] self-start sm:-left-[1rem] sm:bottom-0 sm:top-0 sm:h-auto sm:rotate-[-25deg] sm:scale-100 sm:self-end">
+            <div className="hidden">
               <ArrowsLottie />
-              <div className="sm:hidden"></div>
             </div>
 
-            <h1 className="relative z-20 m-0 text-[13vw] sm:text-[2.9rem] md:text-[3.3rem]">
+            <h1 className="relative z-20 m-0 mb-0 text-[13vw] sm:text-[2.9rem] md:text-[3.3rem]">
               Hard worker. <br /> Fast learner.
             </h1>
           </div>

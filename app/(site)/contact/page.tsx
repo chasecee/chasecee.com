@@ -14,13 +14,15 @@ export default function Contact() {
   return (
     <Container>
       <main>
-        <div className="prose mx-auto flex flex-col gap-10 dark:prose-invert">
-          <h1 className="mb-0 text-[13vw] sm:text-[2.9rem] md:text-[3.3rem]">
-            Let&apos;s talk.
-          </h1>
-          <WavyLine />
-          <p className="m-0 mt-2 text-xl">
-            <div className="m-0 flex flex-col gap-5 sm:flex-row">
+        <div className="prose dark:prose-invert mx-auto flex flex-col gap-10">
+          <div className="flex flex-col gap-10 md:flex-row md:items-center">
+            <h1 className="mb-0 text-[13vw] whitespace-nowrap sm:text-[2.9rem] md:text-[3.3rem]">
+              Let&apos;s talk
+            </h1>
+            <WavyLine />
+          </div>
+          <div className="m-0 mt-2 text-xl">
+            <div className="m-0 grid grid-cols-2 gap-5 sm:grid-cols-4">
               <Button href="https://github.com/chasecee/" target="_blank">
                 Github
                 <FaGithub size={size} />
@@ -41,7 +43,7 @@ export default function Contact() {
                 <FaFilePdf size={size} />
               </Button>
             </div>
-          </p>
+          </div>
         </div>
       </main>
     </Container>
