@@ -6,76 +6,57 @@ import Image from "next/image";
 import urlFor from "@/sanity/sanity.image";
 import Draggable from "react-draggable";
 import NotFound from "./not-found";
-import { Metadata } from "next";
-import { Page } from "@/types/Page";
+import { Metadata, ResolvingMetadata } from "next";
+import type { Page } from "@/types/Page";
 
-type SkillBlock = {
-  _type: string;
-};
+type SkillBlock = { _type: string };
 
-type TextBlock = {
-  _type: string;
-};
+type TextBlock = { _type: string };
 
-type ImageBlock = {
-  _type: string;
-  imageUrl: string;
-  alt: string;
-};
+type ImageBlock = { _type: string; imageUrl: string; alt: string };
 
-type PageProps = {
-  title: string;
-  subtitle?: string;
-  content: (SkillBlock | TextBlock | ImageBlock)[];
-};
+type PageProps = Page & { content: (SkillBlock | TextBlock | ImageBlock)[] };
 
 type Props = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 };
-// Dynamic metadata for SEO
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const page: Page = await getPage(params.slug);
 
-  return {
-    title: `${page.title} - Chase Cee`,
-    description: page.subtitle,
-  };
+// Update generateMetadata signature
+export async function generateMetadata(
+  { params }: Props,
+  parent: ResolvingMetadata,
+): Promise<Metadata> {
+  const { slug } = await params;
+  const page: Page = await getPage(slug);
+  return { title: `${page.title} - Chase Cee`, description: page.subtitle };
 }
-export default async function GenPage({ params }: Props) {
+
+export default async function DynamicPage({ params }: Props) {
   try {
-    const page: PageProps = await getPage(params.slug);
+    const { slug } = await params;
+    const page = await getPage(slug);
 
     if (!page) {
       return <NotFound />;
     }
+
     return (
-      <>
-        <Container className="pt-24" showCTA={true}>
-          <div className="prose mx-auto dark:prose-invert">
-            <header>
-              <h1>{page.subtitle ? page.subtitle : page.title}</h1>
-            </header>
-            <div>
-              {page.content.map((block, index) => {
-                if (block._type === "skills") {
+      <Container className="pt-24" showCTA={true}>
+        <div className="prose dark:prose-invert mx-auto">
+          <header>
+            <h1>{page.subtitle ?? page.title}</h1>
+          </header>
+          <div>
+            {page.content.map((block, index) => {
+              switch (block._type) {
+                case "skills":
                   return <Skills key={index} />;
-                }
-
-                if (block._type === "block") {
+                case "block":
                   return (
-                    <PortableText
-                      key={index}
-                      value={[block]}
-                      components={
-                        {
-                          // Define other custom types if needed
-                        }
-                      }
-                    />
+                    <PortableText key={index} value={[block]} components={{}} />
                   );
-                }
-
-                if (block._type === "image") {
+                case "image":
                   const imageBlock = block as ImageBlock;
                   return (
                     <div key={index} className="rounded-xl">
@@ -88,22 +69,20 @@ export default async function GenPage({ params }: Props) {
                         alt={imageBlock.alt}
                         width={711}
                         height={711}
-                        className=" rounded-xl"
+                        className="rounded-xl"
                       />
                     </div>
                   );
-                }
-                // Handle unrecognized block types
-                return null;
-              })}
-            </div>
+                default:
+                  return null;
+              }
+            })}
           </div>
-        </Container>
-      </>
+        </div>
+      </Container>
     );
-  } catch (err) {
-    // Add a basic error handling for any exceptions
-    console.error(err);
-    return <div>An error occurred while loading the page.</div>;
+  } catch (error) {
+    console.error("Page error:", error);
+    return <NotFound />;
   }
 }

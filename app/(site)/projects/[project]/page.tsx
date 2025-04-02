@@ -7,11 +7,12 @@ import Link from "next/link";
 import { ArrowTopRightIcon } from "@sanity/icons";
 import ProjectLink from "./ProjectLink";
 type Props = {
-  params: { project: string };
+  params: Promise<{ project: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export default async function Project({ params }: Props) {
-  const slug = params.project;
+  const { project: slug } = await params;
   const { project, nextProject, prevProject } = await getProject(slug);
 
   if (!project) {
@@ -20,7 +21,7 @@ export default async function Project({ params }: Props) {
   return (
     <div>
       <Container>
-        <div className="prose mx-auto dark:prose-invert">
+        <div className="prose dark:prose-invert mx-auto">
           <header className="flex flex-col flex-wrap justify-start gap-6 sm:flex-row sm:flex-nowrap sm:items-center sm:justify-between">
             <h1 className="mb-0">{project.name}</h1>
 
@@ -30,8 +31,7 @@ export default async function Project({ params }: Props) {
                   href={project?.url}
                   title={project.name}
                   target="_blank"
-                  className="not-prose group inline-flex rounded-xl border border-current px-3 py-0 pr-2 
-                   text-black no-underline opacity-80 hover:opacity-100 dark:text-white/90"
+                  className="not-prose group inline-flex rounded-xl border border-current px-3 py-0 pr-2 text-black no-underline opacity-80 hover:opacity-100 dark:text-white/90"
                 >
                   {project.archived ? (
                     <span className="flex h-[2.1rem] flex-row items-center justify-normal gap-1">
@@ -65,7 +65,7 @@ export default async function Project({ params }: Props) {
           <h3 className="mb-4 mt-20 text-xl">
             Thanks for reading! Check out more:
           </h3>
-          <div className="not-prose grid gap-4  md:grid-cols-2">
+          <div className="not-prose grid gap-4 md:grid-cols-2">
             {prevProject && (
               <ProjectLink project={prevProject} direction="prev" />
             )}
