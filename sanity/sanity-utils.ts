@@ -13,6 +13,47 @@ export async function getProjects(): Promise<Project[]> {
             "image": image.asset->url,
             "logo": logo.asset->url,
             archived,
+            type,
+            svgcode,
+            subtitle,
+            color,
+            url,
+            content
+        }`,
+  );
+}
+
+export async function getPersonalProjects(): Promise<Project[]> {
+  return createClient(clientConfig).fetch(
+    groq`*[_type == "project" && type == "personal"] | order(orderRank) {
+            _id,
+            _createdAt,
+            name,
+            "slug": slug.current,
+            "image": image.asset->url,
+            "logo": logo.asset->url,
+            archived,
+            type,
+            svgcode,
+            subtitle,
+            color,
+            url,
+            content
+        }`,
+  );
+}
+
+export async function getClientProjects(): Promise<Project[]> {
+  return createClient(clientConfig).fetch(
+    groq`*[_type == "project" && type == "client"] | order(orderRank) {
+            _id,
+            _createdAt,
+            name,
+            "slug": slug.current,
+            "image": image.asset->url,
+            "logo": logo.asset->url,
+            archived,
+            type,
             svgcode,
             subtitle,
             color,

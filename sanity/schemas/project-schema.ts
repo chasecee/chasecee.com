@@ -17,6 +17,19 @@ const project = {
       options: { source: "name" },
     },
     {
+      title: "Project Type",
+      name: "type",
+      type: "string",
+      options: {
+        list: [
+          { title: "Personal Project", value: "personal" },
+          { title: "Client Work", value: "client" },
+        ],
+        layout: "radio",
+      },
+      validation: (Rule: any) => Rule.required(),
+    },
+    {
       name: "subtitle",
       title: "Subtitle",
       type: "string",
@@ -108,7 +121,31 @@ const project = {
     select: {
       title: "name",
       subtitle: "slug.current",
+      type: "type",
       media: "image",
+    },
+    prepare({
+      title,
+      subtitle,
+      type,
+      media,
+    }: {
+      title: string;
+      subtitle: string;
+      type: string;
+      media: any;
+    }) {
+      const typeLabel =
+        type === "personal"
+          ? "Personal"
+          : type === "client"
+            ? "Client"
+            : "No Type";
+      return {
+        title,
+        subtitle: `${typeLabel} • ${subtitle || "No slug"}`,
+        media,
+      };
     },
   },
 };

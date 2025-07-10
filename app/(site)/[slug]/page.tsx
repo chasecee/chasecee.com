@@ -22,14 +22,24 @@ type Props = {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-// Update generateMetadata signature
 export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata,
 ): Promise<Metadata> {
   const { slug } = await params;
   const page: Page = await getPage(slug);
-  return { title: `${page.title} - Chase Cee`, description: page.subtitle };
+
+  if (!page) {
+    return {
+      title: "Page Not Found - Chase Cee",
+      description: "The requested page could not be found.",
+    };
+  }
+
+  return {
+    title: `${page.title} - Chase Cee`,
+    description: page.subtitle,
+  };
 }
 
 export default async function DynamicPage({ params }: Props) {

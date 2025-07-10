@@ -31,14 +31,13 @@ export type Project = {
   _id: string;
   _createdAt: Date;
   name: string;
-  slug: {
-    current: string;
-  };
-  subtitle: string;
-  image: string;
-  svgcode: CodeField;
-  color: ColorField;
-  url: string;
-  archived: boolean;
-  content: (PortableTextBlock | LinkField | InternalLinkField)[];
+  slug: string | { current: string };
+  subtitle?: string;
+  image?: string;
+  svgcode?: CodeField;
+  color?: ColorField;
+  url?: string;
+  type?: "personal" | "client";
+  archived?: boolean;
+  content?: (PortableTextBlock | LinkField | InternalLinkField)[];
 };
