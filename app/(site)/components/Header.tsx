@@ -1,36 +1,24 @@
 import Link from "next/link";
-import LogoDelay from "./logo/logo";
 import HeaderMenu from "./HeaderMenu";
-import Breakpoints from "./Breakpoints";
-import JacksLogo from "./logo/JacksLogo";
-import { BulbOutlineIcon, BulbFilledIcon, SunIcon } from "@sanity/icons";
+import ChaseCeeLogo from "./logo/ChaseCeeLogo";
 export default function Header() {
   return (
-    <div className="fixed left-2 right-2 top-2 z-40 md:left-4 md:right-4 md:top-4">
+    <div className="fixed top-2 right-2 left-2 z-40 md:top-4 md:right-4 md:left-4">
       <header className="header container flex items-center justify-between rounded-xl border border-neutral-100/30 bg-neutral-100/30 px-4 py-4 backdrop-blur-md sm:px-6 dark:border-neutral-900/30 dark:bg-neutral-900/30">
-        <div className="flex flex-row gap-4">
+        <div className="flex flex-row items-center gap-8">
           <Link
             className="header__title group flex flex-row items-center gap-2"
             href="/"
           >
-            {/* <div className="relative h-6 w-6 text-[1.5rem]">
-              <div className="spin-animation relative top-[0.7rem] opacity-70">
-                <SunIcon className="absolute left-1/2 top-[43%] -translate-x-1/2 -translate-y-1/2 text-[2.4rem] text-yellow-400 opacity-0 transition-opacity group-hover:opacity-100" />
-              </div>
-              <BulbFilledIcon
-                className="absolute inset-0 text-yellow-500 opacity-0 transition-opacity group-hover:opacity-100"
-                style={{
-                  filter: `drop-shadow(-1px 0px 16px yellow)`,
-                }}
-              />
-              <BulbOutlineIcon className="absolute inset-0 opacity-100 group-hover:opacity-100" />
-            </div> */}
             <div className="sr-only">Chase Cee Logo</div>
-            {/* <LogoDelay /> */}
-            <span className="whitespace-nowrap">Chase Cee</span>
+            <div className="max-w-[120px]">
+              <ChaseCeeLogo />
+            </div>
           </Link>
 
-          <span className="hidden opacity-40 sm:block">Code & Design</span>
+          <span className="hidden opacity-40 sm:inline-block">
+            Code & Design
+          </span>
         </div>
         <HeaderMenu />
       </header>
