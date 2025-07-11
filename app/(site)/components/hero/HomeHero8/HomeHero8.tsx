@@ -64,7 +64,7 @@ const HomeHero8 = () => {
       <div className="container flex flex-col items-center gap-12 pt-20 pb-10 lg:flex-row lg:items-center lg:gap-16">
         <div className="w-full text-left lg:max-w-md">
           <h1 className="mb-6 text-5xl font-semibold tracking-tight text-gray-900 md:text-6xl dark:text-white">
-            Who can fix this mess?
+            Who&apos;s gonna fix this mess?
           </h1>
           <div className="flex flex-col gap-6">
             <p className="max-w-2xl text-lg text-pretty text-gray-600 md:text-xl dark:text-gray-300">
