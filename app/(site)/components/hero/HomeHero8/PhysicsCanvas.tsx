@@ -611,7 +611,7 @@ export const PhysicsCanvas = memo(
         >
           <canvas
             ref={canvasRef}
-            className="h-full w-full touch-none rounded-2xl border border-gray-200 shadow-2xl dark:border-gray-700"
+            className="h-full w-full touch-none rounded-xl bg-gray-200 shadow-2xl dark:bg-slate-900"
             style={{
               cursor: isDragging ? "grabbing" : isHovering ? "grab" : "default",
             }}
