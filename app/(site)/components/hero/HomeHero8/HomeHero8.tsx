@@ -69,7 +69,7 @@ const HomeHero8 = () => {
           <div className="flex flex-col gap-6">
             <p className="max-w-2xl text-lg text-pretty text-gray-600 md:text-xl dark:text-gray-300">
               Leveraging web can be scary. Call the guy who's obsessed with
-              building excellent websites.
+              building excellent experiences.
             </p>
             <div className="flex flex-wrap gap-4">
               <button
