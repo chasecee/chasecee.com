@@ -61,7 +61,7 @@ const HomeHero8 = () => {
 
   return (
     <div className="relative w-full">
-      <div className="container flex flex-col items-center gap-12 pt-20 lg:flex-row lg:items-start lg:gap-16">
+      <div className="container flex flex-col items-center gap-12 pt-20 pb-10 lg:flex-row lg:items-center lg:gap-16">
         <div className="w-full text-left lg:max-w-md">
           <h1 className="mb-6 text-5xl font-semibold tracking-tight text-gray-900 md:text-6xl dark:text-white">
             Who's gonna fix this mess?

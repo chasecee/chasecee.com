@@ -104,15 +104,15 @@ export const PhysicsCanvas = memo(
         const targetFillWidth = width * 0.7;
         const xOffset = (width - targetFillWidth) / 2;
         const buttonWidth = (targetFillWidth - 2 * 10 * scale) / 3;
-        const buttonHeight = 50 * scale * (2 / 3);
+        const buttonHeight = 50 * scale * (4 / 3);
         const spacing = 10 * scale;
 
         const blockHeights = {
-          Header: 40 * scale * (2 / 3),
-          Navigation: 35 * scale * (2 / 3),
-          Hero: 120 * scale * (2 / 3),
+          Header: 40 * scale * (4 / 3),
+          Navigation: 35 * scale * (4 / 3),
+          Hero: 120 * scale * (4 / 3),
           Button: buttonHeight,
-          Footer: 50 * scale * (2 / 3),
+          Footer: 50 * scale * (4 / 3),
         };
 
         const totalStackHeight =
@@ -351,74 +351,76 @@ export const PhysicsCanvas = memo(
             const startY = -height * 0.5;
 
             const buttonWidth = (targetFillWidth - 2 * 10 * scale) / 3;
-            const buttonHeight = 50 * scale * (2 / 3);
+            const buttonHeight = 50 * scale * (4 / 3);
+            const spacing = 15 * scale;
+
+            let currentY = startY;
 
             const siteLayout = [
-              // Row 1: Header
               {
                 label: "Header",
                 width: targetFillWidth,
-                height: 40 * scale * (2 / 3),
-                y: startY,
-                x: width / 2,
+                height: 40 * scale * (4 / 3),
                 color: palette.header,
               },
-              // Row 2: Navigation
               {
                 label: "Navigation",
                 width: targetFillWidth * 0.8,
-                height: 35 * scale * (2 / 3),
-                y: startY - 45 * scale,
-                x: width / 2,
+                height: 35 * scale * (4 / 3),
                 color: palette.nav,
               },
-              // Row 3: Hero
               {
                 label: "Hero",
                 width: targetFillWidth * 0.6,
-                height: 120 * scale * (2 / 3),
-                y: startY - 85 * scale,
-                x: width / 2,
+                height: 120 * scale * (4 / 3),
                 color: palette.hero,
               },
-              // Row 4: Buttons
               {
-                label: "Button",
-                width: buttonWidth,
+                label: "Buttons",
+                width: targetFillWidth,
                 height: buttonHeight,
-                y: startY - 180 * scale,
-                x: xOffset + buttonWidth / 2,
-                color: palette.button1,
-              },
-              {
-                label: "Button",
-                width: buttonWidth,
-                height: buttonHeight,
-                y: startY - 180 * scale,
-                x: xOffset + buttonWidth + 10 * scale + buttonWidth / 2,
-                color: palette.button2,
-              },
-              {
-                label: "Button",
-                width: buttonWidth,
-                height: buttonHeight,
-                y: startY - 180 * scale,
-                x: xOffset + 2 * (buttonWidth + 10 * scale) + buttonWidth / 2,
-                color: palette.button3,
-              },
-              // Row 5: Footer
+                color: "transparent",
+              }, // Use width for spacing, color is unused
               {
                 label: "Footer",
                 width: targetFillWidth,
-                height: 50 * scale * (2 / 3),
-                y: startY - 230 * scale,
-                x: width / 2,
+                height: 50 * scale * (4 / 3),
                 color: palette.footer,
               },
             ].reverse();
 
             siteLayout.forEach((el) => {
-              elements.push(el);
+              const yPos = currentY;
+              // Special handling for the row of buttons
+              if (el.label === "Buttons") {
+                elements.push({
+                  label: "Button",
+                  width: buttonWidth,
+                  height: el.height,
+                  y: yPos,
+                  x: xOffset + buttonWidth / 2,
+                  color: palette.button1,
+                });
+                elements.push({
+                  label: "Button",
+                  width: buttonWidth,
+                  height: el.height,
+                  y: yPos,
+                  x: xOffset + buttonWidth + 10 * scale + buttonWidth / 2,
+                  color: palette.button2,
+                });
+                elements.push({
+                  label: "Button",
+                  width: buttonWidth,
+                  height: el.height,
+                  y: yPos,
+                  x: xOffset + 2 * (buttonWidth + 10 * scale) + buttonWidth / 2,
+                  color: palette.button3,
+                });
+              } else {
+                elements.push({ ...el, y: yPos, x: width / 2 });
+              }
+              currentY -= el.height + spacing;
             });
 
             elements.forEach((el) => {
