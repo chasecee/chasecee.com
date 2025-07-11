@@ -8,6 +8,10 @@ import React, {
   useImperativeHandle,
   useState,
 } from "react";
+import type { World, Vec2, Body } from "planck";
+
+// Dynamically import planck to avoid SSR issues
+const planckPromise = import("planck");
 
 export interface PhysicsCanvasProps {
   gravity: number;
@@ -21,6 +25,7 @@ export interface PhysicsCanvasProps {
 
 export interface PhysicsCanvasRef {
   reset: () => void;
+  solve: () => void;
 }
 
 export const PhysicsCanvas = memo(
@@ -39,336 +44,539 @@ export const PhysicsCanvas = memo(
     ) => {
       const canvasRef = useRef<HTMLCanvasElement>(null);
       const containerRef = useRef<HTMLDivElement>(null);
-      const worldRef = useRef<any>(null);
       const animationRef = useRef<number>();
-      const bodiesRef = useRef<any[]>([]);
-      const mouseJointRef = useRef<any>(null);
-      const draggedBodyRef = useRef<any>(null);
-      const isDraggingRef = useRef(false);
-      const isHoveringRef = useRef(false);
-      const frameTimeRef = useRef(0);
+      const worldRef = useRef<World | null>(null);
+      const bodiesRef = useRef<
+        {
+          body: Body;
+          width: number;
+          height: number;
+          label: string;
+          color: string;
+        }[]
+      >([]);
+      const initialPositionsRef = useRef<{ x: number; y: number }[]>([]);
+      const mouseJointRef = useRef<any>(null); // MouseJoint is not explicitly typed in planck
+      const draggedBodyRef = useRef<Body | null>(null);
       const planckRef = useRef<any>(null);
-      const resizeTimeoutRef = useRef<number>();
 
-      const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+      const [isDragging, setIsDragging] = useState(false);
+      const [isHovering, setIsHovering] = useState(false);
 
-      // Memoize callbacks to prevent re-initialization
-      const memoizedOnDragStateChange = useCallback(onDragStateChange, []);
-      const memoizedOnHoverStateChange = useCallback(onHoverStateChange, []);
-
-      // Mount-only useEffect for physics initialization
       useEffect(() => {
-        const initializePhysics = async () => {
-          if (!canvasRef.current || !containerRef.current) return;
+        onDragStateChange(isDragging);
+      }, [isDragging, onDragStateChange]);
 
-          const planck = await import("planck");
+      useEffect(() => {
+        onHoverStateChange(isHovering);
+      }, [isHovering, onHoverStateChange]);
+
+      const resetSimulation = useCallback(() => {
+        const planck = planckRef.current;
+        if (!worldRef.current || !bodiesRef.current.length || !planck) return;
+
+        bodiesRef.current.forEach((physicsBody, index) => {
+          if (initialPositionsRef.current[index]) {
+            const { x, y } = initialPositionsRef.current[index];
+            physicsBody.body.setPosition(planck.Vec2(x, y));
+            physicsBody.body.setLinearVelocity(planck.Vec2(0, 0));
+            physicsBody.body.setAngularVelocity(0);
+            physicsBody.body.setAngle(0);
+            physicsBody.body.setAwake(true);
+          }
+        });
+      }, []);
+
+      const solveLayout = useCallback(() => {
+        if (
+          !worldRef.current ||
+          !bodiesRef.current.length ||
+          !planckRef.current
+        )
+          return;
+        const planck = planckRef.current;
+
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const { width, height } = canvas.getBoundingClientRect();
+        const scale = Math.min(width / 800, height / 600);
+        const targetFillWidth = width * 0.7;
+        const xOffset = (width - targetFillWidth) / 2;
+        const buttonWidth = (targetFillWidth - 2 * 10 * scale) / 3;
+        const buttonHeight = 50 * scale * (2 / 3);
+        const spacing = 10 * scale;
+
+        const blockHeights = {
+          Header: 40 * scale * (2 / 3),
+          Navigation: 35 * scale * (2 / 3),
+          Hero: 120 * scale * (2 / 3),
+          Button: buttonHeight,
+          Footer: 50 * scale * (2 / 3),
+        };
+
+        const totalStackHeight =
+          blockHeights.Header +
+          spacing +
+          blockHeights.Navigation +
+          spacing +
+          blockHeights.Hero +
+          spacing +
+          blockHeights.Button +
+          spacing +
+          blockHeights.Footer;
+
+        let currentY = (height - totalStackHeight) / 2;
+
+        const targetPositions = [
+          { y: currentY + blockHeights.Header / 2, x: width / 2 }, // Header
+          {
+            y:
+              currentY +
+              blockHeights.Header +
+              spacing +
+              blockHeights.Navigation / 2,
+            x: width / 2,
+          }, // Nav
+          {
+            y:
+              currentY +
+              blockHeights.Header +
+              spacing +
+              blockHeights.Navigation +
+              spacing +
+              blockHeights.Hero / 2,
+            x: width / 2,
+          }, // Hero
+          {
+            y:
+              currentY +
+              blockHeights.Header +
+              spacing +
+              blockHeights.Navigation +
+              spacing +
+              blockHeights.Hero +
+              spacing +
+              buttonHeight / 2,
+            x: xOffset + buttonWidth / 2,
+          }, // Button 1
+          {
+            y:
+              currentY +
+              blockHeights.Header +
+              spacing +
+              blockHeights.Navigation +
+              spacing +
+              blockHeights.Hero +
+              spacing +
+              buttonHeight / 2,
+            x: xOffset + buttonWidth + 10 * scale + buttonWidth / 2,
+          }, // Button 2
+          {
+            y:
+              currentY +
+              blockHeights.Header +
+              spacing +
+              blockHeights.Navigation +
+              spacing +
+              blockHeights.Hero +
+              spacing +
+              buttonHeight / 2,
+            x: xOffset + 2 * (buttonWidth + 10 * scale) + buttonWidth / 2,
+          }, // Button 3
+          {
+            y:
+              currentY +
+              blockHeights.Header +
+              spacing +
+              blockHeights.Navigation +
+              spacing +
+              blockHeights.Hero +
+              spacing +
+              buttonHeight +
+              spacing +
+              blockHeights.Footer / 2,
+            x: width / 2,
+          }, // Footer
+        ];
+
+        const header = bodiesRef.current.find((b) => b.label === "Header");
+        const nav = bodiesRef.current.find((b) => b.label === "Navigation");
+        const hero = bodiesRef.current.find((b) => b.label === "Hero");
+        const buttons = bodiesRef.current.filter((b) => b.label === "Button");
+        const footer = bodiesRef.current.find((b) => b.label === "Footer");
+
+        const orderedBodies = [
+          header,
+          nav,
+          hero,
+          ...buttons.reverse(),
+          footer,
+        ].filter(Boolean);
+
+        orderedBodies.forEach((bodyItem, index) => {
+          if (bodyItem && targetPositions[index]) {
+            const body = bodyItem.body;
+            const targetPos = planck.Vec2(
+              targetPositions[index].x,
+              targetPositions[index].y,
+            );
+            const currentPos = body.getPosition();
+            const velocity = targetPos.sub(currentPos).mul(2.5);
+            body.setLinearVelocity(velocity);
+            body.setAngularVelocity(0);
+          }
+        });
+      }, []);
+
+      useImperativeHandle(ref, () => ({
+        reset: resetSimulation,
+        solve: solveLayout,
+      }));
+
+      useEffect(() => {
+        let isMounted = true;
+        let resizeTimeout: NodeJS.Timeout;
+        let unregisterPointerEvents: (() => void) | null = null;
+        let unregisterResizeObserver: (() => void) | null = null;
+
+        const init = async () => {
+          const planck = await planckPromise;
           planckRef.current = planck;
+          if (!isMounted || !canvasRef.current || !containerRef.current) return;
 
           const canvas = canvasRef.current;
           const container = containerRef.current;
           const ctx = canvas.getContext("2d");
           if (!ctx) return;
 
-          // Get container dimensions
-          const containerRect = container.getBoundingClientRect();
-          const displayWidth = Math.max(600, containerRect.width);
-          const displayHeight = Math.max(
-            400,
-            Math.min(600, containerRect.width * 0.6),
-          );
+          let groundBody: Body;
 
-          setDimensions({ width: displayWidth, height: displayHeight });
+          const updateWorldBoundaries = (width: number, height: number) => {
+            if (!worldRef.current) return;
+            if (groundBody) {
+              worldRef.current.destroyBody(groundBody);
+            }
 
-          // High-DPI support
-          const dpr = window.devicePixelRatio || 1;
-          canvas.width = displayWidth * dpr;
-          canvas.height = displayHeight * dpr;
-          canvas.style.width = displayWidth + "px";
-          canvas.style.height = displayHeight + "px";
-          ctx.scale(dpr, dpr);
+            groundBody = worldRef.current.createBody();
+            const wallThickness = 20;
 
-          // Create physics world
-          const world = planck.World({ gravity: planck.Vec2(0, gravity) });
-          worldRef.current = world;
-
-          const groundBody = world.createBody({ type: "static" });
-          const wallThickness = 15;
-
-          // Create boundaries
-          const boundaries = [
-            {
-              pos: [displayWidth / 2, displayHeight - wallThickness / 2],
-              size: [displayWidth / 2, wallThickness / 2],
-            },
-            {
-              pos: [wallThickness / 2, displayHeight / 2],
-              size: [wallThickness / 2, displayHeight / 2],
-            },
-            {
-              pos: [displayWidth - wallThickness / 2, displayHeight / 2],
-              size: [wallThickness / 2, displayHeight / 2],
-            },
-          ];
-
-          boundaries.forEach(({ pos, size }) => {
-            const wall = world.createBody({
-              type: "static",
-              position: planck.Vec2(pos[0], pos[1]),
-            });
-            wall.createFixture({
-              shape: planck.Box(size[0], size[1]),
-              density: 0,
-              friction,
-            });
-          });
-
-          // Website elements with proper responsive sizing
-          const scale = Math.min(displayWidth / 800, displayHeight / 600);
-          const elements = [
-            {
-              x: displayWidth * 0.5,
-              y: 60 * scale,
-              width: 320 * scale,
-              height: 32 * scale,
-              label: "Header",
-              color: "#1d1d1f",
-            },
-            {
-              x: displayWidth * 0.5,
-              y: 110 * scale,
-              width: 240 * scale,
-              height: 28 * scale,
-              label: "Navigation",
-              color: "#424245",
-            },
-            {
-              x: displayWidth * 0.5,
-              y: 180 * scale,
-              width: 180 * scale,
-              height: 72 * scale,
-              label: "Hero",
-              color: "#007aff",
-            },
-            {
-              x: displayWidth * 0.425,
-              y: 300 * scale,
-              width: 60 * scale,
-              height: 24 * scale,
-              label: "Button",
-              color: "#34c759",
-            },
-            {
-              x: displayWidth * 0.5,
-              y: 300 * scale,
-              width: 60 * scale,
-              height: 24 * scale,
-              label: "Button",
-              color: "#ff3b30",
-            },
-            {
-              x: displayWidth * 0.575,
-              y: 300 * scale,
-              width: 60 * scale,
-              height: 24 * scale,
-              label: "Button",
-              color: "#ff9500",
-            },
-            {
-              x: displayWidth * 0.5,
-              y: 380 * scale,
-              width: 280 * scale,
-              height: 24 * scale,
-              label: "Footer",
-              color: "#8e8e93",
-            },
-          ];
-
-          const bodies = elements.map((element) => {
-            const body = world.createBody({
-              type: "dynamic",
-              position: planck.Vec2(element.x, element.y),
-              linearDamping: damping,
-              angularDamping: damping,
-            });
-
-            body.createFixture({
-              shape: planck.Box(element.width / 2, element.height / 2),
-              density: 0.8,
-              friction,
-              restitution,
-            });
-
-            return {
-              body,
-              width: element.width,
-              height: element.height,
-              label: element.label,
-              color: element.color,
-            };
-          });
-
-          bodiesRef.current = bodies;
-
-          const getMousePos = (e: MouseEvent | Touch) => {
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = displayWidth / rect.width;
-            const scaleY = displayHeight / rect.height;
-            return {
-              x: (e.clientX - rect.left) * scaleX,
-              y: (e.clientY - rect.top) * scaleY,
-            };
-          };
-
-          const getBodyAtMouse = (mousePos: { x: number; y: number }) => {
-            let selectedBody: any = null;
-            const queryPos = planck.Vec2(mousePos.x, mousePos.y);
-
-            world.queryAABB(
-              planck.AABB(
-                planck.Vec2(mousePos.x - 1, mousePos.y - 1),
-                planck.Vec2(mousePos.x + 1, mousePos.y + 1),
+            // Floor
+            groundBody.createFixture(
+              planck.Box(
+                width / 2,
+                wallThickness / 2,
+                planck.Vec2(width / 2, height),
+                0,
               ),
-              (fixture: any) => {
-                if (
-                  fixture.getBody().getType() === "dynamic" &&
-                  fixture.testPoint(queryPos)
-                ) {
-                  selectedBody = fixture.getBody();
-                  return false;
-                }
-                return true;
-              },
             );
-
-            return selectedBody;
+            // Left wall
+            groundBody.createFixture(
+              planck.Box(
+                wallThickness / 2,
+                height / 2,
+                planck.Vec2(0, height / 2),
+                0,
+              ),
+            );
+            // Right wall
+            groundBody.createFixture(
+              planck.Box(
+                wallThickness / 2,
+                height / 2,
+                planck.Vec2(width, height / 2),
+                0,
+              ),
+            );
           };
 
-          const handlePointerDown = (pos: { x: number; y: number }) => {
-            const body = getBodyAtMouse(pos);
-            if (!body) return;
+          const resizeObserver = new ResizeObserver((entries) => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+              if (!entries[0]) return;
+              const { width, height } = entries[0].contentRect;
 
-            isDraggingRef.current = true;
-            draggedBodyRef.current = body;
-            memoizedOnDragStateChange(true);
+              const dpr = window.devicePixelRatio || 1;
+              canvas.width = width * dpr;
+              canvas.height = height * dpr;
+              canvas.style.width = `${width}px`;
+              canvas.style.height = `${height}px`;
 
-            mouseJointRef.current = world.createJoint(
-              planck.MouseJoint({
-                bodyA: groundBody,
-                bodyB: body,
-                target: planck.Vec2(pos.x, pos.y),
-                maxForce: 1000 * body.getMass(),
-                frequencyHz: 5,
-                dampingRatio: 0.7,
-              }),
-            );
+              ctx.setTransform(1, 0, 0, 1, 0, 0);
+              ctx.scale(dpr, dpr);
 
-            body.setAwake(true);
-          };
+              updateWorldBoundaries(width, height);
+            }, 100);
+          });
 
-          const handlePointerMove = (pos: { x: number; y: number }) => {
-            if (mouseJointRef.current) {
-              mouseJointRef.current.setTarget(planck.Vec2(pos.x, pos.y));
-            } else {
-              const hoveredBody = getBodyAtMouse(pos);
-              const wasHovering = isHoveringRef.current;
-              const isNowHovering = !!hoveredBody;
+          resizeObserver.observe(container);
+          unregisterResizeObserver = () => resizeObserver.disconnect();
 
-              if (wasHovering !== isNowHovering) {
-                isHoveringRef.current = isNowHovering;
-                memoizedOnHoverStateChange(isNowHovering);
+          const initializePhysics = (width: number, height: number) => {
+            if (worldRef.current) {
+              for (let b = worldRef.current.getBodyList(); b; b = b.getNext()) {
+                worldRef.current.destroyBody(b);
               }
             }
+
+            const world = planck.World({ gravity: planck.Vec2(0, gravity) });
+            worldRef.current = world;
+            bodiesRef.current = [];
+            initialPositionsRef.current = [];
+
+            updateWorldBoundaries(width, height);
+
+            const scale = Math.min(width / 800, height / 600);
+
+            const palette = {
+              header: "#1d1d1f",
+              nav: "#424245",
+              hero: "#007aff",
+              button1: "#34c759",
+              button2: "#ff3b30",
+              button3: "#ff9500",
+              footer: "#8e8e93",
+            };
+
+            const elements: {
+              label: string;
+              width: number;
+              height: number;
+              y: number;
+              x: number;
+              color: string;
+            }[] = [];
+            const targetFillWidth = width * 0.7;
+            const xOffset = (width - targetFillWidth) / 2;
+            const startY = -height * 0.5;
+
+            const buttonWidth = (targetFillWidth - 2 * 10 * scale) / 3;
+            const buttonHeight = 50 * scale * (2 / 3);
+
+            const siteLayout = [
+              // Row 1: Header
+              {
+                label: "Header",
+                width: targetFillWidth,
+                height: 40 * scale * (2 / 3),
+                y: startY,
+                x: width / 2,
+                color: palette.header,
+              },
+              // Row 2: Navigation
+              {
+                label: "Navigation",
+                width: targetFillWidth * 0.8,
+                height: 35 * scale * (2 / 3),
+                y: startY - 45 * scale,
+                x: width / 2,
+                color: palette.nav,
+              },
+              // Row 3: Hero
+              {
+                label: "Hero",
+                width: targetFillWidth * 0.6,
+                height: 120 * scale * (2 / 3),
+                y: startY - 85 * scale,
+                x: width / 2,
+                color: palette.hero,
+              },
+              // Row 4: Buttons
+              {
+                label: "Button",
+                width: buttonWidth,
+                height: buttonHeight,
+                y: startY - 180 * scale,
+                x: xOffset + buttonWidth / 2,
+                color: palette.button1,
+              },
+              {
+                label: "Button",
+                width: buttonWidth,
+                height: buttonHeight,
+                y: startY - 180 * scale,
+                x: xOffset + buttonWidth + 10 * scale + buttonWidth / 2,
+                color: palette.button2,
+              },
+              {
+                label: "Button",
+                width: buttonWidth,
+                height: buttonHeight,
+                y: startY - 180 * scale,
+                x: xOffset + 2 * (buttonWidth + 10 * scale) + buttonWidth / 2,
+                color: palette.button3,
+              },
+              // Row 5: Footer
+              {
+                label: "Footer",
+                width: targetFillWidth,
+                height: 50 * scale * (2 / 3),
+                y: startY - 230 * scale,
+                x: width / 2,
+                color: palette.footer,
+              },
+            ].reverse();
+
+            siteLayout.forEach((el) => {
+              elements.push(el);
+            });
+
+            elements.forEach((el) => {
+              initialPositionsRef.current.push({ x: el.x, y: el.y });
+              const body = world.createBody({
+                type: "dynamic",
+                position: planck.Vec2(el.x, el.y),
+                linearDamping: damping,
+                angularDamping: damping,
+              });
+              body.createFixture({
+                shape: planck.Box(el.width / 2, el.height / 2),
+                density: 0.8,
+                friction: friction,
+                restitution: restitution,
+              });
+              bodiesRef.current.push({
+                body,
+                width: el.width,
+                height: el.height,
+                label: el.label,
+                color: el.color,
+              });
+            });
+
+            // Pointer interaction logic
+            const getPointerPos = (e: PointerEvent) => {
+              const rect = canvas.getBoundingClientRect();
+              return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top,
+              };
+            };
+
+            const getBodyAt = (pos: { x: number; y: number }): Body | null => {
+              let hitBody: Body | null = null;
+              world.queryAABB(
+                planck.AABB(
+                  planck.Vec2(pos.x - 0.1, pos.y - 0.1),
+                  planck.Vec2(pos.x + 0.1, pos.y + 0.1),
+                ),
+                (fixture) => {
+                  const body = fixture.getBody();
+                  if (
+                    body.isDynamic() &&
+                    fixture.testPoint(planck.Vec2(pos.x, pos.y))
+                  ) {
+                    hitBody = body;
+                    return false; // Found a body, stop querying
+                  }
+                  return true; // Continue
+                },
+              );
+              return hitBody;
+            };
+
+            const onPointerDown = (e: PointerEvent) => {
+              const pos = getPointerPos(e);
+              const body = getBodyAt(pos);
+              if (body) {
+                e.preventDefault();
+                e.stopPropagation();
+                canvas.setPointerCapture(e.pointerId);
+                body.setAwake(true);
+                const joint = planck.MouseJoint({
+                  bodyA: groundBody,
+                  bodyB: body,
+                  target: planck.Vec2(pos.x, pos.y),
+                  maxForce: 1000 * body.getMass(),
+                });
+                mouseJointRef.current = world.createJoint(joint);
+                draggedBodyRef.current = body;
+                setIsDragging(true);
+              }
+            };
+
+            const onPointerMove = (e: PointerEvent) => {
+              const pos = getPointerPos(e);
+              if (mouseJointRef.current) {
+                mouseJointRef.current.setTarget(planck.Vec2(pos.x, pos.y));
+              }
+              const body = getBodyAt(pos);
+              setIsHovering(!!body);
+            };
+
+            const onPointerUp = (e: PointerEvent) => {
+              if (mouseJointRef.current) {
+                world.destroyJoint(mouseJointRef.current);
+                mouseJointRef.current = null;
+              }
+              if (draggedBodyRef.current) {
+                canvas.releasePointerCapture(e.pointerId);
+                draggedBodyRef.current = null;
+                setIsDragging(false);
+              }
+            };
+
+            canvas.addEventListener("pointerdown", onPointerDown);
+            canvas.addEventListener("pointermove", onPointerMove);
+            canvas.addEventListener("pointerup", onPointerUp);
+            canvas.addEventListener("pointercancel", onPointerUp);
+
+            unregisterPointerEvents = () => {
+              canvas.removeEventListener("pointerdown", onPointerDown);
+              canvas.removeEventListener("pointermove", onPointerMove);
+              canvas.removeEventListener("pointerup", onPointerUp);
+              canvas.removeEventListener("pointercancel", onPointerUp);
+            };
+
+            return () => {
+              if (unregisterPointerEvents) unregisterPointerEvents();
+              if (worldRef.current) {
+                for (
+                  let b = worldRef.current.getBodyList();
+                  b;
+                  b = b.getNext()
+                ) {
+                  worldRef.current.destroyBody(b);
+                }
+              }
+              worldRef.current = null;
+            };
           };
 
-          const handlePointerUp = () => {
-            if (mouseJointRef.current) {
-              world.destroyJoint(mouseJointRef.current);
-              mouseJointRef.current = null;
+          // Initial setup
+          const { width, height } = container.getBoundingClientRect();
+          initializePhysics(width, height);
+
+          // Animation loop
+          let lastTime = 0;
+          const animate = (time: number) => {
+            if (!isMounted) return;
+            animationRef.current = requestAnimationFrame(animate);
+            if (lastTime === 0) {
+              lastTime = time;
             }
+            const deltaTime = (time - lastTime) / 1000;
 
-            if (isDraggingRef.current) {
-              isDraggingRef.current = false;
-              memoizedOnDragStateChange(false);
-            }
+            worldRef.current?.step(timeStep);
 
-            if (isHoveringRef.current) {
-              isHoveringRef.current = false;
-              memoizedOnHoverStateChange(false);
-            }
-
-            draggedBodyRef.current = null;
-          };
-
-          // Event handlers
-          const onMouseDown = (e: MouseEvent) =>
-            handlePointerDown(getMousePos(e));
-          const onMouseMove = (e: MouseEvent) =>
-            handlePointerMove(getMousePos(e));
-          const onTouchStart = (e: TouchEvent) => {
-            e.preventDefault();
-            if (e.touches[0]) handlePointerDown(getMousePos(e.touches[0]));
-          };
-          const onTouchMove = (e: TouchEvent) => {
-            e.preventDefault();
-            if (e.touches[0]) handlePointerMove(getMousePos(e.touches[0]));
-          };
-          const onTouchEnd = (e: TouchEvent) => {
-            e.preventDefault();
-            handlePointerUp();
-          };
-
-          // Add event listeners
-          canvas.addEventListener("mousedown", onMouseDown);
-          canvas.addEventListener("mousemove", onMouseMove);
-          canvas.addEventListener("mouseup", handlePointerUp);
-          canvas.addEventListener("mouseleave", handlePointerUp);
-          canvas.addEventListener("touchstart", onTouchStart, {
-            passive: false,
-          });
-          canvas.addEventListener("touchmove", onTouchMove, { passive: false });
-          canvas.addEventListener("touchend", onTouchEnd, { passive: false });
-
-          // Render loop
-          const render = (currentTime: number) => {
-            const frameDelta = timeStep * 1000;
-
-            if (currentTime - frameTimeRef.current < frameDelta) {
-              animationRef.current = requestAnimationFrame(render);
-              return;
-            }
-            frameTimeRef.current = currentTime;
-
-            ctx.clearRect(0, 0, displayWidth, displayHeight);
-            world.step(timeStep);
+            const { width, height } = canvas.getBoundingClientRect();
+            ctx.clearRect(0, 0, width, height);
 
             bodiesRef.current.forEach(
               ({ body, width, height, label, color }) => {
                 const pos = body.getPosition();
                 const angle = body.getAngle();
-                const isBeingDragged = draggedBodyRef.current === body;
-                const isHovered =
-                  isHoveringRef.current &&
-                  getBodyAtMouse({ x: pos.x, y: pos.y }) === body;
 
                 ctx.save();
                 ctx.translate(pos.x, pos.y);
                 ctx.rotate(angle);
 
-                // Main body - slightly transparent when hovered for visual feedback
-                ctx.fillStyle =
-                  isHovered && !isBeingDragged ? color + "CC" : color;
+                const isDragged = body === draggedBodyRef.current;
+                ctx.fillStyle = isDragged ? `${color}B3` : color;
                 ctx.fillRect(-width / 2, -height / 2, width, height);
 
-                // Subtle shadow/border only when dragging
-                if (isBeingDragged) {
-                  ctx.strokeStyle = "rgba(0, 0, 0, 0.2)";
-                  ctx.lineWidth = 1;
-                  ctx.strokeRect(-width / 2, -height / 2, width, height);
-                }
-
-                // Text
                 ctx.fillStyle = "white";
-                ctx.font = `${Math.max(10, 14 * scale)}px -apple-system, BlinkMacSystemFont, sans-serif`;
+                ctx.font = `${Math.max(10, 14 * Math.min(width / 800, height / 600))}px -apple-system, BlinkMacSystemFont, sans-serif`;
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
                 ctx.fillText(label, 0, 0);
@@ -376,210 +584,34 @@ export const PhysicsCanvas = memo(
                 ctx.restore();
               },
             );
-
-            animationRef.current = requestAnimationFrame(render);
+            lastTime = time;
           };
-
-          animationRef.current = requestAnimationFrame(render);
-
-          // Store cleanup functions for later use
-          const cleanupEventListeners = () => {
-            canvas.removeEventListener("mousedown", onMouseDown);
-            canvas.removeEventListener("mousemove", onMouseMove);
-            canvas.removeEventListener("mouseup", handlePointerUp);
-            canvas.removeEventListener("mouseleave", handlePointerUp);
-            canvas.removeEventListener("touchstart", onTouchStart);
-            canvas.removeEventListener("touchmove", onTouchMove);
-            canvas.removeEventListener("touchend", onTouchEnd);
-          };
-
-          return cleanupEventListeners;
+          animationRef.current = requestAnimationFrame(animate);
         };
 
-        // Initialize physics and store cleanup function
-        let cleanupEventListeners: (() => void) | undefined;
-        initializePhysics().then((cleanup) => {
-          cleanupEventListeners = cleanup;
-        });
+        init();
 
-        // Comprehensive cleanup on unmount
         return () => {
-          // Cancel animation frame
+          isMounted = false;
+          clearTimeout(resizeTimeout);
+          if (unregisterPointerEvents) unregisterPointerEvents();
+          if (unregisterResizeObserver) unregisterResizeObserver();
           if (animationRef.current) {
             cancelAnimationFrame(animationRef.current);
-            animationRef.current = undefined;
-          }
-
-          // Destroy active mouse joint
-          if (mouseJointRef.current && worldRef.current) {
-            worldRef.current.destroyJoint(mouseJointRef.current);
-            mouseJointRef.current = null;
-          }
-
-          // Clear all bodies and joints from world
-          if (worldRef.current) {
-            // Destroy all joints
-            for (
-              let joint = worldRef.current.getJointList();
-              joint;
-              joint = joint.getNext()
-            ) {
-              worldRef.current.destroyJoint(joint);
-            }
-
-            // Destroy all bodies
-            for (
-              let body = worldRef.current.getBodyList();
-              body;
-              body = body.getNext()
-            ) {
-              worldRef.current.destroyBody(body);
-            }
-          }
-
-          // Clean up event listeners
-          if (cleanupEventListeners) {
-            cleanupEventListeners();
-          }
-
-          // Clear refs
-          worldRef.current = null;
-          bodiesRef.current = [];
-          draggedBodyRef.current = null;
-          isDraggingRef.current = false;
-          isHoveringRef.current = false;
-
-          // Clear resize timeout
-          if (resizeTimeoutRef.current) {
-            clearTimeout(resizeTimeoutRef.current);
           }
         };
-      }, []); // Empty dependency array - run only on mount
-
-      // Separate useEffect for prop-driven physics updates
-      useEffect(() => {
-        if (!worldRef.current || !planckRef.current) return;
-
-        const world = worldRef.current;
-        const planck = planckRef.current;
-
-        // Update gravity
-        world.setGravity(planck.Vec2(0, gravity));
-
-        // Update body properties
-        bodiesRef.current.forEach(({ body }) => {
-          body.setLinearDamping(damping);
-          body.setAngularDamping(damping);
-
-          for (
-            let fixture = body.getFixtureList();
-            fixture;
-            fixture = fixture.getNext()
-          ) {
-            fixture.setFriction(friction);
-            fixture.setRestitution(restitution);
-          }
-        });
-      }, [gravity, damping, friction, restitution]);
-
-      // Debounced window resize handler - only adjust dimensions, don't rebuild world
-      useEffect(() => {
-        const handleResize = () => {
-          if (resizeTimeoutRef.current) {
-            clearTimeout(resizeTimeoutRef.current);
-          }
-
-          resizeTimeoutRef.current = window.setTimeout(() => {
-            if (!canvasRef.current || !containerRef.current) return;
-
-            const canvas = canvasRef.current;
-            const container = containerRef.current;
-            const ctx = canvas.getContext("2d");
-            if (!ctx) return;
-
-            // Update canvas dimensions only
-            const containerRect = container.getBoundingClientRect();
-            const displayWidth = Math.max(600, containerRect.width);
-            const displayHeight = Math.max(
-              400,
-              Math.min(600, containerRect.width * 0.6),
-            );
-
-            setDimensions({ width: displayWidth, height: displayHeight });
-
-            // Update canvas sizing
-            const dpr = window.devicePixelRatio || 1;
-            canvas.width = displayWidth * dpr;
-            canvas.height = displayHeight * dpr;
-            canvas.style.width = displayWidth + "px";
-            canvas.style.height = displayHeight + "px";
-            ctx.scale(dpr, dpr);
-          }, 250); // 250ms debounce
-        };
-
-        window.addEventListener("resize", handleResize);
-        return () => {
-          window.removeEventListener("resize", handleResize);
-          if (resizeTimeoutRef.current) {
-            clearTimeout(resizeTimeoutRef.current);
-          }
-        };
-      }, []);
-
-      const resetSimulation = useCallback(() => {
-        if (
-          !worldRef.current ||
-          !bodiesRef.current.length ||
-          !planckRef.current
-        )
-          return;
-
-        const planck = planckRef.current;
-        const scale = Math.min(dimensions.width / 800, dimensions.height / 600);
-
-        const positions = [
-          { x: dimensions.width * 0.5, y: 60 * scale },
-          { x: dimensions.width * 0.5, y: 110 * scale },
-          { x: dimensions.width * 0.5, y: 180 * scale },
-          { x: dimensions.width * 0.425, y: 300 * scale },
-          { x: dimensions.width * 0.5, y: 300 * scale },
-          { x: dimensions.width * 0.575, y: 300 * scale },
-          { x: dimensions.width * 0.5, y: 380 * scale },
-        ];
-
-        bodiesRef.current.forEach((physicsBody, index) => {
-          if (positions[index]) {
-            const { x, y } = positions[index];
-            physicsBody.body.setPosition(planck.Vec2(x, y));
-            physicsBody.body.setLinearVelocity(planck.Vec2(0, 0));
-            physicsBody.body.setAngularVelocity(0);
-            physicsBody.body.setAngle(0);
-          }
-        });
-      }, [dimensions]);
-
-      useImperativeHandle(ref, () => ({
-        reset: resetSimulation,
-      }));
+      }, [gravity, timeStep, damping, friction, restitution]); // Re-init on physics prop change
 
       return (
         <div
           ref={containerRef}
-          className="flex w-full justify-center"
-          style={{ minHeight: "400px" }}
+          className="aspect-square w-full max-w-full touch-none md:aspect-video"
         >
           <canvas
             ref={canvasRef}
-            className="rounded-2xl border border-gray-200 shadow-2xl dark:border-gray-700"
+            className="h-full w-full touch-none rounded-2xl border border-gray-200 shadow-2xl dark:border-gray-700"
             style={{
-              width: `${dimensions.width}px`,
-              height: `${dimensions.height}px`,
-              maxWidth: "100%",
-              cursor: isDraggingRef.current
-                ? "grabbing"
-                : isHoveringRef.current
-                  ? "grab"
-                  : "default",
+              cursor: isDragging ? "grabbing" : isHovering ? "grab" : "default",
             }}
           />
         </div>
