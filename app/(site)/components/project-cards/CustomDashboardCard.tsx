@@ -46,7 +46,7 @@ export default function CustomDashboardCard({
       className="aspect-square h-auto overflow-hidden rounded-xl bg-black"
       ref={containerRef}
     >
-      <div className="relative h-full w-full scale-95 transition-transform duration-100 group-hover:scale-100">
+      <div className="relative h-full w-full overflow-hidden rounded-2xl bg-emerald-800">
         {shouldLoadIframe ? (
           <iframe
             width="100%"

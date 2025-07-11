@@ -8,7 +8,7 @@ export default function LoopPlayerCard({ project }: LoopPlayerCardProps) {
   return (
     <div className="relative h-0 overflow-hidden rounded-xl pt-[100%]">
       <div
-        className="absolute inset-0 scale-105 rounded-xl bg-black bg-size-[200%] bg-top-left bg-no-repeat transition-[background-position] duration-300 group-hover:bg-top-right group-active:bg-bottom-right"
+        className="absolute inset-0 scale-105 rounded-xl bg-black bg-size-[200%] bg-top-left bg-no-repeat transition-[background-position] duration-300 group-hover:bg-top-right group-active:bg-top-right md:group-active:bg-bottom-right"
         style={{
           backgroundImage: `url(/img/loop-box.jpg)`,
         }}
