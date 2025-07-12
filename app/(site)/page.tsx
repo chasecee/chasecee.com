@@ -11,9 +11,9 @@ export default async function Home() {
 
   return (
     <>
-      <ContainerHome className="relative z-10 container" showCTA={true}>
+      <ContainerHome className="relative z-10" showCTA={true}>
         <HomeHero8 />
-        <div className="flex flex-col gap-10">
+        <div className="relative z-10 flex flex-col gap-10">
           <ProjectsList
             projects={personalProjects}
             title="Personal Projects"

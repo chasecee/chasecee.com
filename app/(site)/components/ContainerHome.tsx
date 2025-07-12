@@ -14,15 +14,13 @@ export default function Container({
   showCTA,
 }: ContainerProps) {
   return (
-    <div
-      className={`root min-h-screen w-full ${className} mt-24 px-0 md:mt-0 `}
-    >
-      <div className="container relative z-0">
+    <div className={`root min-h-screen w-full ${className} mt-24 px-0 md:mt-0`}>
+      <div className="relative z-0 container">
         <Header />
         <main>{children}</main>
         {showCTA && (
           <CTA
-            title="Let's get to work."
+            title="Let's get started"
             subtitle="I build powerful and beautiful applications for businesses of all sizes. I'm available for work, let's get started!"
             primaryLink="/contact"
             secondaryLink="/about"

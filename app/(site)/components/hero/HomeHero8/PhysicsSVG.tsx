@@ -20,7 +20,6 @@ export interface PhysicsSVGProps {
   bodySizeVariance?: number;
   colorLevel: number;
   centerCircleRadius: number;
-  bodyCornerRadius: number;
   gridGapSize: number;
   bodiesStartRadius: number;
   bodiesStartSpread: number;
@@ -139,7 +138,6 @@ export const PhysicsSVG = memo(
         bodySizeVariance = 0.5,
         colorLevel,
         centerCircleRadius,
-        bodyCornerRadius,
         gridGapSize,
         bodiesStartRadius,
         bodiesStartSpread,
@@ -576,45 +574,12 @@ export const PhysicsSVG = memo(
             colorLevel,
           );
 
-          // Use simpler shapes for small bodies
-          if (
-            Math.max(bodyWidth, bodyHeight) < simplifyThreshold ||
-            isHighBodyCount
-          ) {
-            // Simple rectangle for small bodies
-            ctx.fillRect(
-              -bodyWidth / 2,
-              -bodyHeight / 2,
-              bodyWidth,
-              bodyHeight,
-            );
-          } else {
-            // Rounded rectangle for larger bodies
-            const x1 = -bodyWidth / 2;
-            const y1 = -bodyHeight / 2;
-            const radius = Math.min(bodyWidth, bodyHeight) * bodyCornerRadius;
+          // Draw circles for all bodies - use consistent radius
+          const radius = Math.sqrt(bodyWidth * bodyHeight) / 2;
 
-            ctx.beginPath();
-            ctx.moveTo(x1 + radius, y1);
-            ctx.arcTo(
-              x1 + bodyWidth,
-              y1,
-              x1 + bodyWidth,
-              y1 + bodyHeight,
-              radius,
-            );
-            ctx.arcTo(
-              x1 + bodyWidth,
-              y1 + bodyHeight,
-              x1,
-              y1 + bodyHeight,
-              radius,
-            );
-            ctx.arcTo(x1, y1 + bodyHeight, x1, y1, radius);
-            ctx.arcTo(x1, y1, x1 + bodyWidth, y1, radius);
-            ctx.closePath();
-            ctx.fill();
-          }
+          ctx.beginPath();
+          ctx.arc(0, 0, radius, 0, Math.PI * 2);
+          ctx.fill();
 
           ctx.restore();
         });
@@ -647,30 +612,11 @@ export const PhysicsSVG = memo(
           ctx.shadowOffsetX = 0;
           ctx.shadowOffsetY = 6;
 
-          // Always use rounded rectangle for dragged bodies
-          const x1 = -bodyWidth / 2;
-          const y1 = -bodyHeight / 2;
-          const radius = Math.min(bodyWidth, bodyHeight) * bodyCornerRadius;
+          // Draw circles for dragged bodies - use consistent radius
+          const radius = Math.sqrt(bodyWidth * bodyHeight) / 2;
 
           ctx.beginPath();
-          ctx.moveTo(x1 + radius, y1);
-          ctx.arcTo(
-            x1 + bodyWidth,
-            y1,
-            x1 + bodyWidth,
-            y1 + bodyHeight,
-            radius,
-          );
-          ctx.arcTo(
-            x1 + bodyWidth,
-            y1 + bodyHeight,
-            x1,
-            y1 + bodyHeight,
-            radius,
-          );
-          ctx.arcTo(x1, y1 + bodyHeight, x1, y1, radius);
-          ctx.arcTo(x1, y1, x1 + bodyWidth, y1, radius);
-          ctx.closePath();
+          ctx.arc(0, 0, radius, 0, Math.PI * 2);
           ctx.fill();
 
           ctx.restore();

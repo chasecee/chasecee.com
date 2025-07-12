@@ -18,16 +18,26 @@ const PHYSICS_SETTINGS = {
   friction: 0,
   restitution: 0,
   numBodies: 1000,
-  bodySize: 0.35,
+  bodySize: 0.4,
   bodySizeVariance: 0.5,
-  bodyCornerRadius: 0.8,
+  bodiesStartSpread: 0.4,
   colorLevel: 4,
   gridGapSize: 5,
-  bodiesStartSpread: 0.4,
-  shockwaveForce: 5000,
+  shockwaveForce: 6000,
   shockwaveRadius: 0.1,
   shockwaveDecay: 0.8,
   shockwaveDirectionality: 0.2,
+} as const;
+
+const RESPONSIVE_SETTINGS = {
+  centerCircleRadius: {
+    mobile: 0.3,
+    desktop: 0.2,
+  },
+  bodiesStartRadius: {
+    mobile: 0.5,
+    desktop: 0.45,
+  },
 } as const;
 
 const HomeHero8 = () => {
@@ -48,13 +58,17 @@ const HomeHero8 = () => {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
-  const centerCircleRadius = isMobile ? 0.4 : 0.25;
-  const bodiesStartRadius = isMobile ? 0.8 : 0.4;
+  const centerCircleRadius = isMobile
+    ? RESPONSIVE_SETTINGS.centerCircleRadius.mobile
+    : RESPONSIVE_SETTINGS.centerCircleRadius.desktop;
+  const bodiesStartRadius = isMobile
+    ? RESPONSIVE_SETTINGS.bodiesStartRadius.mobile
+    : RESPONSIVE_SETTINGS.bodiesStartRadius.desktop;
 
   return (
-    <div className="relative w-full">
-      <div className="flex h-[calc(100vh-10rem)] flex-row items-center gap-12 pb-10 lg:mt-24 lg:gap-16">
-        <div className="pointer-events-none relative z-10 mx-auto flex w-full flex-col items-center justify-center gap-5 p-10 text-center lg:max-w-2/3">
+    <div className="relative -mx-6 lg:mx-0">
+      <div className="flex h-[500px] flex-row items-center gap-12 lg:mt-24 lg:h-[calc(100vh-10rem)] lg:gap-16">
+        <div className="pointer-events-none relative z-10 mx-auto flex w-full flex-col items-center justify-center gap-5 py-10 text-center lg:max-w-2/3">
           <h1 className="text-5xl font-semibold text-pretty text-gray-900 md:text-6xl dark:text-white">
             Let&apos;s build
           </h1>
@@ -87,7 +101,7 @@ const HomeHero8 = () => {
           </div>
         </div>
 
-        <div className="absolute inset-0 w-full flex-1">
+        <div className="absolute inset-0 z-0 w-full flex-1">
           <DynamicPhysicsSVG
             ref={physicsRef}
             gravity={PHYSICS_SETTINGS.gravity}
@@ -100,7 +114,6 @@ const HomeHero8 = () => {
             bodySizeVariance={PHYSICS_SETTINGS.bodySizeVariance}
             colorLevel={PHYSICS_SETTINGS.colorLevel}
             centerCircleRadius={centerCircleRadius}
-            bodyCornerRadius={PHYSICS_SETTINGS.bodyCornerRadius}
             gridGapSize={PHYSICS_SETTINGS.gridGapSize}
             bodiesStartRadius={bodiesStartRadius}
             bodiesStartSpread={PHYSICS_SETTINGS.bodiesStartSpread}

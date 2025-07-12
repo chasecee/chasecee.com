@@ -101,10 +101,81 @@ class PhysicsSimulation {
       positionIterations: 2,
     });
 
+    this.setupCollisionHandlers();
     this.createBoundaries();
     this.isRunning = true;
     this.lastTime = performance.now();
     this.animate();
+  }
+
+  private setupCollisionHandlers() {
+    if (!this.world || !planck) return;
+
+    this.world.on("begin-contact", (contact) => {
+      const fixtureA = contact.getFixtureA();
+      const fixtureB = contact.getFixtureB();
+
+      const bodyA = fixtureA.getBody();
+      const bodyB = fixtureB.getBody();
+
+      // Check if one fixture is a one-way wall
+      const userDataA = fixtureA.getUserData() as { type?: string } | null;
+      const userDataB = fixtureB.getUserData() as { type?: string } | null;
+
+      const wallFixture =
+        userDataA?.type === "one-way-wall"
+          ? fixtureA
+          : userDataB?.type === "one-way-wall"
+            ? fixtureB
+            : null;
+
+      if (!wallFixture) return;
+
+      // Get the dynamic body (not the wall)
+      const dynamicBody = bodyA.isDynamic()
+        ? bodyA
+        : bodyB.isDynamic()
+          ? bodyB
+          : null;
+      if (!dynamicBody) return;
+
+      // Get body position and velocity
+      const pos = dynamicBody.getPosition();
+      const vel = dynamicBody.getLinearVelocity();
+
+      // Calculate direction from center
+      const directionFromCenter = {
+        x: pos.x - this.center.x,
+        y: pos.y - this.center.y,
+      };
+
+      // Calculate dot product to determine if moving outward
+      const dotProduct =
+        vel.x * directionFromCenter.x + vel.y * directionFromCenter.y;
+
+      // If moving outward (positive dot product), apply force to push back
+      if (dotProduct > 0) {
+        const forceStrength = 2000;
+        const forceDirection = {
+          x: -directionFromCenter.x,
+          y: -directionFromCenter.y,
+        };
+
+        // Normalize force direction
+        const magnitude = Math.sqrt(
+          forceDirection.x * forceDirection.x +
+            forceDirection.y * forceDirection.y,
+        );
+        if (magnitude > 0) {
+          forceDirection.x = (forceDirection.x / magnitude) * forceStrength;
+          forceDirection.y = (forceDirection.y / magnitude) * forceStrength;
+
+          this.tempVec1!.x = forceDirection.x;
+          this.tempVec1!.y = forceDirection.y;
+          dynamicBody.applyForceToCenter(this.tempVec1!);
+        }
+      }
+    });
   }
 
   private createBoundaries() {
@@ -147,9 +218,11 @@ class PhysicsSimulation {
     ];
 
     walls.forEach((wall) => {
-      groundBody.createFixture(
-        planck.Box(wall.w, wall.h, planck.Vec2(wall.x, wall.y), 0),
-      );
+      groundBody.createFixture({
+        shape: planck.Box(wall.w, wall.h, planck.Vec2(wall.x, wall.y), 0),
+        isSensor: true,
+        userData: { type: "one-way-wall" },
+      });
     });
 
     const centerRadius =
@@ -665,7 +738,6 @@ class PhysicsSimulation {
         fixture.setSensor(false);
       }
     });
-    console.log("🔄 Reset: Collisions RE-ENABLED - normal physics restored");
 
     this.bodies.forEach((physicsBody, index) => {
       const angle = (index * 2 * Math.PI) / this.bodies.length;
@@ -709,7 +781,6 @@ class PhysicsSimulation {
         fixture.setSensor(false);
       }
     });
-    console.log("🔄 Solve: Collisions RE-ENABLED - normal physics restored");
 
     const formationRadius =
       Math.min(this.dimensions.width, this.dimensions.height) *
@@ -738,13 +809,9 @@ class PhysicsSimulation {
   solveGrid() {
     if (!this.world || !planck) return;
 
-    console.log("🎯 SOLVE GRID CALLED - Starting grid layout");
-
     const numBodies = this.bodies.length;
     const cols = Math.ceil(Math.sqrt(numBodies));
     const rows = Math.ceil(numBodies / cols);
-
-    console.log(`📊 Grid Layout: ${cols}x${rows} for ${numBodies} bodies`);
 
     const blockSize = this.bodies[0]?.width || 60;
 
@@ -770,10 +837,6 @@ class PhysicsSimulation {
 
     const startX = this.center.x - finalGridWidth / 2 + finalCellWidth / 2;
     const startY = this.center.y - finalGridHeight / 2 + finalCellHeight / 2;
-
-    console.log(
-      `🎯 Grid positioned at: start(${startX.toFixed(1)}, ${startY.toFixed(1)}), cell(${finalCellWidth.toFixed(1)}, ${finalCellHeight.toFixed(1)})`,
-    );
 
     const sortedBodies = [...this.bodies].sort(
       (a, b) => a.colorIndex - b.colorIndex,
@@ -804,15 +867,10 @@ class PhysicsSimulation {
     });
 
     this.isGridMode = true;
-    console.log(
-      "🧲 Grid mode ENABLED - Magnetic forces active, collisions DISABLED",
-    );
   }
 
   shockwave(x: number, y: number) {
     if (!this.world || !planck) return;
-
-    console.log(`🌊 SHOCKWAVE triggered at (${x.toFixed(1)}, ${y.toFixed(1)})`);
 
     const shockwaveCenter = { x, y };
     const maxDistance =
@@ -838,10 +896,6 @@ class PhysicsSimulation {
       biasDirection.x /= biasLength;
       biasDirection.y /= biasLength;
     }
-
-    console.log(
-      `🎯 Shockwave bias direction: (${biasDirection.x.toFixed(2)}, ${biasDirection.y.toFixed(2)})`,
-    );
 
     let affectedBodies = 0;
 
@@ -906,10 +960,6 @@ class PhysicsSimulation {
 
       affectedBodies++;
     });
-
-    console.log(
-      `🌊 Shockwave affected ${affectedBodies} bodies with impulse-based explosion`,
-    );
   }
 
   destroy() {
