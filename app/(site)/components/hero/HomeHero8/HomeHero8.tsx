@@ -36,7 +36,7 @@ const RESPONSIVE_SETTINGS = {
   },
   bodiesStartRadius: {
     mobile: 0.8,
-    desktop: 0.45,
+    desktop: 0.6,
   },
 } as const;
 
@@ -66,17 +66,20 @@ const HomeHero8 = () => {
     : RESPONSIVE_SETTINGS.bodiesStartRadius.desktop;
 
   return (
-    <div className="relative -mx-6 lg:mx-0">
+    <div className="relative -mx-6">
       <div className="flex h-[500px] flex-row items-center gap-12 lg:mt-24 lg:h-[calc(100vh-10rem)] lg:gap-16">
         <div className="pointer-events-none relative z-10 mx-auto flex w-full flex-col items-center justify-center gap-5 py-10 text-center lg:max-w-2/3">
           <h1 className="text-5xl font-semibold text-pretty text-gray-900 md:text-6xl dark:text-white">
             Let&apos;s build.
           </h1>
           <div className="container flex flex-col gap-8">
-            <p className="text-lg text-pretty text-gray-600 md:text-xl dark:text-gray-300">
+            <p className="text-lg font-light text-pretty text-gray-600 md:text-xl dark:text-gray-300">
               I&apos;m Chase, a developer obsessed with{" "}
               <br className="hidden md:block" />
-              &nbsp;<strong>crafting excellent experiences.</strong>
+              &nbsp;
+              <strong className="font-bold">
+                crafting excellent experiences.
+              </strong>
             </p>
             <div className="pointer-events-auto hidden flex-col flex-wrap items-center justify-center gap-3 md:flex-row">
               <button

@@ -156,6 +156,9 @@ export const PhysicsSVG = memo(
       const dimensionsRef = useRef({ width: 0, height: 0 });
       const bodiesRef = useRef<PhysicsBodyData[]>([]);
       const isHoveringRef = useRef(false);
+      const isDrawingShockwaveRef = useRef(false);
+      const shockwaveThrottledRef = useRef(false);
+      const lastShockwavePos = useRef({ x: 0, y: 0 });
       const resizeTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
       const renderRequestRef = useRef<number>(0);
       const canvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -329,6 +332,8 @@ export const PhysicsSVG = memo(
             e.preventDefault();
             e.stopPropagation();
 
+            isDrawingShockwaveRef.current = true;
+
             const pos = getPointerPos(e);
 
             // Check if click is in center circle
@@ -361,6 +366,24 @@ export const PhysicsSVG = memo(
 
           const onPointerMove = (e: PointerEvent) => {
             const pos = getPointerPos(e);
+            lastShockwavePos.current = pos;
+
+            if (
+              isDrawingShockwaveRef.current &&
+              !shockwaveThrottledRef.current
+            ) {
+              shockwaveThrottledRef.current = true;
+              requestAnimationFrame(() => {
+                workerRef.current?.postMessage({
+                  type: "SHOCKWAVE",
+                  payload: {
+                    x: lastShockwavePos.current.x,
+                    y: lastShockwavePos.current.y,
+                  },
+                });
+                shockwaveThrottledRef.current = false;
+              });
+            }
 
             // Check if hovering over a body
             const isOverBody = bodiesRef.current.some((body) => {
@@ -377,13 +400,21 @@ export const PhysicsSVG = memo(
             }
           };
 
+          const onPointerUp = () => {
+            isDrawingShockwaveRef.current = false;
+          };
+
           // Register pointer events once
           canvas.addEventListener("pointerdown", onPointerDown);
           canvas.addEventListener("pointermove", onPointerMove);
+          canvas.addEventListener("pointerup", onPointerUp);
+          canvas.addEventListener("pointerleave", onPointerUp);
 
           unregisterPointerEvents = () => {
             canvas.removeEventListener("pointerdown", onPointerDown);
             canvas.removeEventListener("pointermove", onPointerMove);
+            canvas.removeEventListener("pointerup", onPointerUp);
+            canvas.removeEventListener("pointerleave", onPointerUp);
           };
         };
 
