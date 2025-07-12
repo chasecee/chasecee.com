@@ -680,7 +680,7 @@ export const PhysicsSVG = memo(
       return (
         <div
           ref={containerRef}
-          className="relative top-1/2 aspect-square w-full max-w-full -translate-y-1/2 md:aspect-square"
+          className="relative top-1/2 aspect-[9/14] w-full max-w-full -translate-y-1/2 md:aspect-square"
         >
           <canvas
             ref={canvasRef}
