@@ -275,6 +275,7 @@ export const PhysicsSVG = memo(
           // Initial setup
           const { width, height } = container.getBoundingClientRect();
           const dpr = window.devicePixelRatio || 1;
+
           dimensionsRef.current = { width, height };
           canvas.width = width * dpr;
           canvas.height = height * dpr;
@@ -365,6 +366,9 @@ export const PhysicsSVG = memo(
           };
 
           const onPointerMove = (e: PointerEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+
             const pos = getPointerPos(e);
             lastShockwavePos.current = pos;
 
@@ -512,7 +516,7 @@ export const PhysicsSVG = memo(
         const isHighBodyCount = bodies.length > 500;
 
         // Viewport culling - only draw bodies that are visible
-        const padding = 50; // Add padding to catch bodies partially off-screen
+        const padding = 50;
         const visibleBodies = bodies.filter(
           (body) =>
             body.x + body.width / 2 > -padding &&
@@ -614,13 +618,19 @@ export const PhysicsSVG = memo(
       return (
         <div
           ref={containerRef}
-          className="relative top-1/2 aspect-[9/14] w-full max-w-full -translate-y-1/2 md:aspect-square"
+          className="relative top-1/2 h-full w-full max-w-full -translate-y-1/2"
+          style={{
+            mask: "linear-gradient(to top, transparent 0%, black 5%)",
+            WebkitMask: "linear-gradient(to top, transparent 0%, black 5%)",
+            touchAction: "none",
+          }}
         >
           <canvas
             ref={canvasRef}
             className="h-full w-full"
             style={{
               cursor: isHoveringRef.current ? "pointer" : "default",
+              touchAction: "none",
             }}
           />
         </div>

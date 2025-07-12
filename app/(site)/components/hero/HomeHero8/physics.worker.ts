@@ -82,10 +82,15 @@ class PhysicsSimulation {
   private skipUpdateFrames = 0;
   private maxSkipFrames = 2;
 
+  // Simple mobile detection
+  private isMobile = false;
+
   async initialize() {
     if (!planck) {
       planck = await import("planck");
     }
+
+    this.detectMobile();
 
     this.tempVec1 = planck.Vec2(0, 0);
     this.tempVec2 = planck.Vec2(0, 0);
@@ -105,6 +110,10 @@ class PhysicsSimulation {
     this.isRunning = true;
     this.lastTime = performance.now();
     this.animate();
+  }
+
+  private detectMobile() {
+    this.isMobile = self.innerWidth < 768;
   }
 
   private setupCollisionHandlers() {
