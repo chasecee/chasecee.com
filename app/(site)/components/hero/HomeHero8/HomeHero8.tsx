@@ -31,11 +31,11 @@ const PHYSICS_SETTINGS = {
 
 const RESPONSIVE_SETTINGS = {
   centerCircleRadius: {
-    mobile: 0.3,
+    mobile: 0.4,
     desktop: 0.2,
   },
   bodiesStartRadius: {
-    mobile: 0.5,
+    mobile: 0.8,
     desktop: 0.45,
   },
 } as const;

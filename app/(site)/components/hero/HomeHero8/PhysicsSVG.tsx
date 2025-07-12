@@ -514,12 +514,6 @@ export const PhysicsSVG = memo(
         // Clear canvas
         ctx.clearRect(0, 0, width, height);
 
-        // Draw center indicator
-        ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
-        ctx.beginPath();
-        ctx.arc(width / 2, height / 2, 3, 0, Math.PI * 2);
-        ctx.fill();
-
         // Performance optimizations for high body counts
         const isHighBodyCount = bodies.length > 500;
 
