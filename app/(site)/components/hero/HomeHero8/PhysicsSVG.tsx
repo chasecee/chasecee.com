@@ -155,11 +155,9 @@ export const PhysicsSVG = memo(
       const workerRef = useRef<Worker | null>(null);
       const dimensionsRef = useRef({ width: 0, height: 0 });
       const bodiesRef = useRef<PhysicsBodyData[]>([]);
-      const isDraggingRef = useRef(false);
       const isHoveringRef = useRef(false);
       const resizeTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
       const renderRequestRef = useRef<number>(0);
-      const pointerCaptureIdRef = useRef<number | null>(null);
       const canvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
 
       useImperativeHandle(ref, () => ({
@@ -237,16 +235,6 @@ export const PhysicsSVG = memo(
                   renderRequestRef.current =
                     requestAnimationFrame(renderBodies);
                 }
-                break;
-
-              case "DRAG_START":
-                isDraggingRef.current = true;
-                onDragStateChange(true);
-                break;
-
-              case "DRAG_END":
-                isDraggingRef.current = false;
-                onDragStateChange(false);
                 break;
             }
           };
@@ -343,7 +331,7 @@ export const PhysicsSVG = memo(
 
             const pos = getPointerPos(e);
 
-            // Check if click is on center circle
+            // Check if click is in center circle
             const centerX = dimensionsRef.current.width / 2;
             const centerY = dimensionsRef.current.height / 2;
             const centerRadius =
@@ -357,42 +345,30 @@ export const PhysicsSVG = memo(
             );
 
             if (distanceFromCenter <= centerRadius) {
-              // Clicked on center circle - trigger shockwave
+              // Clicked in center - trigger enhanced omnidirectional shockwave
+              worker.postMessage({
+                type: "CENTER_SHOCKWAVE",
+                payload: { x: centerX, y: centerY },
+              });
+            } else {
+              // Clicked elsewhere - trigger normal shockwave
               worker.postMessage({
                 type: "SHOCKWAVE",
                 payload: { x: pos.x, y: pos.y },
               });
-              return;
             }
-
-            // Normal drag behavior for bodies
-            canvas.setPointerCapture(e.pointerId);
-            pointerCaptureIdRef.current = e.pointerId;
-
-            worker.postMessage({
-              type: "START_DRAG",
-              payload: { x: pos.x, y: pos.y },
-            });
           };
 
           const onPointerMove = (e: PointerEvent) => {
             const pos = getPointerPos(e);
 
-            if (pointerCaptureIdRef.current === e.pointerId) {
-              e.preventDefault();
-              worker.postMessage({
-                type: "UPDATE_DRAG",
-                payload: { x: pos.x, y: pos.y },
-              });
-            }
-
             // Check if hovering over a body
             const isOverBody = bodiesRef.current.some((body) => {
               const dx = pos.x - body.x;
               const dy = pos.y - body.y;
-              return (
-                Math.abs(dx) < body.width / 2 && Math.abs(dy) < body.height / 2
-              );
+              const radius = Math.sqrt(body.width * body.height) / 2;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              return distance <= radius;
             });
 
             if (isOverBody !== isHoveringRef.current) {
@@ -401,26 +377,13 @@ export const PhysicsSVG = memo(
             }
           };
 
-          const onPointerUp = (e: PointerEvent) => {
-            if (pointerCaptureIdRef.current === e.pointerId) {
-              canvas.releasePointerCapture(e.pointerId);
-              pointerCaptureIdRef.current = null;
-
-              worker.postMessage({ type: "END_DRAG" });
-            }
-          };
-
           // Register pointer events once
           canvas.addEventListener("pointerdown", onPointerDown);
           canvas.addEventListener("pointermove", onPointerMove);
-          canvas.addEventListener("pointerup", onPointerUp);
-          canvas.addEventListener("pointercancel", onPointerUp);
 
           unregisterPointerEvents = () => {
             canvas.removeEventListener("pointerdown", onPointerDown);
             canvas.removeEventListener("pointermove", onPointerMove);
-            canvas.removeEventListener("pointerup", onPointerUp);
-            canvas.removeEventListener("pointercancel", onPointerUp);
           };
         };
 
@@ -626,11 +589,7 @@ export const PhysicsSVG = memo(
             ref={canvasRef}
             className="h-full w-full"
             style={{
-              cursor: isDraggingRef.current
-                ? "grabbing"
-                : isHoveringRef.current
-                  ? "grab"
-                  : "default",
+              cursor: isHoveringRef.current ? "pointer" : "default",
             }}
           />
         </div>

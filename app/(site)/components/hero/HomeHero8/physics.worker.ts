@@ -56,7 +56,6 @@ class PhysicsSimulation {
   private bodies: PhysicsBody[] = [];
   private groundBody: Body | null = null;
   private mouseJoint: any = null;
-  private draggedBody: Body | null = null;
   private dimensions = { width: 800, height: 600 };
   private center = { x: 400, y: 300 };
   private isRunning = false;
@@ -358,7 +357,7 @@ class PhysicsSimulation {
     if (this.isGridMode) {
       let appliedForces = 0;
       this.bodies.forEach(({ body }, index) => {
-        if (body === this.draggedBody || !this.gridTargets[index]) return;
+        if (!this.gridTargets[index]) return;
 
         const pos = body.getPosition();
         const target = this.gridTargets[index];
@@ -415,8 +414,6 @@ class PhysicsSimulation {
       const attractorStrength = this.settings.gravity * 8;
 
       this.bodies.forEach(({ body }) => {
-        if (body === this.draggedBody) return;
-
         const pos = body.getPosition();
 
         this.tempVec1!.x = this.center.x - pos.x;
@@ -448,7 +445,7 @@ class PhysicsSimulation {
       const pos = physicsBody.body.getPosition();
       const angle = physicsBody.body.getAngle();
       const rotation = (angle * 180) / Math.PI;
-      const isDragged = physicsBody.body === this.draggedBody;
+      const isDragged = false;
 
       physicsBody.x = pos.x;
       physicsBody.y = pos.y;
@@ -469,8 +466,7 @@ class PhysicsSimulation {
 
     const shouldSendFullUpdate =
       this.skipUpdateFrames >= this.maxSkipFrames ||
-      this.lastBodyData.length === 0 ||
-      this.draggedBody !== null;
+      this.lastBodyData.length === 0;
 
     if (shouldSendFullUpdate) {
       self.postMessage({
@@ -695,7 +691,6 @@ class PhysicsSimulation {
         maxForce: 1000 * (hitBody as Body).getMass(),
       });
       this.mouseJoint = this.world.createJoint(joint);
-      this.draggedBody = hitBody;
 
       self.postMessage({
         type: "DRAG_START",
@@ -717,13 +712,10 @@ class PhysicsSimulation {
       this.world.destroyJoint(this.mouseJoint);
       this.mouseJoint = null;
     }
-    if (this.draggedBody) {
-      this.draggedBody = null;
-      self.postMessage({
-        type: "DRAG_END",
-        payload: false,
-      });
-    }
+    self.postMessage({
+      type: "DRAG_END",
+      payload: false,
+    });
   }
 
   reset() {
@@ -900,8 +892,6 @@ class PhysicsSimulation {
     let affectedBodies = 0;
 
     this.bodies.forEach(({ body }) => {
-      if (body === this.draggedBody) return;
-
       const pos = body.getPosition();
 
       this.tempVec1!.x = pos.x - shockwaveCenter.x;
@@ -962,6 +952,100 @@ class PhysicsSimulation {
     });
   }
 
+  centerShockwave(x: number, y: number) {
+    if (!this.world || !planck) return;
+
+    const shockwaveCenter = { x, y };
+    // Enhanced parameters for center shockwave
+    const maxDistance =
+      Math.min(this.dimensions.width, this.dimensions.height) *
+      (this.settings.shockwaveRadius * 2.5); // 2.5x larger radius
+    const baseForce = this.settings.shockwaveForce * 1.5; // 1.5x stronger force
+    const decayFactor = this.settings.shockwaveDecay * 0.7; // Less decay for wider spread
+    const directionality = this.settings.shockwaveDirectionality * 0.5; // Half the regular directionality
+
+    const canvasCenter = {
+      x: this.dimensions.width / 2,
+      y: this.dimensions.height / 2,
+    };
+    const biasDirection = {
+      x: (x - canvasCenter.x) / (this.dimensions.width / 2),
+      y: (y - canvasCenter.y) / (this.dimensions.height / 2),
+    };
+
+    const biasLength = Math.sqrt(
+      biasDirection.x * biasDirection.x + biasDirection.y * biasDirection.y,
+    );
+    if (biasLength > 0) {
+      biasDirection.x /= biasLength;
+      biasDirection.y /= biasLength;
+    }
+
+    let affectedBodies = 0;
+
+    this.bodies.forEach(({ body }) => {
+      const pos = body.getPosition();
+
+      this.tempVec1!.x = pos.x - shockwaveCenter.x;
+      this.tempVec1!.y = pos.y - shockwaveCenter.y;
+
+      const distance = Math.sqrt(
+        this.tempVec1!.x * this.tempVec1!.x +
+          this.tempVec1!.y * this.tempVec1!.y,
+      );
+
+      if (distance > maxDistance || distance < 1) return;
+
+      // Calculate radial direction
+      const direction = {
+        x: this.tempVec1!.x / distance,
+        y: this.tempVec1!.y / distance,
+      };
+
+      // Apply directionality bias (mix of radial and bias direction)
+      const finalDirection = {
+        x:
+          direction.x * (1 - directionality) + biasDirection.x * directionality,
+        y:
+          direction.y * (1 - directionality) + biasDirection.y * directionality,
+      };
+
+      const finalLength = Math.sqrt(
+        finalDirection.x * finalDirection.x +
+          finalDirection.y * finalDirection.y,
+      );
+      if (finalLength > 0) {
+        finalDirection.x /= finalLength;
+        finalDirection.y /= finalLength;
+      }
+
+      const normalizedDistance = distance / maxDistance;
+      const decayMultiplier = Math.pow(1 - normalizedDistance, decayFactor);
+
+      // Apply bias alignment boost
+      const biasAlignment =
+        finalDirection.x * biasDirection.x + finalDirection.y * biasDirection.y;
+      const biasBoost = 1 + biasAlignment * 0.15; // Reduced boost for center shockwave
+
+      const finalForce = baseForce * decayMultiplier * biasBoost;
+
+      const impulseStrength = finalForce * 0.1;
+      this.tempVec2!.x = finalDirection.x * impulseStrength;
+      this.tempVec2!.y = finalDirection.y * impulseStrength;
+
+      const currentVel = body.getLinearVelocity();
+      this.tempVec3!.x = currentVel.x + this.tempVec2!.x;
+      this.tempVec3!.y = currentVel.y + this.tempVec2!.y;
+      body.setLinearVelocity(this.tempVec3!);
+
+      body.setAwake(true);
+      const angularImpulse = (Math.random() - 0.5) * impulseStrength * 0.02;
+      body.applyAngularImpulse(angularImpulse);
+
+      affectedBodies++;
+    });
+  }
+
   destroy() {
     this.isRunning = false;
     this.isGridMode = false;
@@ -976,7 +1060,6 @@ class PhysicsSimulation {
     this.bodies = [];
     this.groundBody = null;
     this.mouseJoint = null;
-    this.draggedBody = null;
   }
 }
 
@@ -1031,6 +1114,10 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
 
     case "SHOCKWAVE":
       simulation?.shockwave(payload.x, payload.y);
+      break;
+
+    case "CENTER_SHOCKWAVE":
+      simulation?.centerShockwave(payload.x, payload.y);
       break;
 
     case "DESTROY":
