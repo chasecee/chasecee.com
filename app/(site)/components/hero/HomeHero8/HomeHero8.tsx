@@ -1,154 +1,113 @@
 "use client";
-import React, { useRef, useCallback, useState } from "react";
+import React, { useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import type { PhysicsCanvasRef } from "./PhysicsCanvas";
+import type { PhysicsSVGRef } from "./PhysicsSVG";
 
-// Dynamic import with SSR disabled
-const DynamicPhysicsCanvas = dynamic(
-  () => import("./PhysicsCanvas").then((mod) => mod.PhysicsCanvas),
+const DynamicPhysicsSVG = dynamic(
+  () => import("./PhysicsSVG").then((mod) => mod.PhysicsSVG),
   {
     ssr: false,
-    loading: () => (
-      <div
-        className="flex w-full justify-center"
-        style={{ minHeight: "400px" }}
-      >
-        <div className="flex h-96 w-full max-w-4xl animate-pulse items-center justify-center rounded-2xl bg-gray-100 dark:bg-gray-800">
-          <div className="text-gray-500 dark:text-gray-400">
-            Loading physics simulation...
-          </div>
-        </div>
-      </div>
-    ),
   },
 );
 
-interface PhysicsSettings {
-  gravity: number;
-  timeStep: number;
-  damping: number;
-  friction: number;
-  restitution: number;
-}
+const PHYSICS_SETTINGS = {
+  gravity: 10,
+  timeStep: 1,
+  damping: 0,
+  friction: 0,
+  restitution: 0.25,
+  numBodies: 1000,
+  bodySize: 0.2,
+  bodySizeVariance: 0.5,
+  bodyCornerRadius: 0.8,
+  colorLevel: 4,
+  centerCircleRadius: 0.25,
+  gridGapSize: 5,
+  bodiesStartRadius: 0.4,
+  bodiesStartSpread: 0.4,
+  shockwaveForce: 5000,
+  shockwaveRadius: 0.1,
+  shockwaveDecay: 0.8,
+  shockwaveDirectionality: 0.2,
+} as const;
 
 const HomeHero8 = () => {
-  const [showControls, setShowControls] = useState(false);
-  const [settings, setSettings] = useState<PhysicsSettings>({
-    gravity: 50,
-    timeStep: 1 / 60, // Adjusted for smoother simulation
-    damping: 0.1,
-    friction: 0.8,
-    restitution: 0.6,
-  });
-
-  const canvasRef = useRef<PhysicsCanvasRef>(null);
-
-  const updateSettings = useCallback(
-    (newSettings: Partial<PhysicsSettings>) => {
-      setSettings((prev) => ({ ...prev, ...newSettings }));
-    },
-    [],
-  );
-
-  const solveLayout = useCallback(() => {
-    canvasRef.current?.solve();
-  }, []);
+  const physicsRef = useRef<PhysicsSVGRef>(null);
 
   const resetSimulation = useCallback(() => {
-    canvasRef.current?.reset();
+    physicsRef.current?.reset();
   }, []);
 
   return (
     <div className="relative w-full">
-      <div className="flex flex-col items-center gap-12 pt-20 pb-10 lg:flex-row lg:items-center lg:gap-16">
-        <div className="w-full text-left lg:max-w-md">
-          <h1 className="mb-6 text-5xl font-semibold tracking-tight text-gray-900 md:text-6xl dark:text-white">
-            Who&apos;s gonna fix this mess?
+      <div className="mt-24 flex h-[calc(100vh-10rem)] flex-col items-center gap-12 pb-10 lg:flex-row lg:items-center lg:gap-16">
+        <div className="pointer-events-none relative z-10 mx-auto w-full p-10 text-center lg:max-w-1/2">
+          <h1 className="text-5xl font-semibold tracking-wide text-pretty text-gray-900 md:text-6xl dark:text-white">
+            Let&apos;s build something great together.
           </h1>
-          <div className="flex flex-col gap-6">
-            <p className="max-w-2xl text-lg text-pretty text-gray-600 md:text-xl dark:text-gray-300">
-              Leveraging web can be scary. Call the guy who&apos;s obsessed with
-              building excellent experiences.
+          <div className="flex flex-col gap-8">
+            <p className="text-lg text-pretty text-gray-600 md:text-xl dark:text-gray-300">
+              Call the guy who&apos;s obsessed with crafting excellent
+              experiences.
             </p>
-            <div className="flex flex-wrap gap-4">
+            <div className="pointer-events-auto flex flex-col flex-wrap items-center justify-center gap-3 md:flex-row">
               <button
-                onClick={solveLayout}
-                className="flex-grow rounded-full bg-gray-900 px-8 py-3 text-sm font-medium text-white transition-all hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
+                onClick={() => physicsRef.current?.solve()}
+                className="pointer-events-auto flex-grow cursor-pointer rounded-lg bg-black px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:bg-gray-800 hover:shadow-md active:scale-95 dark:bg-white dark:text-black dark:hover:bg-gray-100"
               >
-                Fix it, Chase!
+                Solve
               </button>
-              <Link href="/contact" passHref legacyBehavior>
-                <a className="flex-grow rounded-full border border-gray-300 px-8 py-3 text-center text-sm font-medium text-gray-900 transition-all hover:bg-gray-50 dark:border-gray-600 dark:text-white dark:hover:bg-gray-800">
-                  Contact Me
-                </a>
+              <button
+                onClick={() => physicsRef.current?.shockwave()}
+                className="pointer-events-auto flex-grow cursor-pointer rounded-lg border border-gray-200 bg-white px-6 py-2.5 text-sm font-medium text-gray-900 shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md active:scale-95 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:hover:bg-gray-800"
+              >
+                Explode
+              </button>
+              <Link
+                href="/contact"
+                className="pointer-events-auto flex-grow rounded-lg border border-gray-200 bg-white px-6 py-2.5 text-center text-sm font-medium text-gray-600 shadow-sm transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 hover:shadow-md active:scale-95 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+              >
+                Contact
               </Link>
             </div>
           </div>
         </div>
 
-        <div className="w-full flex-1">
-          <DynamicPhysicsCanvas
-            ref={canvasRef}
-            gravity={settings.gravity}
-            timeStep={settings.timeStep}
-            damping={settings.damping}
-            friction={settings.friction}
-            restitution={settings.restitution}
+        <div className="absolute inset-0 w-full flex-1">
+          <DynamicPhysicsSVG
+            ref={physicsRef}
+            gravity={PHYSICS_SETTINGS.gravity}
+            timeStep={PHYSICS_SETTINGS.timeStep}
+            damping={PHYSICS_SETTINGS.damping}
+            friction={PHYSICS_SETTINGS.friction}
+            restitution={PHYSICS_SETTINGS.restitution}
+            numBodies={PHYSICS_SETTINGS.numBodies}
+            bodySize={PHYSICS_SETTINGS.bodySize}
+            bodySizeVariance={PHYSICS_SETTINGS.bodySizeVariance}
+            colorLevel={PHYSICS_SETTINGS.colorLevel}
+            centerCircleRadius={PHYSICS_SETTINGS.centerCircleRadius}
+            bodyCornerRadius={PHYSICS_SETTINGS.bodyCornerRadius}
+            gridGapSize={PHYSICS_SETTINGS.gridGapSize}
+            bodiesStartRadius={PHYSICS_SETTINGS.bodiesStartRadius}
+            bodiesStartSpread={PHYSICS_SETTINGS.bodiesStartSpread}
+            shockwaveForce={PHYSICS_SETTINGS.shockwaveForce}
+            shockwaveRadius={PHYSICS_SETTINGS.shockwaveRadius}
+            shockwaveDecay={PHYSICS_SETTINGS.shockwaveDecay}
+            shockwaveDirectionality={PHYSICS_SETTINGS.shockwaveDirectionality}
             onDragStateChange={() => {}}
             onHoverStateChange={() => {}}
           />
         </div>
       </div>
 
-      <div className="absolute right-4 bottom-4 flex flex-col items-end gap-4 sm:right-8 sm:bottom-8">
-        <div className="flex gap-4">
-          <button
-            onClick={resetSimulation}
-            className="rounded-full bg-gray-200/50 px-4 py-2 text-xs font-medium text-gray-700 backdrop-blur-sm transition-all hover:bg-gray-200/80 dark:bg-gray-800/50 dark:text-gray-200 dark:hover:bg-gray-800/80"
-          >
-            Reset
-          </button>
-          <button
-            onClick={() => setShowControls(!showControls)}
-            className="rounded-full bg-gray-200/50 px-4 py-2 text-xs font-medium text-gray-700 backdrop-blur-sm transition-all hover:bg-gray-200/80 dark:bg-gray-800/50 dark:text-gray-200 dark:hover:bg-gray-800/80"
-          >
-            {showControls ? "Hide" : "Show"} Controls
-          </button>
-        </div>
-        {showControls && (
-          <div className="w-72 max-w-xs rounded-2xl border border-gray-200 bg-white/80 p-6 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900/80">
-            <div className="grid grid-cols-1 gap-6">
-              {Object.entries(settings).map(([key, value]) => (
-                <div key={key}>
-                  <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {key.charAt(0).toUpperCase() + key.slice(1)}:{" "}
-                    {key === "timeStep"
-                      ? `${Math.round(1 / value)} fps`
-                      : value.toFixed(2)}
-                  </label>
-                  <input
-                    type="range"
-                    min={
-                      key === "gravity" ? 0 : key === "timeStep" ? 1 / 120 : 0
-                    }
-                    max={
-                      key === "gravity" ? 200 : key === "timeStep" ? 1 / 10 : 1
-                    }
-                    step={
-                      key === "gravity" ? 5 : key === "timeStep" ? 0.001 : 0.05
-                    }
-                    value={value}
-                    onChange={(e) =>
-                      updateSettings({ [key]: Number(e.target.value) })
-                    }
-                    className="w-full"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+      <div className="absolute right-4 bottom-4 sm:right-8 sm:bottom-8">
+        <button
+          onClick={resetSimulation}
+          className="rounded-full bg-gray-200/50 px-4 py-2 text-xs font-medium text-gray-700 backdrop-blur-sm transition-all hover:bg-gray-200/80 dark:bg-gray-800/50 dark:text-gray-200 dark:hover:bg-gray-800/80"
+        >
+          Reset
+        </button>
       </div>
     </div>
   );

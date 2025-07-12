@@ -1,8 +1,10 @@
 "use client";
+import * as React from "react";
 import Image from "next/image";
-import { useState, useEffect, useRef } from "react";
 import { Project } from "@/types/Project";
 import urlFor from "@/sanity/sanity.image";
+
+const { useState, useEffect, useRef } = React;
 
 type CustomDashboardCardProps = {
   project: Project;
