@@ -17,6 +17,7 @@ export async function getProjects(): Promise<Project[]> {
             svgcode,
             subtitle,
             color,
+            displayType,
             url,
             content
         }`,
@@ -37,6 +38,7 @@ export async function getPersonalProjects(): Promise<Project[]> {
             svgcode,
             subtitle,
             color,
+            displayType,
             url,
             content
         }`,
@@ -57,6 +59,7 @@ export async function getClientProjects(): Promise<Project[]> {
             svgcode,
             subtitle,
             color,
+            displayType,
             url,
             content
         }`,

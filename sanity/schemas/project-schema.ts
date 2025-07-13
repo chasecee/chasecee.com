@@ -61,6 +61,19 @@ const project = {
       type: "color",
     },
     {
+      title: "Display Type",
+      name: "displayType",
+      type: "string",
+      options: {
+        list: [
+          { title: "Popup (Default)", value: "popup" },
+          { title: "Background", value: "background" },
+        ],
+        layout: "radio",
+      },
+      initialValue: "popup",
+    },
+    {
       name: "url",
       title: "URL",
       type: "url",

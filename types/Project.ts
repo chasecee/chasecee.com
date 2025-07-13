@@ -36,6 +36,7 @@ export type Project = {
   image?: string;
   svgcode?: CodeField;
   color?: ColorField;
+  displayType?: "popup" | "background";
   url?: string;
   type?: "personal" | "client";
   archived?: boolean;
