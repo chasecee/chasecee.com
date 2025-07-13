@@ -4,7 +4,6 @@ import AnimatedHeroText from "./AnimatedHeroText";
 const HomeHero8 = () => {
   return (
     <>
-      {/* Sentinel element for scroll tracking */}
       <div
         id="hero-sentinel"
         className="pointer-events-none absolute top-0 left-0 h-[50svh] w-full"

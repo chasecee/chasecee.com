@@ -18,7 +18,7 @@ const DESKTOP_SETTINGS = {
   restitution: 0,
   numBodies: 800,
   bodySize: 0.35,
-  bodySizeVariance: 0.6,
+  bodySizeVariance: 0.7,
   bodiesStartSpread: 0.7,
   bodiesStartRadius: 0.6,
   colorLevel: 4,
@@ -52,81 +52,70 @@ const MOBILE_SETTINGS = {
   initialClockwiseVelocity: 5,
 } as const;
 
-interface PhysicsSVGClientProps {
-  onSolve?: () => void;
-  onShockwave?: () => void;
-  onReset?: () => void;
-}
+const PhysicsSVGClient = React.forwardRef<PhysicsSVGRef>((_, ref) => {
+  const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const physicsRef = useRef<PhysicsSVGRef>(null);
 
-const PhysicsSVGClient = React.forwardRef<PhysicsSVGRef, PhysicsSVGClientProps>(
-  ({ onSolve, onShockwave, onReset }, ref) => {
-    const [isMobile, setIsMobile] = useState(false);
-    const [mounted, setMounted] = useState(false);
-    const physicsRef = useRef<PhysicsSVGRef>(null);
+  React.useImperativeHandle(ref, () => ({
+    shockwave: (x?: number, y?: number) => physicsRef.current?.shockwave(x, y),
+  }));
 
-    React.useImperativeHandle(ref, () => ({
-      reset: () => physicsRef.current?.reset(),
-      solve: () => physicsRef.current?.solve(),
-      shockwave: (x?: number, y?: number) =>
-        physicsRef.current?.shockwave(x, y),
-    }));
+  const handleResize = React.useCallback(() => {
+    if (!mounted) return;
+    setIsMobile(window.innerWidth < 768);
+  }, [mounted]);
 
-    const handleResize = React.useCallback(() => {
-      if (!mounted) return;
-      setIsMobile(window.innerWidth < 768);
-    }, [mounted]);
+  useEffect(() => {
+    setMounted(true);
+    handleResize();
 
-    useEffect(() => {
-      setMounted(true);
-      handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [handleResize]);
 
-      window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
-    }, [handleResize]);
-
-    useEffect(() => {
-      if (mounted) {
-        const timer = setTimeout(() => {
-          physicsRef.current?.shockwave();
-        }, 500);
-        return () => clearTimeout(timer);
-      }
-    }, [mounted, isMobile]);
-
-    if (!mounted) {
-      return null;
+  useEffect(() => {
+    if (mounted) {
+      const timer = setTimeout(() => {
+        physicsRef.current?.shockwave();
+      }, 500);
+      return () => clearTimeout(timer);
     }
+  }, [mounted, isMobile]);
 
-    const settings = isMobile ? MOBILE_SETTINGS : DESKTOP_SETTINGS;
+  if (!mounted) {
+    return null;
+  }
 
-    return (
-      <DynamicPhysicsSVG
-        key={`physics-${isMobile ? "mobile" : "desktop"}`}
-        ref={physicsRef}
-        gravity={settings.gravity}
-        timeStep={settings.timeStep}
-        damping={settings.damping}
-        friction={settings.friction}
-        restitution={settings.restitution}
-        numBodies={settings.numBodies}
-        bodySize={settings.bodySize}
-        bodySizeVariance={settings.bodySizeVariance}
-        colorLevel={settings.colorLevel}
-        centerCircleRadius={settings.centerCircleRadius}
-        gridGapSize={settings.gridGapSize}
-        bodiesStartRadius={settings.bodiesStartRadius}
-        bodiesStartSpread={settings.bodiesStartSpread}
-        shockwaveForce={settings.shockwaveForce}
-        shockwaveRadius={settings.shockwaveRadius}
-        shockwaveDecay={settings.shockwaveDecay}
-        shockwaveDirectionality={settings.shockwaveDirectionality}
-        initialClockwiseVelocity={settings.initialClockwiseVelocity}
-        onDragStateChange={() => {}}
-        onHoverStateChange={() => {}}
-      />
-    );
-  },
-);
+  const settings = isMobile ? MOBILE_SETTINGS : DESKTOP_SETTINGS;
+
+  return (
+    <DynamicPhysicsSVG
+      key={`physics-${isMobile ? "mobile" : "desktop"}`}
+      ref={physicsRef}
+      gravity={settings.gravity}
+      timeStep={settings.timeStep}
+      damping={settings.damping}
+      friction={settings.friction}
+      restitution={settings.restitution}
+      numBodies={settings.numBodies}
+      bodySize={settings.bodySize}
+      bodySizeVariance={settings.bodySizeVariance}
+      colorLevel={settings.colorLevel}
+      centerCircleRadius={settings.centerCircleRadius}
+      gridGapSize={settings.gridGapSize}
+      bodiesStartRadius={settings.bodiesStartRadius}
+      bodiesStartSpread={settings.bodiesStartSpread}
+      shockwaveForce={settings.shockwaveForce}
+      shockwaveRadius={settings.shockwaveRadius}
+      shockwaveDecay={settings.shockwaveDecay}
+      shockwaveDirectionality={settings.shockwaveDirectionality}
+      initialClockwiseVelocity={settings.initialClockwiseVelocity}
+      onDragStateChange={() => {}}
+      onHoverStateChange={() => {}}
+    />
+  );
+});
 
 PhysicsSVGClient.displayName = "PhysicsSVGClient";
 

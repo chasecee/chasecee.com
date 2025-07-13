@@ -56,7 +56,6 @@ class PhysicsSimulation {
   private world: World | null = null;
   private bodies: PhysicsBody[] = [];
   private groundBody: Body | null = null;
-  private mouseJoint: any = null;
   private dimensions = { width: 800, height: 600 };
   private center = { x: 400, y: 300 };
   private isRunning = false;
@@ -65,33 +64,20 @@ class PhysicsSimulation {
   private fixedTimeStep = 1 / 60;
   private settings: PhysicsSettings = {} as PhysicsSettings;
 
-  private isGridMode = false;
-  private gridTargets: { x: number; y: number }[] = [];
-
   private tempVec1: Vec2 | null = null;
   private tempVec2: Vec2 | null = null;
   private tempVec3: Vec2 | null = null;
   private tempVec4: Vec2 | null = null;
   private centerVec: Vec2 | null = null;
 
-  private frameCount = 0;
-  private physicsTime = 0;
-  private messageTime = 0;
-  private lastFpsReport = 0;
-
   private lastBodyData: PhysicsBodyData[] = [];
   private skipUpdateFrames = 0;
   private maxSkipFrames = 2;
-
-  // Simple mobile detection
-  private isMobile = false;
 
   async initialize() {
     if (!planck) {
       planck = await import("planck");
     }
-
-    this.detectMobile();
 
     this.tempVec1 = planck.Vec2(0, 0);
     this.tempVec2 = planck.Vec2(0, 0);
@@ -113,10 +99,6 @@ class PhysicsSimulation {
     this.animate();
   }
 
-  private detectMobile() {
-    this.isMobile = self.innerWidth < 768;
-  }
-
   private setupCollisionHandlers() {
     if (!this.world || !planck) return;
 
@@ -127,7 +109,6 @@ class PhysicsSimulation {
       const bodyA = fixtureA.getBody();
       const bodyB = fixtureB.getBody();
 
-      // Check if one fixture is a one-way wall
       const userDataA = fixtureA.getUserData() as { type?: string } | null;
       const userDataB = fixtureB.getUserData() as { type?: string } | null;
 
@@ -140,7 +121,6 @@ class PhysicsSimulation {
 
       if (!wallFixture) return;
 
-      // Get the dynamic body (not the wall)
       const dynamicBody = bodyA.isDynamic()
         ? bodyA
         : bodyB.isDynamic()
@@ -148,21 +128,17 @@ class PhysicsSimulation {
           : null;
       if (!dynamicBody) return;
 
-      // Get body position and velocity
       const pos = dynamicBody.getPosition();
       const vel = dynamicBody.getLinearVelocity();
 
-      // Calculate direction from center
       const directionFromCenter = {
         x: pos.x - this.center.x,
         y: pos.y - this.center.y,
       };
 
-      // Calculate dot product to determine if moving outward
       const dotProduct =
         vel.x * directionFromCenter.x + vel.y * directionFromCenter.y;
 
-      // If moving outward (positive dot product), apply force to push back
       if (dotProduct > 0) {
         const forceStrength = 2000;
         const forceDirection = {
@@ -170,7 +146,6 @@ class PhysicsSimulation {
           y: -directionFromCenter.y,
         };
 
-        // Normalize force direction
         const magnitude = Math.sqrt(
           forceDirection.x * forceDirection.x +
             forceDirection.y * forceDirection.y,
@@ -317,7 +292,6 @@ class PhysicsSimulation {
         restitution: this.settings.restitution,
       });
 
-      // Calculate clockwise tangential velocity
       const clockwiseSpeed = this.settings.initialClockwiseVelocity;
       this.tempVec2!.x = -clockwiseSpeed * Math.sin(angle);
       this.tempVec2!.y = clockwiseSpeed * Math.cos(angle);
@@ -364,95 +338,31 @@ class PhysicsSimulation {
   private stepPhysics() {
     if (!this.world || !planck) return;
 
-    const physicsStartTime = performance.now();
+    const attractorStrength = this.settings.gravity * 8;
 
-    if (this.isGridMode) {
-      let appliedForces = 0;
-      this.bodies.forEach(({ body }, index) => {
-        if (!this.gridTargets[index]) return;
+    this.bodies.forEach(({ body }) => {
+      const pos = body.getPosition();
 
-        const pos = body.getPosition();
-        const target = this.gridTargets[index];
+      this.tempVec1!.x = this.center.x - pos.x;
+      this.tempVec1!.y = this.center.y - pos.y;
 
-        this.tempVec1!.x = target.x - pos.x;
-        this.tempVec1!.y = target.y - pos.y;
+      const distanceSquared =
+        this.tempVec1!.x * this.tempVec1!.x +
+        this.tempVec1!.y * this.tempVec1!.y;
 
-        const distanceSquared =
-          this.tempVec1!.x * this.tempVec1!.x +
-          this.tempVec1!.y * this.tempVec1!.y;
+      if (distanceSquared > 1) {
         const distance = Math.sqrt(distanceSquared);
-
-        if (distance > 1) {
-          const normalizedDistance = Math.min(distance / 200, 1);
-          const easeCurve = 1 - Math.pow(1 - normalizedDistance, 3);
-          const baseMagneticStrength = 3500;
-          const magneticStrength =
-            baseMagneticStrength * (0.3 + easeCurve * 0.7);
-
-          this.tempVec2!.x = this.tempVec1!.x * magneticStrength;
-          this.tempVec2!.y = this.tempVec1!.y * magneticStrength;
-          body.applyForceToCenter(this.tempVec2!);
-
-          const velocity = body.getLinearVelocity();
-          const dampingStrength = 15 + (1 - normalizedDistance) * 25;
-          this.tempVec3!.x = -velocity.x * dampingStrength;
-          this.tempVec3!.y = -velocity.y * dampingStrength;
-          body.applyForceToCenter(this.tempVec3!);
-
-          appliedForces++;
-        } else {
-          const velocity = body.getLinearVelocity();
-          const velMagnitude = Math.sqrt(
-            velocity.x * velocity.x + velocity.y * velocity.y,
-          );
-
-          if (velMagnitude < 5) {
-            this.tempVec1!.x = target.x;
-            this.tempVec1!.y = target.y;
-            body.setPosition(this.tempVec1!);
-            this.tempVec2!.x = 0;
-            this.tempVec2!.y = 0;
-            body.setLinearVelocity(this.tempVec2!);
-            body.setAngle(0);
-            body.setAngularVelocity(0);
-          } else {
-            this.tempVec3!.x = -velocity.x * 50;
-            this.tempVec3!.y = -velocity.y * 50;
-            body.applyForceToCenter(this.tempVec3!);
-          }
-        }
-      });
-    } else {
-      const attractorStrength = this.settings.gravity * 8;
-
-      this.bodies.forEach(({ body }) => {
-        const pos = body.getPosition();
-
-        this.tempVec1!.x = this.center.x - pos.x;
-        this.tempVec1!.y = this.center.y - pos.y;
-
-        const distanceSquared =
-          this.tempVec1!.x * this.tempVec1!.x +
-          this.tempVec1!.y * this.tempVec1!.y;
-
-        if (distanceSquared > 1) {
-          const distance = Math.sqrt(distanceSquared);
-          this.tempVec2!.x = (this.tempVec1!.x / distance) * attractorStrength;
-          this.tempVec2!.y = (this.tempVec1!.y / distance) * attractorStrength;
-          body.applyForceToCenter(this.tempVec2!);
-        }
-      });
-    }
+        this.tempVec2!.x = (this.tempVec1!.x / distance) * attractorStrength;
+        this.tempVec2!.y = (this.tempVec1!.y / distance) * attractorStrength;
+        body.applyForceToCenter(this.tempVec2!);
+      }
+    });
 
     const physicsTimeStep = this.fixedTimeStep * this.settings.timeStep;
     this.world.step(physicsTimeStep);
-
-    this.physicsTime += performance.now() - physicsStartTime;
   }
 
   private sendBodyUpdates() {
-    const messageStartTime = performance.now();
-
     const bodyData = this.bodies.map((physicsBody) => {
       const pos = physicsBody.body.getPosition();
       const angle = physicsBody.body.getAngle();
@@ -496,24 +406,6 @@ class PhysicsSimulation {
         });
       }
       this.skipUpdateFrames++;
-    }
-
-    this.messageTime += performance.now() - messageStartTime;
-    this.frameCount++;
-
-    if (performance.now() - this.lastFpsReport > 2000) {
-      const fps = this.frameCount / 2;
-      const avgPhysicsTime = this.physicsTime / this.frameCount;
-      const avgMessageTime = this.messageTime / this.frameCount;
-
-      console.log(
-        `🚀 Physics Performance: ${fps.toFixed(1)}fps | Physics: ${avgPhysicsTime.toFixed(2)}ms | Messages: ${avgMessageTime.toFixed(2)}ms`,
-      );
-
-      this.frameCount = 0;
-      this.physicsTime = 0;
-      this.messageTime = 0;
-      this.lastFpsReport = performance.now();
     }
   }
 
@@ -633,7 +525,6 @@ class PhysicsSimulation {
       this.tempVec1!.y = y;
       physicsBody.body.setPosition(this.tempVec1!);
 
-      // Apply clockwise tangential velocity
       const clockwiseSpeed = this.settings.initialClockwiseVelocity;
       this.tempVec2!.x = -clockwiseSpeed * Math.sin(angle);
       this.tempVec2!.y = clockwiseSpeed * Math.cos(angle);
@@ -668,215 +559,6 @@ class PhysicsSimulation {
     }
   }
 
-  startDrag(x: number, y: number) {
-    if (!this.world || !planck) return;
-
-    this.tempVec1!.x = x;
-    this.tempVec1!.y = y;
-
-    this.tempVec2!.x = x - 0.1;
-    this.tempVec2!.y = y - 0.1;
-    const aabbMin = this.tempVec2!;
-
-    this.tempVec3!.x = x + 0.1;
-    this.tempVec3!.y = y + 0.1;
-    const aabbMax = this.tempVec3!;
-
-    let hitBody: Body | null = null;
-    this.world.queryAABB(planck.AABB(aabbMin, aabbMax), (fixture: any) => {
-      const body = fixture.getBody() as Body;
-      if (body.isDynamic() && fixture.testPoint(this.tempVec1!)) {
-        hitBody = body;
-        return false;
-      }
-      return true;
-    });
-
-    if (hitBody) {
-      (hitBody as Body).setAwake(true);
-
-      this.tempVec1!.x = x;
-      this.tempVec1!.y = y;
-
-      const joint = planck.MouseJoint({
-        bodyA: this.groundBody!,
-        bodyB: hitBody,
-        target: this.tempVec1!,
-        maxForce: 1000 * (hitBody as Body).getMass(),
-      });
-      this.mouseJoint = this.world.createJoint(joint);
-
-      self.postMessage({
-        type: "DRAG_START",
-        payload: true,
-      });
-    }
-  }
-
-  updateDrag(x: number, y: number) {
-    if (this.mouseJoint && planck) {
-      this.tempVec4!.x = x;
-      this.tempVec4!.y = y;
-      this.mouseJoint.setTarget(this.tempVec4!);
-    }
-  }
-
-  endDrag() {
-    if (this.mouseJoint && this.world) {
-      this.world.destroyJoint(this.mouseJoint);
-      this.mouseJoint = null;
-    }
-    self.postMessage({
-      type: "DRAG_END",
-      payload: false,
-    });
-  }
-
-  reset() {
-    if (!this.world || !planck) return;
-
-    this.isGridMode = false;
-    this.gridTargets = [];
-
-    this.bodies.forEach(({ body }) => {
-      const fixture = body.getFixtureList();
-      if (fixture) {
-        fixture.setSensor(false);
-      }
-    });
-
-    this.bodies.forEach((physicsBody, index) => {
-      const angle = (index * 2 * Math.PI) / this.bodies.length;
-
-      const baseRadius =
-        Math.min(this.dimensions.width, this.dimensions.height) *
-        this.settings.bodiesStartRadius;
-      const radiusVariation =
-        this.bodies.length > 50
-          ? Math.random() * this.settings.bodiesStartSpread -
-            this.settings.bodiesStartSpread / 2
-          : 0;
-      const radius = baseRadius * (1 + radiusVariation);
-
-      const x = this.center.x + Math.cos(angle) * radius;
-      const y = this.center.y + Math.sin(angle) * radius;
-
-      this.tempVec1!.x = x;
-      this.tempVec1!.y = y;
-      physicsBody.body.setPosition(this.tempVec1!);
-
-      // Apply clockwise tangential velocity
-      const clockwiseSpeed = this.settings.initialClockwiseVelocity;
-      this.tempVec2!.x = -clockwiseSpeed * Math.sin(angle);
-      this.tempVec2!.y = clockwiseSpeed * Math.cos(angle);
-      physicsBody.body.setLinearVelocity(this.tempVec2!);
-
-      physicsBody.body.setAngularVelocity(0);
-      physicsBody.body.setAngle(0);
-      physicsBody.body.setAwake(true);
-    });
-  }
-
-  solve() {
-    if (!this.world || !planck) return;
-
-    this.isGridMode = false;
-    this.gridTargets = [];
-
-    this.bodies.forEach(({ body }) => {
-      const fixture = body.getFixtureList();
-      if (fixture) {
-        fixture.setSensor(false);
-      }
-    });
-
-    const formationRadius =
-      Math.min(this.dimensions.width, this.dimensions.height) *
-      (this.settings.bodiesStartRadius * 0.4);
-    const angleStep = (2 * Math.PI) / this.bodies.length;
-
-    this.bodies.forEach((bodyItem, index) => {
-      const angle = index * angleStep;
-      const targetX = this.center.x + Math.cos(angle) * formationRadius;
-      const targetY = this.center.y + Math.sin(angle) * formationRadius;
-
-      const body = bodyItem.body;
-      const currentPos = body.getPosition();
-
-      this.tempVec1!.x = targetX - currentPos.x;
-      this.tempVec1!.y = targetY - currentPos.y;
-      this.tempVec1!.x *= 3.0;
-      this.tempVec1!.y *= 3.0;
-
-      body.setLinearVelocity(this.tempVec1!);
-      body.setAngularVelocity(0);
-      body.setAwake(true);
-    });
-  }
-
-  solveGrid() {
-    if (!this.world || !planck) return;
-
-    const numBodies = this.bodies.length;
-    const cols = Math.ceil(Math.sqrt(numBodies));
-    const rows = Math.ceil(numBodies / cols);
-
-    const blockSize = this.bodies[0]?.width || 60;
-
-    const gapSize = blockSize * this.settings.gridGapSize;
-    const cellWidth = blockSize + gapSize;
-    const cellHeight = blockSize + gapSize;
-
-    const totalGridWidth = cols * cellWidth - gapSize;
-    const totalGridHeight = rows * cellHeight - gapSize;
-
-    const maxWidth = this.dimensions.width * 0.7;
-    const maxHeight = this.dimensions.height * 0.7;
-
-    const scaleX = totalGridWidth > maxWidth ? maxWidth / totalGridWidth : 1;
-    const scaleY =
-      totalGridHeight > maxHeight ? maxHeight / totalGridHeight : 1;
-    const scale = Math.min(scaleX, scaleY);
-
-    const finalCellWidth = cellWidth * scale;
-    const finalCellHeight = cellHeight * scale;
-    const finalGridWidth = totalGridWidth * scale;
-    const finalGridHeight = totalGridHeight * scale;
-
-    const startX = this.center.x - finalGridWidth / 2 + finalCellWidth / 2;
-    const startY = this.center.y - finalGridHeight / 2 + finalCellHeight / 2;
-
-    const sortedBodies = [...this.bodies].sort(
-      (a, b) => a.colorIndex - b.colorIndex,
-    );
-
-    this.gridTargets = new Array(this.bodies.length);
-
-    sortedBodies.forEach((bodyItem, index) => {
-      const row = Math.floor(index / cols);
-      const col = index % cols;
-
-      const targetX = startX + col * finalCellWidth;
-      const targetY = startY + row * finalCellHeight;
-
-      const bodyIndex = this.bodies.findIndex((b) => b.id === bodyItem.id);
-      if (bodyIndex !== -1) {
-        this.gridTargets[bodyIndex] = { x: targetX, y: targetY };
-      }
-
-      bodyItem.body.setAwake(true);
-    });
-
-    this.bodies.forEach(({ body }) => {
-      const fixture = body.getFixtureList();
-      if (fixture) {
-        fixture.setSensor(true);
-      }
-    });
-
-    this.isGridMode = true;
-  }
-
   shockwave(x: number, y: number) {
     if (!this.world || !planck) return;
 
@@ -904,8 +586,6 @@ class PhysicsSimulation {
       biasDirection.x /= biasLength;
       biasDirection.y /= biasLength;
     }
-
-    let affectedBodies = 0;
 
     this.bodies.forEach(({ body }) => {
       const pos = body.getPosition();
@@ -963,8 +643,6 @@ class PhysicsSimulation {
       body.setAwake(true);
       const angularImpulse = (Math.random() - 0.5) * impulseStrength * 0.01;
       body.applyAngularImpulse(angularImpulse);
-
-      affectedBodies++;
     });
   }
 
@@ -972,13 +650,12 @@ class PhysicsSimulation {
     if (!this.world || !planck) return;
 
     const shockwaveCenter = { x, y };
-    // Enhanced parameters for center shockwave
     const maxDistance =
       Math.min(this.dimensions.width, this.dimensions.height) *
-      (this.settings.shockwaveRadius * 2.5); // 2.5x larger radius
-    const baseForce = this.settings.shockwaveForce * 1.5; // 1.5x stronger force
-    const decayFactor = this.settings.shockwaveDecay * 0.7; // Less decay for wider spread
-    const directionality = this.settings.shockwaveDirectionality * 0.5; // Half the regular directionality
+      (this.settings.shockwaveRadius * 2.5);
+    const baseForce = this.settings.shockwaveForce * 1.5;
+    const decayFactor = this.settings.shockwaveDecay * 0.7;
+    const directionality = this.settings.shockwaveDirectionality * 0.5;
 
     const canvasCenter = {
       x: this.dimensions.width / 2,
@@ -997,8 +674,6 @@ class PhysicsSimulation {
       biasDirection.y /= biasLength;
     }
 
-    let affectedBodies = 0;
-
     this.bodies.forEach(({ body }) => {
       const pos = body.getPosition();
 
@@ -1012,13 +687,11 @@ class PhysicsSimulation {
 
       if (distance > maxDistance || distance < 1) return;
 
-      // Calculate radial direction
       const direction = {
         x: this.tempVec1!.x / distance,
         y: this.tempVec1!.y / distance,
       };
 
-      // Apply directionality bias (mix of radial and bias direction)
       const finalDirection = {
         x:
           direction.x * (1 - directionality) + biasDirection.x * directionality,
@@ -1038,10 +711,9 @@ class PhysicsSimulation {
       const normalizedDistance = distance / maxDistance;
       const decayMultiplier = Math.pow(1 - normalizedDistance, decayFactor);
 
-      // Apply bias alignment boost
       const biasAlignment =
         finalDirection.x * biasDirection.x + finalDirection.y * biasDirection.y;
-      const biasBoost = 1 + biasAlignment * 0.15; // Reduced boost for center shockwave
+      const biasBoost = 1 + biasAlignment * 0.15;
 
       const finalForce = baseForce * decayMultiplier * biasBoost;
 
@@ -1057,15 +729,11 @@ class PhysicsSimulation {
       body.setAwake(true);
       const angularImpulse = (Math.random() - 0.5) * impulseStrength * 0.02;
       body.applyAngularImpulse(angularImpulse);
-
-      affectedBodies++;
     });
   }
 
   destroy() {
     this.isRunning = false;
-    this.isGridMode = false;
-    this.gridTargets = [];
 
     if (this.world) {
       for (let b = this.world.getBodyList(); b; b = b.getNext()) {
@@ -1075,11 +743,9 @@ class PhysicsSimulation {
     this.world = null;
     this.bodies = [];
     this.groundBody = null;
-    this.mouseJoint = null;
   }
 }
 
-// Global simulation instance
 let simulation: PhysicsSimulation | null = null;
 
 self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
@@ -1102,30 +768,6 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
         payload.height,
         payload.numBodies,
       );
-      break;
-
-    case "START_DRAG":
-      simulation?.startDrag(payload.x, payload.y);
-      break;
-
-    case "UPDATE_DRAG":
-      simulation?.updateDrag(payload.x, payload.y);
-      break;
-
-    case "END_DRAG":
-      simulation?.endDrag();
-      break;
-
-    case "RESET":
-      simulation?.reset();
-      break;
-
-    case "SOLVE":
-      simulation?.solve();
-      break;
-
-    case "SOLVE_GRID":
-      simulation?.solveGrid();
       break;
 
     case "SHOCKWAVE":

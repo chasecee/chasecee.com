@@ -33,8 +33,6 @@ export interface PhysicsSVGProps {
 }
 
 export interface PhysicsSVGRef {
-  reset: () => void;
-  solve: () => void;
   shockwave: (x?: number, y?: number) => void;
 }
 
@@ -49,7 +47,6 @@ interface PhysicsBodyData {
   colorIndex: number;
 }
 
-// Helper function to parse HSLA color string
 const parseHSLA = (hslaString: string) => {
   const match = hslaString.match(/HSLA\((\d+),(\d+)%,(\d+)%,([0-9.]+)\)/);
   if (!match) return { h: 0, s: 0, l: 0, a: 1 };
@@ -61,12 +58,10 @@ const parseHSLA = (hslaString: string) => {
   };
 };
 
-// Helper function to interpolate between two HSLA colors
 const interpolateHSLA = (color1: string, color2: string, factor: number) => {
   const hsla1 = parseHSLA(color1);
   const hsla2 = parseHSLA(color2);
 
-  // Handle hue interpolation (shortest path around color wheel)
   let h1 = hsla1.h;
   let h2 = hsla2.h;
   let hDiff = h2 - h1;
@@ -92,7 +87,6 @@ const generateRainbowFromPalette = (
   totalBodies: number,
   colorLevel: number,
 ): string => {
-  // Define color order for better visual flow (traditional rainbow order)
   const colorOrder: Array<keyof typeof palette> = [
     "red",
     "amber",
@@ -103,25 +97,16 @@ const generateRainbowFromPalette = (
     "pink",
   ];
 
-  // Use the specified level (0-9 maps to 100-900)
   const levelIndex = Math.min(Math.max(colorLevel, 0), 9);
-
-  // Calculate position in the rainbow (0 to 1)
   const rainbowPosition = (index / totalBodies) % 1;
-
-  // Calculate which color segment we're in
   const colorPosition = rainbowPosition * colorOrder.length;
   const colorIndex = Math.floor(colorPosition);
   const nextColorIndex = (colorIndex + 1) % colorOrder.length;
-
-  // Get interpolation factor between the two colors
   const interpolationFactor = colorPosition - colorIndex;
 
-  // Get the two colors to interpolate between
   const currentColor = palette[colorOrder[colorIndex]][levelIndex];
   const nextColor = palette[colorOrder[nextColorIndex]][levelIndex];
 
-  // Return interpolated color
   return interpolateHSLA(currentColor, nextColor, interpolationFactor);
 };
 
@@ -166,14 +151,7 @@ export const PhysicsSVG = memo(
       const canvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
 
       useImperativeHandle(ref, () => ({
-        reset: () => {
-          workerRef.current?.postMessage({ type: "RESET" });
-        },
-        solve: () => {
-          workerRef.current?.postMessage({ type: "SOLVE_GRID" });
-        },
         shockwave: (x?: number, y?: number) => {
-          // If no coordinates provided, use center of canvas
           const centerX = x ?? dimensionsRef.current.width / 2;
           const centerY = y ?? dimensionsRef.current.height / 2;
 
@@ -184,7 +162,6 @@ export const PhysicsSVG = memo(
         },
       }));
 
-      // Initialize worker and physics simulation once
       useEffect(() => {
         let isMounted = true;
         let unregisterPointerEvents: (() => void) | null = null;
@@ -196,17 +173,14 @@ export const PhysicsSVG = memo(
           const canvas = canvasRef.current;
           const container = containerRef.current;
 
-          // Cache canvas context
           canvasContextRef.current = canvas.getContext("2d");
 
-          // Create worker - Turbopack compatible pattern
           const worker = new Worker(
             new URL("./physics.worker.ts", import.meta.url),
             { type: "module" },
           );
           workerRef.current = worker;
 
-          // Handle worker messages
           worker.onmessage = (event) => {
             const { type, payload } = event.data;
 
@@ -224,7 +198,6 @@ export const PhysicsSVG = memo(
                 break;
 
               case "BODY_UPDATE_DELTA":
-                // Handle delta updates by merging with existing data
                 const updatedBodies = [...bodiesRef.current];
                 payload.forEach((changedBody: PhysicsBodyData) => {
                   const index = updatedBodies.findIndex(
@@ -244,7 +217,6 @@ export const PhysicsSVG = memo(
             }
           };
 
-          // Setup resize observer
           const resizeObserver = new ResizeObserver((entries) => {
             if (resizeTimeoutRef.current) {
               clearTimeout(resizeTimeoutRef.current);
@@ -274,7 +246,6 @@ export const PhysicsSVG = memo(
           resizeObserver.observe(container);
           unregisterResizeObserver = () => resizeObserver.disconnect();
 
-          // Initial setup
           const { width, height } = container.getBoundingClientRect();
           const dpr = window.devicePixelRatio || 1;
 
@@ -288,10 +259,8 @@ export const PhysicsSVG = memo(
             canvasContextRef.current.scale(dpr, dpr);
           }
 
-          // Initialize physics
           worker.postMessage({ type: "INIT" });
 
-          // Send settings BEFORE creating bodies
           worker.postMessage({
             type: "UPDATE_SETTINGS",
             payload: {
@@ -319,7 +288,6 @@ export const PhysicsSVG = memo(
             payload: { width, height, numBodies },
           });
 
-          // Unified pointer event handlers
           const getPointerPos = (e: PointerEvent) => {
             const rect = canvas.getBoundingClientRect();
             return {
@@ -340,7 +308,6 @@ export const PhysicsSVG = memo(
 
             const pos = getPointerPos(e);
 
-            // Check if click is in center circle
             const centerX = dimensionsRef.current.width / 2;
             const centerY = dimensionsRef.current.height / 2;
             const centerRadius =
@@ -354,13 +321,11 @@ export const PhysicsSVG = memo(
             );
 
             if (distanceFromCenter <= centerRadius) {
-              // Clicked in center - trigger enhanced omnidirectional shockwave
               worker.postMessage({
                 type: "CENTER_SHOCKWAVE",
                 payload: { x: centerX, y: centerY },
               });
             } else {
-              // Clicked elsewhere - trigger normal shockwave
               worker.postMessage({
                 type: "SHOCKWAVE",
                 payload: { x: pos.x, y: pos.y },
@@ -392,7 +357,6 @@ export const PhysicsSVG = memo(
               });
             }
 
-            // Check if hovering over a body
             const isOverBody = bodiesRef.current.some((body) => {
               const dx = pos.x - body.x;
               const dy = pos.y - body.y;
@@ -411,7 +375,6 @@ export const PhysicsSVG = memo(
             isDrawingShockwaveRef.current = false;
           };
 
-          // Register pointer events once
           canvas.addEventListener("pointerdown", onPointerDown);
           canvas.addEventListener("pointermove", onPointerMove);
           canvas.addEventListener("pointerup", onPointerUp);
@@ -445,7 +408,6 @@ export const PhysicsSVG = memo(
         };
       }, [onDragStateChange, onHoverStateChange]);
 
-      // Update physics settings in separate effect
       useEffect(() => {
         if (workerRef.current) {
           workerRef.current.postMessage({
@@ -489,7 +451,6 @@ export const PhysicsSVG = memo(
         initialClockwiseVelocity,
       ]);
 
-      // Update number of bodies when it changes
       useEffect(() => {
         if (workerRef.current && dimensionsRef.current.width > 0) {
           workerRef.current.postMessage({
@@ -503,7 +464,6 @@ export const PhysicsSVG = memo(
         }
       }, [numBodies]);
 
-      // Canvas render function for optimal performance
       const renderBodies = useCallback(() => {
         renderRequestRef.current = 0;
 
@@ -514,13 +474,10 @@ export const PhysicsSVG = memo(
         const { width, height } = dimensionsRef.current;
         const bodies = bodiesRef.current;
 
-        // Clear canvas
         ctx.clearRect(0, 0, width, height);
 
-        // Performance optimizations for high body counts
         const isHighBodyCount = bodies.length > 500;
 
-        // Viewport culling - only draw bodies that are visible
         const padding = 50;
         const visibleBodies = bodies.filter(
           (body) =>
@@ -530,14 +487,11 @@ export const PhysicsSVG = memo(
             body.y - body.height / 2 < height + padding,
         );
 
-        // Level of detail - use simpler shapes for small bodies
-        const simplifyThreshold = Math.min(width, height) * 0.02; // 2% of canvas size
+        const simplifyThreshold = Math.min(width, height) * 0.02;
 
-        // Batch drawing by grouping bodies with similar properties
         const draggedBodies = visibleBodies.filter((body) => body.isDragged);
         const regularBodies = visibleBodies.filter((body) => !body.isDragged);
 
-        // Draw regular bodies first (no shadows)
         ctx.shadowColor = "transparent";
         ctx.shadowBlur = 0;
         ctx.shadowOffsetX = 0;
@@ -553,25 +507,21 @@ export const PhysicsSVG = memo(
             colorIndex,
           } = body;
 
-          // Skip tiny bodies when there are many
           if (isHighBodyCount && Math.max(bodyWidth, bodyHeight) < 5) return;
 
           ctx.save();
           ctx.translate(x, y);
 
-          // Skip rotation for small bodies to save performance
           if (Math.max(bodyWidth, bodyHeight) > simplifyThreshold) {
             ctx.rotate((rotation * Math.PI) / 180);
           }
 
-          // Set fill color using palette
           ctx.fillStyle = generateRainbowFromPalette(
             colorIndex,
             bodies.length,
             colorLevel,
           );
 
-          // Draw circles for all bodies - use consistent radius
           const radius = Math.sqrt(bodyWidth * bodyHeight) / 2;
 
           ctx.beginPath();
@@ -581,7 +531,6 @@ export const PhysicsSVG = memo(
           ctx.restore();
         });
 
-        // Draw dragged bodies last (with shadows)
         draggedBodies.forEach((body) => {
           const {
             x,
@@ -596,20 +545,17 @@ export const PhysicsSVG = memo(
           ctx.translate(x, y);
           ctx.rotate((rotation * Math.PI) / 180);
 
-          // Set fill color using palette
           ctx.fillStyle = generateRainbowFromPalette(
             colorIndex,
             bodies.length,
             colorLevel,
           );
 
-          // Apply shadow for dragged bodies
           ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
           ctx.shadowBlur = 12;
           ctx.shadowOffsetX = 0;
           ctx.shadowOffsetY = 6;
 
-          // Draw circles for dragged bodies - use consistent radius
           const radius = Math.sqrt(bodyWidth * bodyHeight) / 2;
 
           ctx.beginPath();
