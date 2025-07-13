@@ -13,8 +13,7 @@ export default async function Home() {
     <>
       <ContainerHome className="relative z-10" showCTA={true}>
         <HomeHero8 />
-        <div className="relative z-0 h-[80svh]"></div>
-        <div className="relative z-10 flex flex-col gap-10 bg-neutral-100 pt-20 dark:bg-neutral-900">
+        <div className="relative z-10 flex flex-col gap-10">
           <ProjectsList
             projects={personalProjects}
             title="Personal Projects"

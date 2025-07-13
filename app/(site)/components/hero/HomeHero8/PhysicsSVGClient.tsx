@@ -11,35 +11,36 @@ const DynamicPhysicsSVG = dynamic(
 );
 
 const DESKTOP_SETTINGS = {
-  gravity: 50,
+  gravity: 40,
   timeStep: 1,
   damping: 0,
   friction: 0,
   restitution: 0,
   numBodies: 800,
   bodySize: 0.35,
-  bodySizeVariance: 0.5,
-  bodiesStartSpread: 0.4,
+  bodySizeVariance: 0.6,
+  bodiesStartSpread: 0.7,
   bodiesStartRadius: 0.6,
   colorLevel: 4,
   gridGapSize: 5,
-  shockwaveForce: 6000,
+  shockwaveForce: 1000,
   shockwaveRadius: 0.3,
   shockwaveDecay: 0.8,
   shockwaveDirectionality: 0.2,
-  centerCircleRadius: 0.4,
+  centerCircleRadius: 0.3,
+  initialClockwiseVelocity: 5,
 } as const;
 
 const MOBILE_SETTINGS = {
   gravity: 40,
   timeStep: 1,
-  damping: 0.1,
+  damping: 0,
   friction: 0,
   restitution: 0,
   numBodies: 450,
-  bodySize: 0.4,
+  bodySize: 0.36,
   bodySizeVariance: 0.6,
-  bodiesStartRadius: 1.2,
+  bodiesStartRadius: 0.9,
   bodiesStartSpread: 0.3,
   colorLevel: 4,
   gridGapSize: 8,
@@ -48,6 +49,7 @@ const MOBILE_SETTINGS = {
   shockwaveDecay: 0.9,
   shockwaveDirectionality: 0.3,
   centerCircleRadius: 0.45,
+  initialClockwiseVelocity: 5,
 } as const;
 
 interface PhysicsSVGClientProps {
@@ -118,6 +120,7 @@ const PhysicsSVGClient = React.forwardRef<PhysicsSVGRef, PhysicsSVGClientProps>(
         shockwaveRadius={settings.shockwaveRadius}
         shockwaveDecay={settings.shockwaveDecay}
         shockwaveDirectionality={settings.shockwaveDirectionality}
+        initialClockwiseVelocity={settings.initialClockwiseVelocity}
         onDragStateChange={() => {}}
         onHoverStateChange={() => {}}
       />

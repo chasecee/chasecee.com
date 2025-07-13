@@ -49,6 +49,7 @@ interface PhysicsSettings {
   shockwaveRadius: number;
   shockwaveDecay: number;
   shockwaveDirectionality: number;
+  initialClockwiseVelocity: number;
 }
 
 class PhysicsSimulation {
@@ -316,8 +317,10 @@ class PhysicsSimulation {
         restitution: this.settings.restitution,
       });
 
-      this.tempVec2!.x = 0;
-      this.tempVec2!.y = 0;
+      // Calculate clockwise tangential velocity
+      const clockwiseSpeed = this.settings.initialClockwiseVelocity;
+      this.tempVec2!.x = -clockwiseSpeed * Math.sin(angle);
+      this.tempVec2!.y = clockwiseSpeed * Math.cos(angle);
       body.setLinearVelocity(this.tempVec2!);
 
       const physicsBody: PhysicsBody = {
@@ -630,8 +633,10 @@ class PhysicsSimulation {
       this.tempVec1!.y = y;
       physicsBody.body.setPosition(this.tempVec1!);
 
-      this.tempVec2!.x = 0;
-      this.tempVec2!.y = 0;
+      // Apply clockwise tangential velocity
+      const clockwiseSpeed = this.settings.initialClockwiseVelocity;
+      this.tempVec2!.x = -clockwiseSpeed * Math.sin(angle);
+      this.tempVec2!.y = clockwiseSpeed * Math.cos(angle);
       physicsBody.body.setLinearVelocity(this.tempVec2!);
       physicsBody.body.setAngularVelocity(0);
       physicsBody.body.setAngle(0);
@@ -760,8 +765,10 @@ class PhysicsSimulation {
       this.tempVec1!.y = y;
       physicsBody.body.setPosition(this.tempVec1!);
 
-      this.tempVec2!.x = 0;
-      this.tempVec2!.y = 0;
+      // Apply clockwise tangential velocity
+      const clockwiseSpeed = this.settings.initialClockwiseVelocity;
+      this.tempVec2!.x = -clockwiseSpeed * Math.sin(angle);
+      this.tempVec2!.y = clockwiseSpeed * Math.cos(angle);
       physicsBody.body.setLinearVelocity(this.tempVec2!);
 
       physicsBody.body.setAngularVelocity(0);

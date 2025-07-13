@@ -27,6 +27,7 @@ export interface PhysicsSVGProps {
   shockwaveRadius: number;
   shockwaveDecay: number;
   shockwaveDirectionality: number;
+  initialClockwiseVelocity: number;
   onDragStateChange: (isDragging: boolean) => void;
   onHoverStateChange: (isHovering: boolean) => void;
 }
@@ -145,6 +146,7 @@ export const PhysicsSVG = memo(
         shockwaveRadius,
         shockwaveDecay,
         shockwaveDirectionality,
+        initialClockwiseVelocity,
         onDragStateChange,
         onHoverStateChange,
       },
@@ -308,6 +310,7 @@ export const PhysicsSVG = memo(
               shockwaveRadius,
               shockwaveDecay,
               shockwaveDirectionality,
+              initialClockwiseVelocity,
             },
           });
 
@@ -463,6 +466,7 @@ export const PhysicsSVG = memo(
               shockwaveRadius,
               shockwaveDecay,
               shockwaveDirectionality,
+              initialClockwiseVelocity,
             },
           });
         }
@@ -482,6 +486,7 @@ export const PhysicsSVG = memo(
         shockwaveRadius,
         shockwaveDecay,
         shockwaveDirectionality,
+        initialClockwiseVelocity,
       ]);
 
       // Update number of bodies when it changes
@@ -618,7 +623,7 @@ export const PhysicsSVG = memo(
       return (
         <div
           ref={containerRef}
-          className="relative top-1/2 h-full w-full max-w-full -translate-y-1/2"
+          className="relative top-1/2 h-full w-full max-w-full -translate-y-1/2 lg:h-[110svh]"
           style={{
             mask: "linear-gradient(to top, transparent 0%, black 5%)",
             WebkitMask: "linear-gradient(to top, transparent 0%, black 5%)",

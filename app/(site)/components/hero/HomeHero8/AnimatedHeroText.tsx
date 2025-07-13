@@ -82,11 +82,11 @@ const AnimatedHeroText = () => {
   return (
     <div
       className="pointer-events-none relative z-10 mx-auto flex w-full touch-none flex-col items-center justify-center gap-5 py-10 text-center select-none lg:max-w-2/3"
-      style={{
-        transform: `scale(${scale}) translateY(${translateY}px)`,
-        opacity: opacity,
-        transition: "0.1s transform ease, 0.1s opacity ease",
-      }}
+      //   style={{
+      //     transform: `scale(${scale}) translateY(${translateY}px)`,
+      //     opacity: opacity,
+      //     transition: "0.1s transform ease, 0.1s opacity ease",
+      //   }}
     >
       <h1 className="text-5xl font-semibold text-pretty text-gray-900 md:text-6xl dark:text-white">
         Let&apos;s build.

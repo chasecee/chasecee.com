@@ -11,11 +11,11 @@ const HomeHero8 = () => {
         style={{ position: "absolute", zIndex: -1 }}
       />
 
-      <div className="fixed inset-0 z-[1]">
-        <div className="relative flex h-[80svh] flex-row items-center gap-12 lg:h-[90vh] lg:gap-16">
+      <div className="relative inset-0 z-[1] -mx-6">
+        <div className="relative flex h-[80svh] flex-row items-center gap-12 lg:h-[90svh] lg:gap-16">
           <AnimatedHeroText />
 
-          <div className="absolute inset-0 z-0 w-full flex-1">
+          <div className="bottom-[-10svh]z-0 absolute inset-0 w-full flex-1">
             <PhysicsSVGClient />
           </div>
         </div>
