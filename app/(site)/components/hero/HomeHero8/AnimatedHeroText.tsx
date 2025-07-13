@@ -92,7 +92,7 @@ const AnimatedHeroText = () => {
         Let&apos;s build.
       </h1>
       <div className="container flex flex-col gap-8">
-        <p className="text-lg font-light text-pretty text-gray-600 md:text-xl dark:text-gray-300">
+        <p className="text-lg font-light text-pretty text-gray-600 md:text-xl dark:text-gray-400">
           I&apos;m Chase, a developer obsessed with
           <br className="hidden sm:block" />
           &nbsp;crafting excellent experiences.

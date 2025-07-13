@@ -39,7 +39,7 @@ const MOBILE_SETTINGS = {
   restitution: 0,
   numBodies: 450,
   bodySize: 0.36,
-  bodySizeVariance: 0.6,
+  bodySizeVariance: 0.5,
   bodiesStartRadius: 0.9,
   bodiesStartSpread: 0.3,
   colorLevel: 4,
