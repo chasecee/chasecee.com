@@ -12,13 +12,13 @@ import React, {
 import { palette as importedPalette } from "./palette";
 
 const canvasStyle = {
-  touchAction: "none",
+  touchAction: "auto",
 };
 
 const containerStyle = {
   mask: "linear-gradient(to top, transparent 0%, black 5%)",
   WebkitMask: "linear-gradient(to top, transparent 0%, black 5%)",
-  touchAction: "none",
+  touchAction: "auto",
 };
 
 export interface PhysicsSVGProps {
@@ -52,6 +52,7 @@ export interface PhysicsSVGProps {
 export interface PhysicsSVGRef {
   shockwave: (x?: number, y?: number) => void;
   applyScrollForce: (force: number, direction: number) => void;
+  getCanvasBounds: () => DOMRect | null;
 }
 
 interface PhysicsBodyData {
@@ -247,6 +248,9 @@ export const PhysicsSVG = memo(
             type: "SCROLL_FORCE",
             payload: { force, direction },
           });
+        },
+        getCanvasBounds: () => {
+          return canvasRef.current?.getBoundingClientRect() || null;
         },
       }));
 

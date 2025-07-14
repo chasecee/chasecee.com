@@ -69,6 +69,7 @@ const PhysicsSVGClient = forwardRef<PhysicsSVGRef>((_, ref) => {
     shockwave: (x?: number, y?: number) => physicsRef.current?.shockwave(x, y),
     applyScrollForce: (force: number, direction: number) =>
       physicsRef.current?.applyScrollForce(force, direction),
+    getCanvasBounds: () => physicsRef.current?.getCanvasBounds() || null,
   }));
 
   useEffect(() => {
@@ -120,23 +121,72 @@ const PhysicsSVGClient = forwardRef<PhysicsSVGRef>((_, ref) => {
             lastTime = now;
           };
 
+          const isPointInCanvas = (
+            clientX: number,
+            clientY: number,
+          ): boolean => {
+            const canvasBounds = physicsRef.current?.getCanvasBounds();
+            if (!canvasBounds) return false;
+
+            return (
+              clientX >= canvasBounds.left &&
+              clientX <= canvasBounds.right &&
+              clientY >= canvasBounds.top &&
+              clientY <= canvasBounds.bottom
+            );
+          };
+
+          const convertToCanvasCoords = (clientX: number, clientY: number) => {
+            const canvasBounds = physicsRef.current?.getCanvasBounds();
+            if (!canvasBounds) return { x: 0, y: 0 };
+
+            return {
+              x: clientX - canvasBounds.left,
+              y: clientY - canvasBounds.top,
+            };
+          };
+
           const handleTouchStart = (e: TouchEvent) => {
             if (!isMobile) return;
-            lastTouchY = e.touches[0].clientY;
+
+            const touch = e.touches[0];
+            lastTouchY = touch.clientY;
             lastTime = performance.now();
+
+            if (isPointInCanvas(touch.clientX, touch.clientY)) {
+              const canvasCoords = convertToCanvasCoords(
+                touch.clientX,
+                touch.clientY,
+              );
+              physicsRef.current?.shockwave(canvasCoords.x, canvasCoords.y);
+            }
           };
 
           const handleTouchMove = (e: TouchEvent) => {
             if (!isMobile) return;
 
             const now = performance.now();
-            const currentTouchY = e.touches[0].clientY;
+            const touch = e.touches[0];
+            const currentTouchY = touch.clientY;
             const deltaTime = now - lastTime;
             const deltaY = lastTouchY - currentTouchY;
 
+            const isTouchingCanvas = isPointInCanvas(
+              touch.clientX,
+              touch.clientY,
+            );
+
             if (deltaTime > 16 && Math.abs(deltaY) > 3) {
               const velocity = (deltaY / deltaTime) * 25;
-              applyForce(velocity);
+
+              if (isTouchingCanvas) {
+                applyForce(velocity);
+                const canvasCoords = convertToCanvasCoords(
+                  touch.clientX,
+                  touch.clientY,
+                );
+                physicsRef.current?.shockwave(canvasCoords.x, canvasCoords.y);
+              }
             }
 
             lastTouchY = currentTouchY;
