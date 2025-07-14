@@ -2,12 +2,24 @@
 import React, {
   useRef,
   useEffect,
+  useLayoutEffect,
   useCallback,
   memo,
   forwardRef,
   useImperativeHandle,
+  RefObject,
 } from "react";
-import { palette } from "./pallette";
+import { palette as importedPalette } from "./palette";
+
+const canvasStyle = {
+  touchAction: "none",
+};
+
+const containerStyle = {
+  mask: "linear-gradient(to top, transparent 0%, black 5%)",
+  WebkitMask: "linear-gradient(to top, transparent 0%, black 5%)",
+  touchAction: "none",
+};
 
 export interface PhysicsSVGProps {
   gravity: number;
@@ -34,6 +46,7 @@ export interface PhysicsSVGProps {
   scrollDirectionInfluence: number;
   onDragStateChange: (isDragging: boolean) => void;
   onHoverStateChange: (isHovering: boolean) => void;
+  palette?: Record<string, string[]>;
 }
 
 export interface PhysicsSVGRef {
@@ -50,6 +63,18 @@ interface PhysicsBodyData {
   width: number;
   height: number;
   colorIndex: number;
+}
+
+interface CanvasProps {
+  canvasRef: RefObject<HTMLCanvasElement | null>;
+  cursorStyle: string;
+}
+
+interface ControlsProps {
+  onPointerDown: (e: PointerEvent) => void;
+  onPointerMove: (e: PointerEvent) => void;
+  onPointerUp: () => void;
+  canvasRef: RefObject<HTMLCanvasElement | null>;
 }
 
 const parseHSLA = (hslaString: string) => {
@@ -91,8 +116,9 @@ const generateRainbowFromPalette = (
   index: number,
   totalBodies: number,
   colorLevel: number,
+  paletteColors: Record<string, string[]>,
 ): string => {
-  const colorOrder: Array<keyof typeof palette> = [
+  const colorOrder: Array<keyof typeof paletteColors> = [
     "red",
     "amber",
     "green",
@@ -109,11 +135,55 @@ const generateRainbowFromPalette = (
   const nextColorIndex = (colorIndex + 1) % colorOrder.length;
   const interpolationFactor = colorPosition - colorIndex;
 
-  const currentColor = palette[colorOrder[colorIndex]][levelIndex];
-  const nextColor = palette[colorOrder[nextColorIndex]][levelIndex];
+  const currentColor =
+    paletteColors[colorOrder[colorIndex]]?.[levelIndex] ||
+    paletteColors[colorOrder[colorIndex]]?.[0] ||
+    "HSLA(0,100%,50%,1)";
+  const nextColor =
+    paletteColors[colorOrder[nextColorIndex]]?.[levelIndex] ||
+    paletteColors[colorOrder[nextColorIndex]]?.[0] ||
+    "HSLA(0,100%,50%,1)";
 
   return interpolateHSLA(currentColor, nextColor, interpolationFactor);
 };
+
+const MemoizedCanvas = memo(({ canvasRef, cursorStyle }: CanvasProps) => (
+  <canvas
+    ref={canvasRef}
+    className="h-full w-full"
+    style={{
+      cursor: cursorStyle,
+      ...canvasStyle,
+    }}
+  />
+));
+
+MemoizedCanvas.displayName = "MemoizedCanvas";
+
+const PointerControls = memo(
+  ({ onPointerDown, onPointerMove, onPointerUp, canvasRef }: ControlsProps) => {
+    useLayoutEffect(() => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      canvas.addEventListener("pointerdown", onPointerDown);
+      canvas.addEventListener("pointermove", onPointerMove);
+      canvas.addEventListener("pointerup", onPointerUp);
+      canvas.addEventListener("pointerleave", onPointerUp);
+
+      return () => {
+        canvas.removeEventListener("pointerdown", onPointerDown);
+        canvas.removeEventListener("pointermove", onPointerMove);
+        canvas.removeEventListener("pointerup", onPointerUp);
+        canvas.removeEventListener("pointerleave", onPointerUp);
+      };
+    }, [onPointerDown, onPointerMove, onPointerUp]);
+
+    return null;
+  },
+);
+
+PointerControls.displayName = "PointerControls";
 
 export const PhysicsSVG = memo(
   forwardRef<PhysicsSVGRef, PhysicsSVGProps>(
@@ -143,6 +213,7 @@ export const PhysicsSVG = memo(
         scrollDirectionInfluence,
         onDragStateChange,
         onHoverStateChange,
+        palette = importedPalette,
       },
       ref,
     ) => {
@@ -152,12 +223,14 @@ export const PhysicsSVG = memo(
       const dimensionsRef = useRef({ width: 0, height: 0 });
       const bodiesRef = useRef<PhysicsBodyData[]>([]);
       const isHoveringRef = useRef(false);
+      const isDraggingRef = useRef(false);
       const isDrawingShockwaveRef = useRef(false);
       const shockwaveThrottledRef = useRef(false);
       const lastShockwavePos = useRef({ x: 0, y: 0 });
       const resizeTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
       const renderRequestRef = useRef<number>(0);
       const canvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
+      const [cursorStyle, setCursorStyle] = React.useState("default");
 
       useImperativeHandle(ref, () => ({
         shockwave: (x?: number, y?: number) => {
@@ -177,9 +250,207 @@ export const PhysicsSVG = memo(
         },
       }));
 
+      const getPointerPos = useCallback((e: PointerEvent) => {
+        const canvas = canvasRef.current;
+        if (!canvas) return { x: 0, y: 0 };
+
+        const rect = canvas.getBoundingClientRect();
+        return {
+          x:
+            (e.clientX - rect.left) *
+            (dimensionsRef.current.width / rect.width),
+          y:
+            (e.clientY - rect.top) *
+            (dimensionsRef.current.height / rect.height),
+        };
+      }, []);
+
+      const onPointerDown = useCallback(
+        (e: PointerEvent) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          isDrawingShockwaveRef.current = true;
+
+          const pos = getPointerPos(e);
+          const centerX = dimensionsRef.current.width / 2;
+          const centerY = dimensionsRef.current.height / 2;
+          const centerRadius =
+            Math.min(
+              dimensionsRef.current.width,
+              dimensionsRef.current.height,
+            ) * centerCircleRadius;
+
+          const distanceFromCenter = Math.sqrt(
+            Math.pow(pos.x - centerX, 2) + Math.pow(pos.y - centerY, 2),
+          );
+
+          if (distanceFromCenter <= centerRadius) {
+            workerRef.current?.postMessage({
+              type: "CENTER_SHOCKWAVE",
+              payload: { x: centerX, y: centerY },
+            });
+          } else {
+            workerRef.current?.postMessage({
+              type: "SHOCKWAVE",
+              payload: { x: pos.x, y: pos.y },
+            });
+          }
+        },
+        [getPointerPos, centerCircleRadius],
+      );
+
+      const onPointerMove = useCallback(
+        (e: PointerEvent) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          const pos = getPointerPos(e);
+          lastShockwavePos.current = pos;
+
+          if (isDrawingShockwaveRef.current && !shockwaveThrottledRef.current) {
+            shockwaveThrottledRef.current = true;
+            requestAnimationFrame(() => {
+              workerRef.current?.postMessage({
+                type: "SHOCKWAVE",
+                payload: {
+                  x: lastShockwavePos.current.x,
+                  y: lastShockwavePos.current.y,
+                },
+              });
+              shockwaveThrottledRef.current = false;
+            });
+          }
+
+          const isOverBody = bodiesRef.current.some((body) => {
+            const dx = pos.x - body.x;
+            const dy = pos.y - body.y;
+            const radius = Math.sqrt(body.width * body.height) / 2;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            return distance <= radius;
+          });
+
+          if (isOverBody !== isHoveringRef.current) {
+            isHoveringRef.current = isOverBody;
+            setCursorStyle(isOverBody ? "pointer" : "default");
+            onHoverStateChange(isOverBody);
+          }
+        },
+        [getPointerPos, onHoverStateChange],
+      );
+
+      const onPointerUp = useCallback(() => {
+        isDrawingShockwaveRef.current = false;
+      }, []);
+
+      const renderBodies = useCallback(() => {
+        renderRequestRef.current = 0;
+
+        const canvas = canvasRef.current;
+        const ctx = canvasContextRef.current;
+        if (!canvas || !ctx) return;
+
+        const { width, height } = dimensionsRef.current;
+        const bodies = bodiesRef.current;
+
+        ctx.clearRect(0, 0, width, height);
+
+        const isHighBodyCount = bodies.length > 400;
+        const padding = 40;
+
+        const visibleBodies = bodies.filter(
+          (body) =>
+            body.x + body.width / 2 > -padding &&
+            body.x - body.width / 2 < width + padding &&
+            body.y + body.height / 2 > -padding &&
+            body.y - body.height / 2 < height + padding,
+        );
+
+        const simplifyThreshold = Math.min(width, height) * 0.015;
+        const draggedBodies = visibleBodies.filter((body) => body.isDragged);
+        const regularBodies = visibleBodies.filter((body) => !body.isDragged);
+
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+
+        regularBodies.forEach((body) => {
+          const {
+            x,
+            y,
+            width: bodyWidth,
+            height: bodyHeight,
+            rotation,
+            colorIndex,
+          } = body;
+
+          if (isHighBodyCount && Math.max(bodyWidth, bodyHeight) < 4) return;
+
+          ctx.save();
+          ctx.translate(x, y);
+
+          if (Math.max(bodyWidth, bodyHeight) > simplifyThreshold) {
+            ctx.rotate((rotation * Math.PI) / 180);
+          }
+
+          ctx.fillStyle = generateRainbowFromPalette(
+            colorIndex,
+            bodies.length,
+            colorLevel,
+            palette,
+          );
+
+          const radius = Math.sqrt(bodyWidth * bodyHeight) / 2;
+
+          ctx.beginPath();
+          ctx.arc(0, 0, radius, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.restore();
+        });
+
+        if (draggedBodies.length > 0) {
+          draggedBodies.forEach((body) => {
+            const {
+              x,
+              y,
+              width: bodyWidth,
+              height: bodyHeight,
+              rotation,
+              colorIndex,
+            } = body;
+
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate((rotation * Math.PI) / 180);
+
+            ctx.fillStyle = generateRainbowFromPalette(
+              colorIndex,
+              bodies.length,
+              colorLevel,
+              palette,
+            );
+
+            ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
+            ctx.shadowBlur = 12;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 6;
+
+            const radius = Math.sqrt(bodyWidth * bodyHeight) / 2;
+
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+          });
+        }
+      }, [colorLevel, palette]);
+
+      // Mount-only effect for worker initialization
       useEffect(() => {
         let isMounted = true;
-        let unregisterPointerEvents: (() => void) | null = null;
         let unregisterResizeObserver: (() => void) | null = null;
 
         const initializeWorker = async () => {
@@ -205,7 +476,33 @@ export const PhysicsSVG = memo(
 
               case "BODY_UPDATE":
                 bodiesRef.current = payload;
+                if (renderRequestRef.current === 0) {
+                  renderRequestRef.current =
+                    requestAnimationFrame(renderBodies);
+                }
+                break;
 
+              case "BODY_UPDATE_BUFFER":
+                const buffer = payload.buffer;
+                const count = payload.count;
+                const floatView = new Float32Array(buffer);
+
+                const bodies = [];
+                for (let i = 0; i < count; i++) {
+                  const offset = i * 8;
+                  bodies.push({
+                    id: `body-${Math.floor(floatView[offset])}`,
+                    x: floatView[offset + 1],
+                    y: floatView[offset + 2],
+                    rotation: floatView[offset + 3],
+                    isDragged: floatView[offset + 4] === 1,
+                    width: floatView[offset + 5],
+                    height: floatView[offset + 6],
+                    colorIndex: Math.floor(floatView[offset + 7]),
+                  });
+                }
+
+                bodiesRef.current = bodies;
                 if (renderRequestRef.current === 0) {
                   renderRequestRef.current =
                     requestAnimationFrame(renderBodies);
@@ -223,7 +520,6 @@ export const PhysicsSVG = memo(
                   }
                 });
                 bodiesRef.current = updatedBodies;
-
                 if (renderRequestRef.current === 0) {
                   renderRequestRef.current =
                     requestAnimationFrame(renderBodies);
@@ -275,136 +571,10 @@ export const PhysicsSVG = memo(
           }
 
           worker.postMessage({ type: "INIT" });
-
-          worker.postMessage({
-            type: "UPDATE_SETTINGS",
-            payload: {
-              gravity,
-              timeStep,
-              damping,
-              friction,
-              restitution,
-              bodySize,
-              bodySizeVariance,
-              centerCircleRadius,
-              gridGapSize,
-              bodiesStartRadius,
-              bodiesStartSpread,
-              shockwaveForce,
-              shockwaveRadius,
-              shockwaveDecay,
-              shockwaveDirectionality,
-              initialClockwiseVelocity,
-              scrollForceMultiplier,
-              scrollVelocityDamping,
-              scrollInertiaDecay,
-              scrollDirectionInfluence,
-            },
-          });
-
           worker.postMessage({
             type: "UPDATE_DIMENSIONS",
             payload: { width, height, numBodies },
           });
-
-          const getPointerPos = (e: PointerEvent) => {
-            const rect = canvas.getBoundingClientRect();
-            return {
-              x:
-                (e.clientX - rect.left) *
-                (dimensionsRef.current.width / rect.width),
-              y:
-                (e.clientY - rect.top) *
-                (dimensionsRef.current.height / rect.height),
-            };
-          };
-
-          const onPointerDown = (e: PointerEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            isDrawingShockwaveRef.current = true;
-
-            const pos = getPointerPos(e);
-
-            const centerX = dimensionsRef.current.width / 2;
-            const centerY = dimensionsRef.current.height / 2;
-            const centerRadius =
-              Math.min(
-                dimensionsRef.current.width,
-                dimensionsRef.current.height,
-              ) * centerCircleRadius;
-
-            const distanceFromCenter = Math.sqrt(
-              Math.pow(pos.x - centerX, 2) + Math.pow(pos.y - centerY, 2),
-            );
-
-            if (distanceFromCenter <= centerRadius) {
-              worker.postMessage({
-                type: "CENTER_SHOCKWAVE",
-                payload: { x: centerX, y: centerY },
-              });
-            } else {
-              worker.postMessage({
-                type: "SHOCKWAVE",
-                payload: { x: pos.x, y: pos.y },
-              });
-            }
-          };
-
-          const onPointerMove = (e: PointerEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const pos = getPointerPos(e);
-            lastShockwavePos.current = pos;
-
-            if (
-              isDrawingShockwaveRef.current &&
-              !shockwaveThrottledRef.current
-            ) {
-              shockwaveThrottledRef.current = true;
-              requestAnimationFrame(() => {
-                workerRef.current?.postMessage({
-                  type: "SHOCKWAVE",
-                  payload: {
-                    x: lastShockwavePos.current.x,
-                    y: lastShockwavePos.current.y,
-                  },
-                });
-                shockwaveThrottledRef.current = false;
-              });
-            }
-
-            const isOverBody = bodiesRef.current.some((body) => {
-              const dx = pos.x - body.x;
-              const dy = pos.y - body.y;
-              const radius = Math.sqrt(body.width * body.height) / 2;
-              const distance = Math.sqrt(dx * dx + dy * dy);
-              return distance <= radius;
-            });
-
-            if (isOverBody !== isHoveringRef.current) {
-              isHoveringRef.current = isOverBody;
-              onHoverStateChange(isOverBody);
-            }
-          };
-
-          const onPointerUp = () => {
-            isDrawingShockwaveRef.current = false;
-          };
-
-          canvas.addEventListener("pointerdown", onPointerDown);
-          canvas.addEventListener("pointermove", onPointerMove);
-          canvas.addEventListener("pointerup", onPointerUp);
-          canvas.addEventListener("pointerleave", onPointerUp);
-
-          unregisterPointerEvents = () => {
-            canvas.removeEventListener("pointerdown", onPointerDown);
-            canvas.removeEventListener("pointermove", onPointerMove);
-            canvas.removeEventListener("pointerup", onPointerUp);
-            canvas.removeEventListener("pointerleave", onPointerUp);
-          };
         };
 
         initializeWorker();
@@ -414,19 +584,19 @@ export const PhysicsSVG = memo(
           if (resizeTimeoutRef.current) {
             clearTimeout(resizeTimeoutRef.current);
           }
-          if (unregisterPointerEvents) unregisterPointerEvents();
           if (unregisterResizeObserver) unregisterResizeObserver();
           if (renderRequestRef.current) {
             cancelAnimationFrame(renderRequestRef.current);
           }
           if (workerRef.current) {
-            workerRef.current.postMessage({ type: "DESTROY" });
+            workerRef.current.postMessage({ type: "TERMINATE" });
             workerRef.current.terminate();
             workerRef.current = null;
           }
         };
-      }, [onDragStateChange, onHoverStateChange]);
+      }, []);
 
+      // Settings-only effect
       useEffect(() => {
         if (workerRef.current) {
           workerRef.current.postMessage({
@@ -491,127 +661,19 @@ export const PhysicsSVG = memo(
         }
       }, [numBodies]);
 
-      const renderBodies = useCallback(() => {
-        renderRequestRef.current = 0;
-
-        const canvas = canvasRef.current;
-        const ctx = canvasContextRef.current;
-        if (!canvas || !ctx) return;
-
-        const { width, height } = dimensionsRef.current;
-        const bodies = bodiesRef.current;
-
-        ctx.clearRect(0, 0, width, height);
-
-        const isHighBodyCount = bodies.length > 400;
-        const padding = 40;
-
-        const visibleBodies = bodies.filter(
-          (body) =>
-            body.x + body.width / 2 > -padding &&
-            body.x - body.width / 2 < width + padding &&
-            body.y + body.height / 2 > -padding &&
-            body.y - body.height / 2 < height + padding,
-        );
-
-        const simplifyThreshold = Math.min(width, height) * 0.015;
-        const draggedBodies = visibleBodies.filter((body) => body.isDragged);
-        const regularBodies = visibleBodies.filter((body) => !body.isDragged);
-
-        ctx.shadowColor = "transparent";
-        ctx.shadowBlur = 0;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 0;
-
-        regularBodies.forEach((body) => {
-          const {
-            x,
-            y,
-            width: bodyWidth,
-            height: bodyHeight,
-            rotation,
-            colorIndex,
-          } = body;
-
-          if (isHighBodyCount && Math.max(bodyWidth, bodyHeight) < 4) return;
-
-          ctx.save();
-          ctx.translate(x, y);
-
-          if (Math.max(bodyWidth, bodyHeight) > simplifyThreshold) {
-            ctx.rotate((rotation * Math.PI) / 180);
-          }
-
-          ctx.fillStyle = generateRainbowFromPalette(
-            colorIndex,
-            bodies.length,
-            colorLevel,
-          );
-
-          const radius = Math.sqrt(bodyWidth * bodyHeight) / 2;
-
-          ctx.beginPath();
-          ctx.arc(0, 0, radius, 0, Math.PI * 2);
-          ctx.fill();
-
-          ctx.restore();
-        });
-
-        if (draggedBodies.length > 0) {
-          draggedBodies.forEach((body) => {
-            const {
-              x,
-              y,
-              width: bodyWidth,
-              height: bodyHeight,
-              rotation,
-              colorIndex,
-            } = body;
-
-            ctx.save();
-            ctx.translate(x, y);
-            ctx.rotate((rotation * Math.PI) / 180);
-
-            ctx.fillStyle = generateRainbowFromPalette(
-              colorIndex,
-              bodies.length,
-              colorLevel,
-            );
-
-            ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
-            ctx.shadowBlur = 12;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 6;
-
-            const radius = Math.sqrt(bodyWidth * bodyHeight) / 2;
-
-            ctx.beginPath();
-            ctx.arc(0, 0, radius, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.restore();
-          });
-        }
-      }, [colorLevel]);
-
       return (
         <div
           ref={containerRef}
-          className="relative top-1/2 h-full w-full max-w-full -translate-y-1/2 lg:h-[110svh]"
-          style={{
-            mask: "linear-gradient(to top, transparent 0%, black 5%)",
-            WebkitMask: "linear-gradient(to top, transparent 0%, black 5%)",
-            touchAction: "none",
-          }}
+          className="relative top-1/2 h-[100svh] w-full max-w-full -translate-y-1/2 lg:h-[110svh]"
+          style={containerStyle}
         >
-          <canvas
-            ref={canvasRef}
-            className="h-full w-full"
-            style={{
-              cursor: isHoveringRef.current ? "pointer" : "default",
-              touchAction: "none",
-            }}
+          <PointerControls
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            canvasRef={canvasRef}
           />
+          <MemoizedCanvas canvasRef={canvasRef} cursorStyle={cursorStyle} />
         </div>
       );
     },

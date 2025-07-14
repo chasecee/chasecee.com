@@ -1,21 +1,23 @@
+"use client";
 import PhysicsSVGClient from "./PhysicsSVGClient";
-import AnimatedHeroText from "./AnimatedHeroText";
+import HeroText from "./HeroText";
 
 const HomeHero8 = () => {
   return (
     <>
       <div
         id="hero-sentinel"
-        className="pointer-events-none absolute top-0 left-0 h-[50svh] w-full"
-        style={{ position: "absolute", zIndex: -1 }}
+        className="pointer-events-none absolute top-0 left-0 z-[-1] h-[50svh] w-full"
       />
 
       <div className="relative inset-0 z-[1] -mx-6">
-        <div className="relative flex h-[80svh] flex-row items-center gap-12 lg:h-[90svh] lg:gap-16">
-          <AnimatedHeroText />
-
-          <div className="bottom-[-10svh]z-0 absolute inset-0 w-full flex-1">
+        <div className="relative h-[80svh] w-full lg:h-[90svh]">
+          <div className="absolute top-0 left-0 h-[calc(100%+10svh)] w-full">
             <PhysicsSVGClient />
+          </div>
+
+          <div className="pointer-events-none absolute top-0 left-0 z-20 flex h-full w-full items-center justify-center">
+            <HeroText />
           </div>
         </div>
       </div>

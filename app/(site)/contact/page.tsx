@@ -38,7 +38,7 @@ export default function Contact() {
                 LinkedIn
                 <FaLinkedin size={size} />
               </Button>
-              <Button href="/Chase-Christensen-Resume-2023.pdf" target="_blank">
+              <Button href="/ChaseChristensen-Resume-2025.pdf" target="_blank">
                 Resume
                 <FaFilePdf size={size} />
               </Button>

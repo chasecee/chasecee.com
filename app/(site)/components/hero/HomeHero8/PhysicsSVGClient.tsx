@@ -3,19 +3,12 @@ import {
   useState,
   useEffect,
   useRef,
-  useCallback,
   useImperativeHandle,
   forwardRef,
 } from "react";
-import dynamic from "next/dynamic";
-import type { PhysicsSVGRef } from "./PhysicsSVG";
+import { PhysicsSVG, type PhysicsSVGRef } from "./PhysicsSVG";
 
-const DynamicPhysicsSVG = dynamic(
-  () => import("./PhysicsSVG").then((mod) => mod.PhysicsSVG),
-  {
-    ssr: false,
-  },
-);
+const noop = () => {};
 
 const DESKTOP_SETTINGS = {
   gravity: 40,
@@ -78,18 +71,18 @@ const PhysicsSVGClient = forwardRef<PhysicsSVGRef>((_, ref) => {
       physicsRef.current?.applyScrollForce(force, direction),
   }));
 
-  const handleResize = useCallback(() => {
-    if (!mounted) return;
-    const isMobileDevice = window.innerWidth < 768;
-    setIsMobile(isMobileDevice);
-  }, [mounted]);
-
   useEffect(() => {
+    const handleResize = () => {
+      if (!mounted) return;
+      const isMobileDevice = window.innerWidth < 768;
+      setIsMobile(isMobileDevice);
+    };
+
     setMounted(true);
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [handleResize]);
+  }, [mounted]);
 
   useEffect(() => {
     if (!mounted) return;
@@ -101,7 +94,7 @@ const PhysicsSVGClient = forwardRef<PhysicsSVGRef>((_, ref) => {
           let lastTouchY = 0;
           let lastTime = performance.now();
 
-          const applyForce = (velocity: number, source: string) => {
+          const applyForce = (velocity: number) => {
             if (physicsRef.current && Math.abs(velocity) > 2) {
               physicsRef.current.applyScrollForce(
                 velocity,
@@ -120,7 +113,7 @@ const PhysicsSVGClient = forwardRef<PhysicsSVGRef>((_, ref) => {
 
             if (deltaTime > 16 && Math.abs(deltaScroll) > 1) {
               const velocity = (deltaScroll / deltaTime) * 18;
-              applyForce(velocity, "SCROLL");
+              applyForce(velocity);
             }
 
             lastScrollPos = currentScrollY;
@@ -129,7 +122,6 @@ const PhysicsSVGClient = forwardRef<PhysicsSVGRef>((_, ref) => {
 
           const handleTouchStart = (e: TouchEvent) => {
             if (!isMobile) return;
-
             lastTouchY = e.touches[0].clientY;
             lastTime = performance.now();
           };
@@ -144,7 +136,7 @@ const PhysicsSVGClient = forwardRef<PhysicsSVGRef>((_, ref) => {
 
             if (deltaTime > 16 && Math.abs(deltaY) > 3) {
               const velocity = (deltaY / deltaTime) * 25;
-              applyForce(velocity, "TOUCH");
+              applyForce(velocity);
             }
 
             lastTouchY = currentTouchY;
@@ -195,12 +187,12 @@ const PhysicsSVGClient = forwardRef<PhysicsSVGRef>((_, ref) => {
   const settings = isMobile ? MOBILE_SETTINGS : DESKTOP_SETTINGS;
 
   return (
-    <DynamicPhysicsSVG
+    <PhysicsSVG
       key={`physics-${isMobile ? "mobile" : "desktop"}`}
       ref={physicsRef}
       {...settings}
-      onDragStateChange={() => {}}
-      onHoverStateChange={() => {}}
+      onDragStateChange={noop}
+      onHoverStateChange={noop}
     />
   );
 });

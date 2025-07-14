@@ -4,6 +4,94 @@ import type { World, Body, Vec2 } from "planck";
 
 let planck: any = null;
 
+class Vec2Pool {
+  private pool: Vec2[] = [];
+  private index = 0;
+  private static instance: Vec2Pool;
+
+  static getInstance(): Vec2Pool {
+    if (!Vec2Pool.instance) {
+      Vec2Pool.instance = new Vec2Pool();
+    }
+    return Vec2Pool.instance;
+  }
+
+  initialize(planckInstance: any, poolSize: number = 50) {
+    this.pool = [];
+    for (let i = 0; i < poolSize; i++) {
+      this.pool.push(planckInstance.Vec2(0, 0));
+    }
+    this.index = 0;
+  }
+
+  get(x: number = 0, y: number = 0): Vec2 {
+    const vec = this.pool[this.index];
+    vec.x = x;
+    vec.y = y;
+    this.index = (this.index + 1) % this.pool.length;
+    return vec;
+  }
+
+  reset() {
+    this.index = 0;
+  }
+}
+
+class TransferableBuffer {
+  private static instance: TransferableBuffer;
+  private buffer: ArrayBuffer | null = null;
+  private floatView: Float32Array | null = null;
+  private capacity = 0;
+
+  static getInstance(): TransferableBuffer {
+    if (!TransferableBuffer.instance) {
+      TransferableBuffer.instance = new TransferableBuffer();
+    }
+    return TransferableBuffer.instance;
+  }
+
+  initialize(maxBodies: number) {
+    const floatsPerBody = 8; // id, x, y, rotation, isDragged, width, height, colorIndex
+    this.capacity = maxBodies * floatsPerBody;
+    this.buffer = new ArrayBuffer(this.capacity * 4);
+    this.floatView = new Float32Array(this.buffer);
+  }
+
+  packBodies(
+    bodies: {
+      id: string;
+      x: number;
+      y: number;
+      rotation: number;
+      isDragged: boolean;
+      width: number;
+      height: number;
+      colorIndex: number;
+    }[],
+  ): ArrayBuffer | null {
+    if (!this.floatView || !this.buffer) return null;
+
+    for (let i = 0; i < bodies.length; i++) {
+      const body = bodies[i];
+      const offset = i * 8;
+
+      this.floatView[offset] = parseInt(body.id.split("-")[1]) || i; // Extract numeric ID
+      this.floatView[offset + 1] = body.x;
+      this.floatView[offset + 2] = body.y;
+      this.floatView[offset + 3] = body.rotation;
+      this.floatView[offset + 4] = body.isDragged ? 1 : 0;
+      this.floatView[offset + 5] = body.width;
+      this.floatView[offset + 6] = body.height;
+      this.floatView[offset + 7] = body.colorIndex;
+    }
+
+    const result = this.buffer.slice(0, bodies.length * 8 * 4);
+    this.buffer = new ArrayBuffer(this.capacity * 4);
+    this.floatView = new Float32Array(this.buffer);
+    return result;
+  }
+}
+
 interface PhysicsBody {
   id: string;
   body: Body;
@@ -66,12 +154,16 @@ class PhysicsSimulation {
   private lastTime = 0;
   private accumulator = 0;
   private fixedTimeStep = 1 / 60;
+  private maxFPS = 60;
+  private frameInterval = 1000 / 60;
+  private lastFrameTime = 0;
+  private animationId: number | null = null;
   private settings: PhysicsSettings = {} as PhysicsSettings;
+  private settingsInitialized = false;
+  private boundariesCreated = false;
 
-  private tempVec1: Vec2 | null = null;
-  private tempVec2: Vec2 | null = null;
-  private tempVec3: Vec2 | null = null;
-  private tempVec4: Vec2 | null = null;
+  private vec2Pool: Vec2Pool;
+  private transferBuffer: TransferableBuffer;
   private centerVec: Vec2 | null = null;
 
   private lastBodyData: PhysicsBodyData[] = [];
@@ -81,15 +173,29 @@ class PhysicsSimulation {
   private scrollForce = 0;
   private scrollDirection = 0;
 
+  constructor() {
+    this.vec2Pool = Vec2Pool.getInstance();
+    this.transferBuffer = TransferableBuffer.getInstance();
+  }
+
+  getBoundariesCreated(): boolean {
+    return this.boundariesCreated;
+  }
+
+  createBoundariesOnce() {
+    if (!this.boundariesCreated && this.settingsInitialized) {
+      this.createBoundaries();
+      this.boundariesCreated = true;
+    }
+  }
+
   async initialize() {
     if (!planck) {
       planck = await import("planck");
     }
 
-    this.tempVec1 = planck.Vec2(0, 0);
-    this.tempVec2 = planck.Vec2(0, 0);
-    this.tempVec3 = planck.Vec2(0, 0);
-    this.tempVec4 = planck.Vec2(0, 0);
+    this.vec2Pool.initialize(planck, 50);
+    this.transferBuffer.initialize(1000);
     this.centerVec = planck.Vec2(this.center.x, this.center.y);
 
     this.world = planck.World({
@@ -99,14 +205,14 @@ class PhysicsSimulation {
       positionIterations: 2,
     });
 
-    this.createBoundaries();
     this.isRunning = true;
     this.lastTime = performance.now();
+    this.lastFrameTime = performance.now();
     this.animate();
   }
 
   private createBoundaries() {
-    if (!this.world || !planck) return;
+    if (!this.world || !planck || !this.settingsInitialized) return;
 
     if (this.groundBody) {
       this.world.destroyBody(this.groundBody);
@@ -182,12 +288,11 @@ class PhysicsSimulation {
 
       const finalBlockSize = blockSize * sizeMultiplier;
 
-      this.tempVec1!.x = x;
-      this.tempVec1!.y = y;
+      const vec1 = this.vec2Pool.get(x, y);
 
       const body = this.world.createBody({
         type: "dynamic",
-        position: this.tempVec1!,
+        position: vec1,
         linearDamping: this.settings.damping,
         angularDamping: this.settings.damping,
       });
@@ -200,9 +305,11 @@ class PhysicsSimulation {
       });
 
       const clockwiseSpeed = this.settings.initialClockwiseVelocity;
-      this.tempVec2!.x = -clockwiseSpeed * Math.sin(angle);
-      this.tempVec2!.y = clockwiseSpeed * Math.cos(angle);
-      body.setLinearVelocity(this.tempVec2!);
+      const vec2 = this.vec2Pool.get(
+        -clockwiseSpeed * Math.sin(angle),
+        clockwiseSpeed * Math.cos(angle),
+      );
+      body.setLinearVelocity(vec2);
 
       const physicsBody: PhysicsBody = {
         id: `body-${i}`,
@@ -225,25 +332,33 @@ class PhysicsSimulation {
     if (!this.isRunning || !this.world) return;
 
     const currentTime = performance.now();
-    const deltaTime = (currentTime - this.lastTime) / 1000;
-    this.lastTime = currentTime;
+    const deltaTime = currentTime - this.lastFrameTime;
 
-    this.accumulator += deltaTime;
-    const maxAccumulator = this.fixedTimeStep * 4;
-    this.accumulator = Math.min(this.accumulator, maxAccumulator);
+    if (deltaTime >= this.frameInterval) {
+      this.lastFrameTime = currentTime - (deltaTime % this.frameInterval);
 
-    while (this.accumulator >= this.fixedTimeStep) {
-      this.stepPhysics();
-      this.accumulator -= this.fixedTimeStep;
+      const physicsTime = (currentTime - this.lastTime) / 1000;
+      this.lastTime = currentTime;
+
+      this.accumulator += physicsTime;
+      const maxAccumulator = this.fixedTimeStep * 4;
+      this.accumulator = Math.min(this.accumulator, maxAccumulator);
+
+      while (this.accumulator >= this.fixedTimeStep) {
+        this.stepPhysics();
+        this.accumulator -= this.fixedTimeStep;
+      }
+
+      this.sendBodyUpdates();
     }
 
-    this.sendBodyUpdates();
-
-    requestAnimationFrame(() => this.animate());
+    this.animationId = requestAnimationFrame(() => this.animate());
   }
 
   private stepPhysics() {
     if (!this.world || !planck) return;
+
+    this.vec2Pool.reset();
 
     const attractorStrength = this.settings.gravity * 8;
     const scrollInfluence =
@@ -260,44 +375,45 @@ class PhysicsSimulation {
         const angle = Math.atan2(pos.y - this.center.y, pos.x - this.center.x);
         const radialImpulse = impulseStrength * 0.3;
 
+        let radialX, radialY;
         if (this.scrollDirection > 0) {
-          this.tempVec3!.x = Math.cos(angle + Math.PI / 2) * radialImpulse;
-          this.tempVec3!.y = Math.sin(angle + Math.PI / 2) * radialImpulse;
+          radialX = Math.cos(angle + Math.PI / 2) * radialImpulse;
+          radialY = Math.sin(angle + Math.PI / 2) * radialImpulse;
         } else {
-          this.tempVec3!.x = Math.cos(angle - Math.PI / 2) * radialImpulse;
-          this.tempVec3!.y = Math.sin(angle - Math.PI / 2) * radialImpulse;
+          radialX = Math.cos(angle - Math.PI / 2) * radialImpulse;
+          radialY = Math.sin(angle - Math.PI / 2) * radialImpulse;
         }
 
         const verticalImpulse = impulseStrength * 0.8;
-        this.tempVec3!.y += verticalImpulse;
+        radialY += verticalImpulse;
 
         const horizontalImpulse = impulseStrength * 0.3 * (Math.random() - 0.5);
-        this.tempVec3!.x += horizontalImpulse;
+        radialX += horizontalImpulse;
 
-        const currentVel = body.getLinearVelocity();
-        this.tempVec4!.x = currentVel.x + this.tempVec3!.x;
-        this.tempVec4!.y = currentVel.y + this.tempVec3!.y;
-        body.setLinearVelocity(this.tempVec4!);
+        const newVel = this.vec2Pool.get(vel.x + radialX, vel.y + radialY);
+        body.setLinearVelocity(newVel);
       });
     }
 
     this.bodies.forEach(({ body }) => {
       const pos = body.getPosition();
 
-      this.tempVec1!.x = this.center.x - pos.x;
-      this.tempVec1!.y = this.center.y - pos.y;
+      const vec1 = this.vec2Pool.get(
+        this.center.x - pos.x,
+        this.center.y - pos.y,
+      );
 
-      const distanceSquared =
-        this.tempVec1!.x * this.tempVec1!.x +
-        this.tempVec1!.y * this.tempVec1!.y;
+      const distanceSquared = vec1.x * vec1.x + vec1.y * vec1.y;
 
       if (distanceSquared > 1) {
         const distance = Math.sqrt(distanceSquared);
         const baseForce = attractorStrength;
 
-        this.tempVec2!.x = (this.tempVec1!.x / distance) * baseForce;
-        this.tempVec2!.y = (this.tempVec1!.y / distance) * baseForce;
-        body.applyForceToCenter(this.tempVec2!);
+        const vec2 = this.vec2Pool.get(
+          (vec1.x / distance) * baseForce,
+          (vec1.y / distance) * baseForce,
+        );
+        body.applyForceToCenter(vec2);
       }
     });
 
@@ -336,15 +452,28 @@ class PhysicsSimulation {
       this.lastBodyData.length === 0;
 
     if (shouldSendFullUpdate) {
-      self.postMessage({
-        type: "BODY_UPDATE",
-        payload: bodyData,
-      });
+      const buffer = this.transferBuffer.packBodies(bodyData);
+      if (buffer) {
+        self.postMessage(
+          {
+            type: "BODY_UPDATE_BUFFER",
+            payload: { buffer, count: bodyData.length },
+          },
+          [buffer],
+        );
+      } else {
+        // Fallback to structured clone
+        self.postMessage({
+          type: "BODY_UPDATE",
+          payload: bodyData,
+        });
+      }
       this.lastBodyData = bodyData;
       this.skipUpdateFrames = 0;
     } else {
       const significantChanges = this.findSignificantChanges(bodyData);
       if (significantChanges.length > 0) {
+        // Use structured clone for delta updates (usually smaller)
         self.postMessage({
           type: "BODY_UPDATE_DELTA",
           payload: significantChanges,
@@ -386,6 +515,8 @@ class PhysicsSimulation {
     const oldBodiesStartRadius = this.settings.bodiesStartRadius;
     const oldBodiesStartSpread = this.settings.bodiesStartSpread;
     this.settings = { ...this.settings, ...newSettings };
+
+    this.settingsInitialized = true;
 
     this.bodies.forEach(({ body }) => {
       const fixture = body.getFixtureList();
@@ -443,9 +574,11 @@ class PhysicsSimulation {
 
     this.bodies.forEach((physicsBody, index) => {
       if (currentPositions[index]) {
-        this.tempVec1!.x = currentPositions[index].x;
-        this.tempVec1!.y = currentPositions[index].y;
-        physicsBody.body.setPosition(this.tempVec1!);
+        const vec1 = this.vec2Pool.get(
+          currentPositions[index].x,
+          currentPositions[index].y,
+        );
+        physicsBody.body.setPosition(vec1);
       }
     });
   }
@@ -467,14 +600,15 @@ class PhysicsSimulation {
       const x = this.center.x + Math.cos(angle) * radius;
       const y = this.center.y + Math.sin(angle) * radius;
 
-      this.tempVec1!.x = x;
-      this.tempVec1!.y = y;
-      physicsBody.body.setPosition(this.tempVec1!);
+      const vec1 = this.vec2Pool.get(x, y);
+      physicsBody.body.setPosition(vec1);
 
       const clockwiseSpeed = this.settings.initialClockwiseVelocity;
-      this.tempVec2!.x = -clockwiseSpeed * Math.sin(angle);
-      this.tempVec2!.y = clockwiseSpeed * Math.cos(angle);
-      physicsBody.body.setLinearVelocity(this.tempVec2!);
+      const vec2 = this.vec2Pool.get(
+        -clockwiseSpeed * Math.sin(angle),
+        clockwiseSpeed * Math.cos(angle),
+      );
+      physicsBody.body.setLinearVelocity(vec2);
       physicsBody.body.setAngularVelocity(0);
       physicsBody.body.setAngle(0);
       physicsBody.body.setAwake(true);
@@ -536,19 +670,18 @@ class PhysicsSimulation {
     this.bodies.forEach(({ body }) => {
       const pos = body.getPosition();
 
-      this.tempVec1!.x = pos.x - shockwaveCenter.x;
-      this.tempVec1!.y = pos.y - shockwaveCenter.y;
-
-      const distance = Math.sqrt(
-        this.tempVec1!.x * this.tempVec1!.x +
-          this.tempVec1!.y * this.tempVec1!.y,
+      const vec1 = this.vec2Pool.get(
+        pos.x - shockwaveCenter.x,
+        pos.y - shockwaveCenter.y,
       );
+
+      const distance = Math.sqrt(vec1.x * vec1.x + vec1.y * vec1.y);
 
       if (distance > maxDistance || distance < 1) return;
 
       const direction = {
-        x: this.tempVec1!.x / distance,
-        y: this.tempVec1!.y / distance,
+        x: vec1.x / distance,
+        y: vec1.y / distance,
       };
 
       const finalDirection = {
@@ -578,13 +711,17 @@ class PhysicsSimulation {
       const finalForce = forceMultiplier * biasBoost;
 
       const impulseStrength = finalForce * 0.1;
-      this.tempVec2!.x = finalDirection.x * impulseStrength;
-      this.tempVec2!.y = finalDirection.y * impulseStrength;
+      const vec2 = this.vec2Pool.get(
+        finalDirection.x * impulseStrength,
+        finalDirection.y * impulseStrength,
+      );
 
       const currentVel = body.getLinearVelocity();
-      this.tempVec3!.x = currentVel.x + this.tempVec2!.x;
-      this.tempVec3!.y = currentVel.y + this.tempVec2!.y;
-      body.setLinearVelocity(this.tempVec3!);
+      const vec3 = this.vec2Pool.get(
+        currentVel.x + vec2.x,
+        currentVel.y + vec2.y,
+      );
+      body.setLinearVelocity(vec3);
 
       body.setAwake(true);
       const angularImpulse = (Math.random() - 0.5) * impulseStrength * 0.01;
@@ -623,19 +760,18 @@ class PhysicsSimulation {
     this.bodies.forEach(({ body }) => {
       const pos = body.getPosition();
 
-      this.tempVec1!.x = pos.x - shockwaveCenter.x;
-      this.tempVec1!.y = pos.y - shockwaveCenter.y;
-
-      const distance = Math.sqrt(
-        this.tempVec1!.x * this.tempVec1!.x +
-          this.tempVec1!.y * this.tempVec1!.y,
+      const vec1 = this.vec2Pool.get(
+        pos.x - shockwaveCenter.x,
+        pos.y - shockwaveCenter.y,
       );
+
+      const distance = Math.sqrt(vec1.x * vec1.x + vec1.y * vec1.y);
 
       if (distance > maxDistance || distance < 1) return;
 
       const direction = {
-        x: this.tempVec1!.x / distance,
-        y: this.tempVec1!.y / distance,
+        x: vec1.x / distance,
+        y: vec1.y / distance,
       };
 
       const finalDirection = {
@@ -664,13 +800,17 @@ class PhysicsSimulation {
       const finalForce = baseForce * decayMultiplier * biasBoost;
 
       const impulseStrength = finalForce * 0.1;
-      this.tempVec2!.x = finalDirection.x * impulseStrength;
-      this.tempVec2!.y = finalDirection.y * impulseStrength;
+      const vec2 = this.vec2Pool.get(
+        finalDirection.x * impulseStrength,
+        finalDirection.y * impulseStrength,
+      );
 
       const currentVel = body.getLinearVelocity();
-      this.tempVec3!.x = currentVel.x + this.tempVec2!.x;
-      this.tempVec3!.y = currentVel.y + this.tempVec2!.y;
-      body.setLinearVelocity(this.tempVec3!);
+      const vec3 = this.vec2Pool.get(
+        currentVel.x + vec2.x,
+        currentVel.y + vec2.y,
+      );
+      body.setLinearVelocity(vec3);
 
       body.setAwake(true);
       const angularImpulse = (Math.random() - 0.5) * impulseStrength * 0.02;
@@ -684,7 +824,16 @@ class PhysicsSimulation {
   }
 
   destroy() {
+    this.cleanup();
+  }
+
+  private cleanup() {
     this.isRunning = false;
+
+    if (this.animationId !== null) {
+      cancelAnimationFrame(this.animationId);
+      this.animationId = null;
+    }
 
     if (this.world) {
       for (let b = this.world.getBodyList(); b; b = b.getNext()) {
@@ -694,6 +843,12 @@ class PhysicsSimulation {
     this.world = null;
     this.bodies = [];
     this.groundBody = null;
+    this.centerVec = null;
+  }
+
+  terminate() {
+    this.cleanup();
+    self.close();
   }
 }
 
@@ -711,6 +866,9 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
 
     case "UPDATE_SETTINGS":
       simulation?.updateSettings(payload);
+      if (simulation && !simulation.getBoundariesCreated()) {
+        simulation.createBoundariesOnce();
+      }
       break;
 
     case "UPDATE_DIMENSIONS":
@@ -735,6 +893,11 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
 
     case "DESTROY":
       simulation?.destroy();
+      simulation = null;
+      break;
+
+    case "TERMINATE":
+      simulation?.terminate();
       simulation = null;
       break;
   }
