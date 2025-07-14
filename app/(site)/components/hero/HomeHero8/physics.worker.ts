@@ -50,6 +50,10 @@ interface PhysicsSettings {
   shockwaveDecay: number;
   shockwaveDirectionality: number;
   initialClockwiseVelocity: number;
+  scrollForceMultiplier: number;
+  scrollVelocityDamping: number;
+  scrollInertiaDecay: number;
+  scrollDirectionInfluence: number;
 }
 
 class PhysicsSimulation {
@@ -74,6 +78,9 @@ class PhysicsSimulation {
   private skipUpdateFrames = 0;
   private maxSkipFrames = 2;
 
+  private scrollForce = 0;
+  private scrollDirection = 0;
+
   async initialize() {
     if (!planck) {
       planck = await import("planck");
@@ -92,74 +99,10 @@ class PhysicsSimulation {
       positionIterations: 2,
     });
 
-    this.setupCollisionHandlers();
     this.createBoundaries();
     this.isRunning = true;
     this.lastTime = performance.now();
     this.animate();
-  }
-
-  private setupCollisionHandlers() {
-    if (!this.world || !planck) return;
-
-    this.world.on("begin-contact", (contact) => {
-      const fixtureA = contact.getFixtureA();
-      const fixtureB = contact.getFixtureB();
-
-      const bodyA = fixtureA.getBody();
-      const bodyB = fixtureB.getBody();
-
-      const userDataA = fixtureA.getUserData() as { type?: string } | null;
-      const userDataB = fixtureB.getUserData() as { type?: string } | null;
-
-      const wallFixture =
-        userDataA?.type === "one-way-wall"
-          ? fixtureA
-          : userDataB?.type === "one-way-wall"
-            ? fixtureB
-            : null;
-
-      if (!wallFixture) return;
-
-      const dynamicBody = bodyA.isDynamic()
-        ? bodyA
-        : bodyB.isDynamic()
-          ? bodyB
-          : null;
-      if (!dynamicBody) return;
-
-      const pos = dynamicBody.getPosition();
-      const vel = dynamicBody.getLinearVelocity();
-
-      const directionFromCenter = {
-        x: pos.x - this.center.x,
-        y: pos.y - this.center.y,
-      };
-
-      const dotProduct =
-        vel.x * directionFromCenter.x + vel.y * directionFromCenter.y;
-
-      if (dotProduct > 0) {
-        const forceStrength = 2000;
-        const forceDirection = {
-          x: -directionFromCenter.x,
-          y: -directionFromCenter.y,
-        };
-
-        const magnitude = Math.sqrt(
-          forceDirection.x * forceDirection.x +
-            forceDirection.y * forceDirection.y,
-        );
-        if (magnitude > 0) {
-          forceDirection.x = (forceDirection.x / magnitude) * forceStrength;
-          forceDirection.y = (forceDirection.y / magnitude) * forceStrength;
-
-          this.tempVec1!.x = forceDirection.x;
-          this.tempVec1!.y = forceDirection.y;
-          dynamicBody.applyForceToCenter(this.tempVec1!);
-        }
-      }
-    });
   }
 
   private createBoundaries() {
@@ -171,43 +114,7 @@ class PhysicsSimulation {
 
     const groundBody = this.world.createBody();
     this.groundBody = groundBody;
-    const wallThickness = 20;
     const { width, height } = this.dimensions;
-
-    const walls = [
-      {
-        x: width / 2,
-        y: -wallThickness / 2,
-        w: width / 2,
-        h: wallThickness / 2,
-      },
-      {
-        x: width / 2,
-        y: height + wallThickness / 2,
-        w: width / 2,
-        h: wallThickness / 2,
-      },
-      {
-        x: -wallThickness / 2,
-        y: height / 2,
-        w: wallThickness / 2,
-        h: height / 2,
-      },
-      {
-        x: width + wallThickness / 2,
-        y: height / 2,
-        w: wallThickness / 2,
-        h: height / 2,
-      },
-    ];
-
-    walls.forEach((wall) => {
-      groundBody.createFixture({
-        shape: planck.Box(wall.w, wall.h, planck.Vec2(wall.x, wall.y), 0),
-        isSensor: true,
-        userData: { type: "one-way-wall" },
-      });
-    });
 
     const centerRadius =
       Math.min(width, height) * this.settings.centerCircleRadius;
@@ -339,6 +246,40 @@ class PhysicsSimulation {
     if (!this.world || !planck) return;
 
     const attractorStrength = this.settings.gravity * 8;
+    const scrollInfluence =
+      this.scrollForce * this.settings.scrollForceMultiplier;
+
+    if (Math.abs(scrollInfluence) > 1.0) {
+      this.bodies.forEach(({ body }) => {
+        const pos = body.getPosition();
+        body.setAwake(true);
+
+        const vel = body.getLinearVelocity();
+        const impulseStrength = scrollInfluence * 0.5;
+
+        const angle = Math.atan2(pos.y - this.center.y, pos.x - this.center.x);
+        const radialImpulse = impulseStrength * 0.3;
+
+        if (this.scrollDirection > 0) {
+          this.tempVec3!.x = Math.cos(angle + Math.PI / 2) * radialImpulse;
+          this.tempVec3!.y = Math.sin(angle + Math.PI / 2) * radialImpulse;
+        } else {
+          this.tempVec3!.x = Math.cos(angle - Math.PI / 2) * radialImpulse;
+          this.tempVec3!.y = Math.sin(angle - Math.PI / 2) * radialImpulse;
+        }
+
+        const verticalImpulse = impulseStrength * 0.8;
+        this.tempVec3!.y += verticalImpulse;
+
+        const horizontalImpulse = impulseStrength * 0.3 * (Math.random() - 0.5);
+        this.tempVec3!.x += horizontalImpulse;
+
+        const currentVel = body.getLinearVelocity();
+        this.tempVec4!.x = currentVel.x + this.tempVec3!.x;
+        this.tempVec4!.y = currentVel.y + this.tempVec3!.y;
+        body.setLinearVelocity(this.tempVec4!);
+      });
+    }
 
     this.bodies.forEach(({ body }) => {
       const pos = body.getPosition();
@@ -352,11 +293,15 @@ class PhysicsSimulation {
 
       if (distanceSquared > 1) {
         const distance = Math.sqrt(distanceSquared);
-        this.tempVec2!.x = (this.tempVec1!.x / distance) * attractorStrength;
-        this.tempVec2!.y = (this.tempVec1!.y / distance) * attractorStrength;
+        const baseForce = attractorStrength;
+
+        this.tempVec2!.x = (this.tempVec1!.x / distance) * baseForce;
+        this.tempVec2!.y = (this.tempVec1!.y / distance) * baseForce;
         body.applyForceToCenter(this.tempVec2!);
       }
     });
+
+    this.scrollForce *= 0.88;
 
     const physicsTimeStep = this.fixedTimeStep * this.settings.timeStep;
     this.world.step(physicsTimeStep);
@@ -412,7 +357,8 @@ class PhysicsSimulation {
   private findSignificantChanges(
     newData: PhysicsBodyData[],
   ): PhysicsBodyData[] {
-    const threshold = 0.5;
+    const threshold = 0.8;
+    const rotationThreshold = 2;
     const changes: PhysicsBodyData[] = [];
 
     for (let i = 0; i < newData.length; i++) {
@@ -423,7 +369,7 @@ class PhysicsSimulation {
         !oldBody ||
         Math.abs(newBody.x - oldBody.x) > threshold ||
         Math.abs(newBody.y - oldBody.y) > threshold ||
-        Math.abs(newBody.rotation - oldBody.rotation) > 1 ||
+        Math.abs(newBody.rotation - oldBody.rotation) > rotationThreshold ||
         newBody.isDragged !== oldBody.isDragged
       ) {
         changes.push(newBody);
@@ -732,6 +678,11 @@ class PhysicsSimulation {
     });
   }
 
+  applyScrollForce(force: number, direction: number) {
+    this.scrollForce = force;
+    this.scrollDirection = direction;
+  }
+
   destroy() {
     this.isRunning = false;
 
@@ -776,6 +727,10 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
 
     case "CENTER_SHOCKWAVE":
       simulation?.centerShockwave(payload.x, payload.y);
+      break;
+
+    case "SCROLL_FORCE":
+      simulation?.applyScrollForce(payload.force, payload.direction);
       break;
 
     case "DESTROY":

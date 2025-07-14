@@ -28,12 +28,17 @@ export interface PhysicsSVGProps {
   shockwaveDecay: number;
   shockwaveDirectionality: number;
   initialClockwiseVelocity: number;
+  scrollForceMultiplier: number;
+  scrollVelocityDamping: number;
+  scrollInertiaDecay: number;
+  scrollDirectionInfluence: number;
   onDragStateChange: (isDragging: boolean) => void;
   onHoverStateChange: (isHovering: boolean) => void;
 }
 
 export interface PhysicsSVGRef {
   shockwave: (x?: number, y?: number) => void;
+  applyScrollForce: (force: number, direction: number) => void;
 }
 
 interface PhysicsBodyData {
@@ -132,6 +137,10 @@ export const PhysicsSVG = memo(
         shockwaveDecay,
         shockwaveDirectionality,
         initialClockwiseVelocity,
+        scrollForceMultiplier,
+        scrollVelocityDamping,
+        scrollInertiaDecay,
+        scrollDirectionInfluence,
         onDragStateChange,
         onHoverStateChange,
       },
@@ -158,6 +167,12 @@ export const PhysicsSVG = memo(
           workerRef.current?.postMessage({
             type: "SHOCKWAVE",
             payload: { x: centerX, y: centerY },
+          });
+        },
+        applyScrollForce: (force: number, direction: number) => {
+          workerRef.current?.postMessage({
+            type: "SCROLL_FORCE",
+            payload: { force, direction },
           });
         },
       }));
@@ -280,6 +295,10 @@ export const PhysicsSVG = memo(
               shockwaveDecay,
               shockwaveDirectionality,
               initialClockwiseVelocity,
+              scrollForceMultiplier,
+              scrollVelocityDamping,
+              scrollInertiaDecay,
+              scrollDirectionInfluence,
             },
           });
 
@@ -429,6 +448,10 @@ export const PhysicsSVG = memo(
               shockwaveDecay,
               shockwaveDirectionality,
               initialClockwiseVelocity,
+              scrollForceMultiplier,
+              scrollVelocityDamping,
+              scrollInertiaDecay,
+              scrollDirectionInfluence,
             },
           });
         }
@@ -449,6 +472,10 @@ export const PhysicsSVG = memo(
         shockwaveDecay,
         shockwaveDirectionality,
         initialClockwiseVelocity,
+        scrollForceMultiplier,
+        scrollVelocityDamping,
+        scrollInertiaDecay,
+        scrollDirectionInfluence,
       ]);
 
       useEffect(() => {
@@ -476,9 +503,9 @@ export const PhysicsSVG = memo(
 
         ctx.clearRect(0, 0, width, height);
 
-        const isHighBodyCount = bodies.length > 500;
+        const isHighBodyCount = bodies.length > 400;
+        const padding = 40;
 
-        const padding = 50;
         const visibleBodies = bodies.filter(
           (body) =>
             body.x + body.width / 2 > -padding &&
@@ -487,8 +514,7 @@ export const PhysicsSVG = memo(
             body.y - body.height / 2 < height + padding,
         );
 
-        const simplifyThreshold = Math.min(width, height) * 0.02;
-
+        const simplifyThreshold = Math.min(width, height) * 0.015;
         const draggedBodies = visibleBodies.filter((body) => body.isDragged);
         const regularBodies = visibleBodies.filter((body) => !body.isDragged);
 
@@ -507,7 +533,7 @@ export const PhysicsSVG = memo(
             colorIndex,
           } = body;
 
-          if (isHighBodyCount && Math.max(bodyWidth, bodyHeight) < 5) return;
+          if (isHighBodyCount && Math.max(bodyWidth, bodyHeight) < 4) return;
 
           ctx.save();
           ctx.translate(x, y);
@@ -531,39 +557,41 @@ export const PhysicsSVG = memo(
           ctx.restore();
         });
 
-        draggedBodies.forEach((body) => {
-          const {
-            x,
-            y,
-            width: bodyWidth,
-            height: bodyHeight,
-            rotation,
-            colorIndex,
-          } = body;
+        if (draggedBodies.length > 0) {
+          draggedBodies.forEach((body) => {
+            const {
+              x,
+              y,
+              width: bodyWidth,
+              height: bodyHeight,
+              rotation,
+              colorIndex,
+            } = body;
 
-          ctx.save();
-          ctx.translate(x, y);
-          ctx.rotate((rotation * Math.PI) / 180);
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate((rotation * Math.PI) / 180);
 
-          ctx.fillStyle = generateRainbowFromPalette(
-            colorIndex,
-            bodies.length,
-            colorLevel,
-          );
+            ctx.fillStyle = generateRainbowFromPalette(
+              colorIndex,
+              bodies.length,
+              colorLevel,
+            );
 
-          ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
-          ctx.shadowBlur = 12;
-          ctx.shadowOffsetX = 0;
-          ctx.shadowOffsetY = 6;
+            ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
+            ctx.shadowBlur = 12;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 6;
 
-          const radius = Math.sqrt(bodyWidth * bodyHeight) / 2;
+            const radius = Math.sqrt(bodyWidth * bodyHeight) / 2;
 
-          ctx.beginPath();
-          ctx.arc(0, 0, radius, 0, Math.PI * 2);
-          ctx.fill();
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            ctx.fill();
 
-          ctx.restore();
-        });
+            ctx.restore();
+          });
+        }
       }, [colorLevel]);
 
       return (

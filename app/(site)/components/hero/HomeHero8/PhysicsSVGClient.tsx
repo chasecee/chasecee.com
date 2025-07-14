@@ -1,5 +1,12 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useImperativeHandle,
+  forwardRef,
+} from "react";
 import dynamic from "next/dynamic";
 import type { PhysicsSVGRef } from "./PhysicsSVG";
 
@@ -28,7 +35,11 @@ const DESKTOP_SETTINGS = {
   shockwaveDecay: 0.8,
   shockwaveDirectionality: 0.2,
   centerCircleRadius: 0.3,
-  initialClockwiseVelocity: 5,
+  initialClockwiseVelocity: 2,
+  scrollForceMultiplier: 2.5,
+  scrollVelocityDamping: 0.95,
+  scrollInertiaDecay: 0.92,
+  scrollDirectionInfluence: 1.0,
 } as const;
 
 const MOBILE_SETTINGS = {
@@ -37,8 +48,8 @@ const MOBILE_SETTINGS = {
   damping: 0,
   friction: 0,
   restitution: 0,
-  numBodies: 450,
-  bodySize: 0.36,
+  numBodies: 350,
+  bodySize: 0.38,
   bodySizeVariance: 0.5,
   bodiesStartRadius: 0.9,
   bodiesStartSpread: 0.3,
@@ -48,31 +59,125 @@ const MOBILE_SETTINGS = {
   shockwaveRadius: 0.4,
   shockwaveDecay: 0.9,
   shockwaveDirectionality: 0.3,
-  centerCircleRadius: 0.45,
+  centerCircleRadius: 0.4,
   initialClockwiseVelocity: 5,
+  scrollForceMultiplier: 1.5,
+  scrollVelocityDamping: 0.88,
+  scrollInertiaDecay: 0.85,
+  scrollDirectionInfluence: 1.2,
 } as const;
 
-const PhysicsSVGClient = React.forwardRef<PhysicsSVGRef>((_, ref) => {
+const PhysicsSVGClient = forwardRef<PhysicsSVGRef>((_, ref) => {
   const [isMobile, setIsMobile] = useState(false);
   const [mounted, setMounted] = useState(false);
   const physicsRef = useRef<PhysicsSVGRef>(null);
 
-  React.useImperativeHandle(ref, () => ({
+  useImperativeHandle(ref, () => ({
     shockwave: (x?: number, y?: number) => physicsRef.current?.shockwave(x, y),
+    applyScrollForce: (force: number, direction: number) =>
+      physicsRef.current?.applyScrollForce(force, direction),
   }));
 
-  const handleResize = React.useCallback(() => {
+  const handleResize = useCallback(() => {
     if (!mounted) return;
-    setIsMobile(window.innerWidth < 768);
+    const isMobileDevice = window.innerWidth < 768;
+    setIsMobile(isMobileDevice);
   }, [mounted]);
 
   useEffect(() => {
     setMounted(true);
     handleResize();
-
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [handleResize]);
+
+  useEffect(() => {
+    if (!mounted) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          let lastScrollPos = window.scrollY;
+          let lastTouchY = 0;
+          let lastTime = performance.now();
+
+          const applyForce = (velocity: number, source: string) => {
+            if (physicsRef.current && Math.abs(velocity) > 2) {
+              physicsRef.current.applyScrollForce(
+                velocity,
+                Math.sign(velocity),
+              );
+            }
+          };
+
+          const handleScroll = () => {
+            if (isMobile) return;
+
+            const now = performance.now();
+            const currentScrollY = window.scrollY;
+            const deltaTime = now - lastTime;
+            const deltaScroll = currentScrollY - lastScrollPos;
+
+            if (deltaTime > 16 && Math.abs(deltaScroll) > 1) {
+              const velocity = (deltaScroll / deltaTime) * 18;
+              applyForce(velocity, "SCROLL");
+            }
+
+            lastScrollPos = currentScrollY;
+            lastTime = now;
+          };
+
+          const handleTouchStart = (e: TouchEvent) => {
+            if (!isMobile) return;
+
+            lastTouchY = e.touches[0].clientY;
+            lastTime = performance.now();
+          };
+
+          const handleTouchMove = (e: TouchEvent) => {
+            if (!isMobile) return;
+
+            const now = performance.now();
+            const currentTouchY = e.touches[0].clientY;
+            const deltaTime = now - lastTime;
+            const deltaY = lastTouchY - currentTouchY;
+
+            if (deltaTime > 16 && Math.abs(deltaY) > 3) {
+              const velocity = (deltaY / deltaTime) * 25;
+              applyForce(velocity, "TOUCH");
+            }
+
+            lastTouchY = currentTouchY;
+            lastTime = now;
+          };
+
+          window.addEventListener("scroll", handleScroll, { passive: true });
+          document.addEventListener("touchstart", handleTouchStart, {
+            passive: true,
+          });
+          document.addEventListener("touchmove", handleTouchMove, {
+            passive: true,
+          });
+
+          return () => {
+            window.removeEventListener("scroll", handleScroll);
+            document.removeEventListener("touchstart", handleTouchStart);
+            document.removeEventListener("touchmove", handleTouchMove);
+          };
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    const sentinel = document.getElementById("hero-sentinel");
+    if (sentinel) {
+      observer.observe(sentinel);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [mounted, isMobile]);
 
   useEffect(() => {
     if (mounted) {
@@ -93,24 +198,7 @@ const PhysicsSVGClient = React.forwardRef<PhysicsSVGRef>((_, ref) => {
     <DynamicPhysicsSVG
       key={`physics-${isMobile ? "mobile" : "desktop"}`}
       ref={physicsRef}
-      gravity={settings.gravity}
-      timeStep={settings.timeStep}
-      damping={settings.damping}
-      friction={settings.friction}
-      restitution={settings.restitution}
-      numBodies={settings.numBodies}
-      bodySize={settings.bodySize}
-      bodySizeVariance={settings.bodySizeVariance}
-      colorLevel={settings.colorLevel}
-      centerCircleRadius={settings.centerCircleRadius}
-      gridGapSize={settings.gridGapSize}
-      bodiesStartRadius={settings.bodiesStartRadius}
-      bodiesStartSpread={settings.bodiesStartSpread}
-      shockwaveForce={settings.shockwaveForce}
-      shockwaveRadius={settings.shockwaveRadius}
-      shockwaveDecay={settings.shockwaveDecay}
-      shockwaveDirectionality={settings.shockwaveDirectionality}
-      initialClockwiseVelocity={settings.initialClockwiseVelocity}
+      {...settings}
       onDragStateChange={() => {}}
       onHoverStateChange={() => {}}
     />
