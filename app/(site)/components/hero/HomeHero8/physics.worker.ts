@@ -1,6 +1,17 @@
 /// <reference lib="webworker" />
 
 import type { World, Body, Vec2 } from "planck";
+import type { PhysicsConfig } from "./physicsConfig";
+import {
+  radiansToDegrees,
+  angleBetweenPoints,
+  pointOnCircle,
+  circularPosition,
+  circularVelocity,
+  magnitude,
+  normalize,
+  decayFunction,
+} from "../../../utils/mathUtils";
 
 let planck: any = null;
 
@@ -121,29 +132,6 @@ interface WorkerMessage {
   payload?: any;
 }
 
-interface PhysicsSettings {
-  gravity: number;
-  timeStep: number;
-  damping: number;
-  friction: number;
-  restitution: number;
-  bodySize: number;
-  bodySizeVariance: number;
-  centerCircleRadius: number;
-  gridGapSize: number;
-  bodiesStartRadius: number;
-  bodiesStartSpread: number;
-  shockwaveForce: number;
-  shockwaveRadius: number;
-  shockwaveDecay: number;
-  shockwaveDirectionality: number;
-  initialClockwiseVelocity: number;
-  scrollForceMultiplier: number;
-  scrollVelocityDamping: number;
-  scrollInertiaDecay: number;
-  scrollDirectionInfluence: number;
-}
-
 class PhysicsSimulation {
   private world: World | null = null;
   private bodies: PhysicsBody[] = [];
@@ -158,7 +146,7 @@ class PhysicsSimulation {
   private frameInterval = 1000 / 60;
   private lastFrameTime = 0;
   private animationId: number | null = null;
-  private settings: PhysicsSettings = {} as PhysicsSettings;
+  private settings: PhysicsConfig = {} as PhysicsConfig;
   private settingsInitialized = false;
   private boundariesCreated = false;
 
@@ -258,7 +246,6 @@ class PhysicsSimulation {
     this.bodies = [];
 
     for (let i = 0; i < numBlocks; i++) {
-      const angle = (i * 2 * Math.PI) / numBlocks;
       const baseRadius =
         Math.min(this.dimensions.width, this.dimensions.height) *
         this.settings.bodiesStartRadius;
@@ -268,8 +255,15 @@ class PhysicsSimulation {
             this.settings.bodiesStartSpread / 2
           : 0;
       const radius = baseRadius * (1 + radiusVariation);
-      const x = this.center.x + Math.cos(angle) * radius;
-      const y = this.center.y + Math.sin(angle) * radius;
+      const position = circularPosition(
+        i,
+        numBlocks,
+        radius,
+        this.center.x,
+        this.center.y,
+      );
+      const x = position.x;
+      const y = position.y;
 
       const variance = this.settings.bodySizeVariance;
       let sizeMultiplier = 1.0;
@@ -305,10 +299,8 @@ class PhysicsSimulation {
       });
 
       const clockwiseSpeed = this.settings.initialClockwiseVelocity;
-      const vec2 = this.vec2Pool.get(
-        -clockwiseSpeed * Math.sin(angle),
-        clockwiseSpeed * Math.cos(angle),
-      );
+      const velocity = circularVelocity(i, numBlocks, clockwiseSpeed);
+      const vec2 = this.vec2Pool.get(velocity.x, velocity.y);
       body.setLinearVelocity(vec2);
 
       const physicsBody: PhysicsBody = {
@@ -372,7 +364,12 @@ class PhysicsSimulation {
         const vel = body.getLinearVelocity();
         const impulseStrength = scrollInfluence * 0.5;
 
-        const angle = Math.atan2(pos.y - this.center.y, pos.x - this.center.x);
+        const angle = angleBetweenPoints(
+          this.center.x,
+          this.center.y,
+          pos.x,
+          pos.y,
+        );
         const radialImpulse = impulseStrength * 0.3;
 
         let radialX, radialY;
@@ -406,7 +403,7 @@ class PhysicsSimulation {
       const distanceSquared = vec1.x * vec1.x + vec1.y * vec1.y;
 
       if (distanceSquared > 1) {
-        const distance = Math.sqrt(distanceSquared);
+        const distance = magnitude(vec1.x, vec1.y);
         const baseForce = attractorStrength;
 
         const vec2 = this.vec2Pool.get(
@@ -427,7 +424,7 @@ class PhysicsSimulation {
     const bodyData = this.bodies.map((physicsBody) => {
       const pos = physicsBody.body.getPosition();
       const angle = physicsBody.body.getAngle();
-      const rotation = (angle * 180) / Math.PI;
+      const rotation = radiansToDegrees(angle);
       const isDragged = false;
 
       physicsBody.x = pos.x;
@@ -508,7 +505,7 @@ class PhysicsSimulation {
     return changes;
   }
 
-  updateSettings(newSettings: Partial<PhysicsSettings>) {
+  updateSettings(newSettings: Partial<PhysicsConfig>) {
     const oldBodySize = this.settings.bodySize;
     const oldBodySizeVariance = this.settings.bodySizeVariance;
     const oldCenterCircleRadius = this.settings.centerCircleRadius;
@@ -585,8 +582,6 @@ class PhysicsSimulation {
 
   private repositionBodies() {
     this.bodies.forEach((physicsBody, index) => {
-      const angle = (index * 2 * Math.PI) / this.bodies.length;
-
       const baseRadius =
         Math.min(this.dimensions.width, this.dimensions.height) *
         this.settings.bodiesStartRadius;
@@ -597,17 +592,26 @@ class PhysicsSimulation {
           : 0;
       const radius = baseRadius * (1 + radiusVariation);
 
-      const x = this.center.x + Math.cos(angle) * radius;
-      const y = this.center.y + Math.sin(angle) * radius;
+      const position = circularPosition(
+        index,
+        this.bodies.length,
+        radius,
+        this.center.x,
+        this.center.y,
+      );
+      const x = position.x;
+      const y = position.y;
 
       const vec1 = this.vec2Pool.get(x, y);
       physicsBody.body.setPosition(vec1);
 
       const clockwiseSpeed = this.settings.initialClockwiseVelocity;
-      const vec2 = this.vec2Pool.get(
-        -clockwiseSpeed * Math.sin(angle),
-        clockwiseSpeed * Math.cos(angle),
+      const velocity = circularVelocity(
+        index,
+        this.bodies.length,
+        clockwiseSpeed,
       );
+      const vec2 = this.vec2Pool.get(velocity.x, velocity.y);
       physicsBody.body.setLinearVelocity(vec2);
       physicsBody.body.setAngularVelocity(0);
       physicsBody.body.setAngle(0);
@@ -659,12 +663,11 @@ class PhysicsSimulation {
       y: (y - canvasCenter.y) / (this.dimensions.height / 2),
     };
 
-    const biasLength = Math.sqrt(
-      biasDirection.x * biasDirection.x + biasDirection.y * biasDirection.y,
-    );
+    const biasLength = magnitude(biasDirection.x, biasDirection.y);
     if (biasLength > 0) {
-      biasDirection.x /= biasLength;
-      biasDirection.y /= biasLength;
+      const normalizedBias = normalize(biasDirection.x, biasDirection.y);
+      biasDirection.x = normalizedBias.x;
+      biasDirection.y = normalizedBias.y;
     }
 
     this.bodies.forEach(({ body }) => {
@@ -675,14 +678,11 @@ class PhysicsSimulation {
         pos.y - shockwaveCenter.y,
       );
 
-      const distance = Math.sqrt(vec1.x * vec1.x + vec1.y * vec1.y);
+      const distance = magnitude(vec1.x, vec1.y);
 
       if (distance > maxDistance || distance < 1) return;
 
-      const direction = {
-        x: vec1.x / distance,
-        y: vec1.y / distance,
-      };
+      const direction = normalize(vec1.x, vec1.y);
 
       const finalDirection = {
         x:
@@ -691,17 +691,15 @@ class PhysicsSimulation {
           direction.y * (1 - directionality) + biasDirection.y * directionality,
       };
 
-      const finalLength = Math.sqrt(
-        finalDirection.x * finalDirection.x +
-          finalDirection.y * finalDirection.y,
-      );
+      const finalLength = magnitude(finalDirection.x, finalDirection.y);
       if (finalLength > 0) {
-        finalDirection.x /= finalLength;
-        finalDirection.y /= finalLength;
+        const normalizedFinal = normalize(finalDirection.x, finalDirection.y);
+        finalDirection.x = normalizedFinal.x;
+        finalDirection.y = normalizedFinal.y;
       }
 
       const normalizedDistance = distance / maxDistance;
-      const decayMultiplier = Math.pow(1 - normalizedDistance, decayFactor);
+      const decayMultiplier = decayFunction(normalizedDistance, decayFactor);
       const forceMultiplier = baseForce * decayMultiplier;
 
       const biasAlignment =
@@ -749,12 +747,11 @@ class PhysicsSimulation {
       y: (y - canvasCenter.y) / (this.dimensions.height / 2),
     };
 
-    const biasLength = Math.sqrt(
-      biasDirection.x * biasDirection.x + biasDirection.y * biasDirection.y,
-    );
+    const biasLength = magnitude(biasDirection.x, biasDirection.y);
     if (biasLength > 0) {
-      biasDirection.x /= biasLength;
-      biasDirection.y /= biasLength;
+      const normalizedBias = normalize(biasDirection.x, biasDirection.y);
+      biasDirection.x = normalizedBias.x;
+      biasDirection.y = normalizedBias.y;
     }
 
     this.bodies.forEach(({ body }) => {
@@ -765,14 +762,11 @@ class PhysicsSimulation {
         pos.y - shockwaveCenter.y,
       );
 
-      const distance = Math.sqrt(vec1.x * vec1.x + vec1.y * vec1.y);
+      const distance = magnitude(vec1.x, vec1.y);
 
       if (distance > maxDistance || distance < 1) return;
 
-      const direction = {
-        x: vec1.x / distance,
-        y: vec1.y / distance,
-      };
+      const direction = normalize(vec1.x, vec1.y);
 
       const finalDirection = {
         x:
@@ -781,17 +775,15 @@ class PhysicsSimulation {
           direction.y * (1 - directionality) + biasDirection.y * directionality,
       };
 
-      const finalLength = Math.sqrt(
-        finalDirection.x * finalDirection.x +
-          finalDirection.y * finalDirection.y,
-      );
+      const finalLength = magnitude(finalDirection.x, finalDirection.y);
       if (finalLength > 0) {
-        finalDirection.x /= finalLength;
-        finalDirection.y /= finalLength;
+        const normalizedFinal = normalize(finalDirection.x, finalDirection.y);
+        finalDirection.x = normalizedFinal.x;
+        finalDirection.y = normalizedFinal.y;
       }
 
       const normalizedDistance = distance / maxDistance;
-      const decayMultiplier = Math.pow(1 - normalizedDistance, decayFactor);
+      const decayMultiplier = decayFunction(normalizedDistance, decayFactor);
 
       const biasAlignment =
         finalDirection.x * biasDirection.x + finalDirection.y * biasDirection.y;

@@ -9,6 +9,9 @@ import React, {
   RefObject,
 } from "react";
 import { palette as importedPalette } from "./palette";
+import type { PhysicsConfig } from "./physicsConfig";
+import { generateRainbowFromPalette } from "../../../utils/colorUtils";
+import { degreesToRadians, magnitude } from "../../../utils/mathUtils";
 
 const canvasStyle = {
   touchAction: "auto",
@@ -20,31 +23,11 @@ const containerStyle = {
   touchAction: "auto",
 };
 
-export interface PhysicsSVGProps {
-  gravity: number;
-  timeStep: number;
-  damping: number;
-  friction: number;
-  restitution: number;
-  numBodies?: number;
-  bodySize?: number;
-  bodySizeVariance?: number;
-  colorLevel: number;
-  centerCircleRadius: number;
-  gridGapSize: number;
-  bodiesStartRadius: number;
-  bodiesStartSpread: number;
-  shockwaveForce: number;
-  shockwaveRadius: number;
-  shockwaveDecay: number;
-  shockwaveDirectionality: number;
-  initialClockwiseVelocity: number;
-  scrollForceMultiplier: number;
-  scrollVelocityDamping: number;
-  scrollInertiaDecay: number;
-  scrollDirectionInfluence: number;
-
+export interface PhysicsSVGProps extends PhysicsConfig {
   palette?: Record<string, string[]>;
+  containerRef?: React.RefObject<HTMLDivElement | null>;
+  canvasRef?: React.RefObject<HTMLCanvasElement | null>;
+  dimensions?: { width: number; height: number };
 }
 
 export interface PhysicsSVGRef {
@@ -69,76 +52,6 @@ interface CanvasProps {
   canvasRef: RefObject<HTMLCanvasElement | null>;
   cursorStyle: string;
 }
-
-const parseHSLA = (hslaString: string) => {
-  const match = hslaString.match(/HSLA\((\d+),(\d+)%,(\d+)%,([0-9.]+)\)/);
-  if (!match) return { h: 0, s: 0, l: 0, a: 1 };
-  return {
-    h: parseInt(match[1]),
-    s: parseInt(match[2]),
-    l: parseInt(match[3]),
-    a: parseFloat(match[4]),
-  };
-};
-
-const interpolateHSLA = (color1: string, color2: string, factor: number) => {
-  const hsla1 = parseHSLA(color1);
-  const hsla2 = parseHSLA(color2);
-
-  let h1 = hsla1.h;
-  let h2 = hsla2.h;
-  let hDiff = h2 - h1;
-
-  if (Math.abs(hDiff) > 180) {
-    if (hDiff > 0) {
-      h1 += 360;
-    } else {
-      h2 += 360;
-    }
-  }
-
-  const h = (h1 + (h2 - h1) * factor) % 360;
-  const s = hsla1.s + (hsla2.s - hsla1.s) * factor;
-  const l = hsla1.l + (hsla2.l - hsla1.l) * factor;
-  const a = hsla1.a + (hsla2.a - hsla1.a) * factor;
-
-  return `hsla(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%, ${a})`;
-};
-
-const generateRainbowFromPalette = (
-  index: number,
-  totalBodies: number,
-  colorLevel: number,
-  paletteColors: Record<string, string[]>,
-): string => {
-  const colorOrder: Array<keyof typeof paletteColors> = [
-    "red",
-    "amber",
-    "green",
-    "teal",
-    "blue",
-    "purple",
-    "pink",
-  ];
-
-  const levelIndex = Math.min(Math.max(colorLevel, 0), 9);
-  const rainbowPosition = (index / totalBodies) % 1;
-  const colorPosition = rainbowPosition * colorOrder.length;
-  const colorIndex = Math.floor(colorPosition);
-  const nextColorIndex = (colorIndex + 1) % colorOrder.length;
-  const interpolationFactor = colorPosition - colorIndex;
-
-  const currentColor =
-    paletteColors[colorOrder[colorIndex]]?.[levelIndex] ||
-    paletteColors[colorOrder[colorIndex]]?.[0] ||
-    "HSLA(0,100%,50%,1)";
-  const nextColor =
-    paletteColors[colorOrder[nextColorIndex]]?.[levelIndex] ||
-    paletteColors[colorOrder[nextColorIndex]]?.[0] ||
-    "HSLA(0,100%,50%,1)";
-
-  return interpolateHSLA(currentColor, nextColor, interpolationFactor);
-};
 
 const MemoizedCanvas = memo(({ canvasRef, cursorStyle }: CanvasProps) => (
   <canvas
@@ -180,11 +93,16 @@ export const PhysicsSVG = memo(
         scrollInertiaDecay,
         scrollDirectionInfluence,
         palette = importedPalette,
+        containerRef: externalContainerRef,
+        canvasRef: externalCanvasRef,
+        dimensions,
       },
       ref,
     ) => {
-      const containerRef = useRef<HTMLDivElement>(null);
-      const canvasRef = useRef<HTMLCanvasElement>(null);
+      const internalContainerRef = useRef<HTMLDivElement>(null);
+      const internalCanvasRef = useRef<HTMLCanvasElement>(null);
+      const containerRef = externalContainerRef || internalContainerRef;
+      const canvasRef = externalCanvasRef || internalCanvasRef;
       const workerRef = useRef<Worker | null>(null);
       const dimensionsRef = useRef({ width: 0, height: 0 });
       const bodiesRef = useRef<PhysicsBodyData[]>([]);
@@ -264,7 +182,7 @@ export const PhysicsSVG = memo(
           ctx.translate(x, y);
 
           if (Math.max(bodyWidth, bodyHeight) > simplifyThreshold) {
-            ctx.rotate((rotation * Math.PI) / 180);
+            ctx.rotate(degreesToRadians(rotation));
           }
 
           ctx.fillStyle = generateRainbowFromPalette(
@@ -274,7 +192,7 @@ export const PhysicsSVG = memo(
             palette,
           );
 
-          const radius = Math.sqrt(bodyWidth * bodyHeight) / 2;
+          const radius = magnitude(bodyWidth, bodyHeight) / 2;
 
           ctx.beginPath();
           ctx.arc(0, 0, radius, 0, Math.PI * 2);
@@ -296,7 +214,7 @@ export const PhysicsSVG = memo(
 
             ctx.save();
             ctx.translate(x, y);
-            ctx.rotate((rotation * Math.PI) / 180);
+            ctx.rotate(degreesToRadians(rotation));
 
             ctx.fillStyle = generateRainbowFromPalette(
               colorIndex,
@@ -310,7 +228,7 @@ export const PhysicsSVG = memo(
             ctx.shadowOffsetX = 0;
             ctx.shadowOffsetY = 6;
 
-            const radius = Math.sqrt(bodyWidth * bodyHeight) / 2;
+            const radius = magnitude(bodyWidth, bodyHeight) / 2;
 
             ctx.beginPath();
             ctx.arc(0, 0, radius, 0, Math.PI * 2);
@@ -324,14 +242,11 @@ export const PhysicsSVG = memo(
       // Mount-only effect for worker initialization
       useEffect(() => {
         let isMounted = true;
-        let unregisterResizeObserver: (() => void) | null = null;
 
         const initializeWorker = async () => {
-          if (!isMounted || !canvasRef.current || !containerRef.current) return;
+          if (!isMounted || !canvasRef.current) return;
 
           const canvas = canvasRef.current;
-          const container = containerRef.current;
-
           canvasContextRef.current = canvas.getContext("2d");
 
           const worker = new Worker(
@@ -401,53 +316,7 @@ export const PhysicsSVG = memo(
             }
           };
 
-          const resizeObserver = new ResizeObserver((entries) => {
-            if (resizeTimeoutRef.current) {
-              clearTimeout(resizeTimeoutRef.current);
-            }
-            resizeTimeoutRef.current = setTimeout(() => {
-              if (!entries[0]) return;
-              const { width, height } = entries[0].contentRect;
-              const dpr = window.devicePixelRatio || 1;
-
-              dimensionsRef.current = { width, height };
-              canvas.width = width * dpr;
-              canvas.height = height * dpr;
-              canvas.style.width = `${width}px`;
-              canvas.style.height = `${height}px`;
-
-              if (canvasContextRef.current) {
-                canvasContextRef.current.scale(dpr, dpr);
-              }
-
-              worker.postMessage({
-                type: "UPDATE_DIMENSIONS",
-                payload: { width, height, numBodies },
-              });
-            }, 100);
-          });
-
-          resizeObserver.observe(container);
-          unregisterResizeObserver = () => resizeObserver.disconnect();
-
-          const { width, height } = container.getBoundingClientRect();
-          const dpr = window.devicePixelRatio || 1;
-
-          dimensionsRef.current = { width, height };
-          canvas.width = width * dpr;
-          canvas.height = height * dpr;
-          canvas.style.width = `${width}px`;
-          canvas.style.height = `${height}px`;
-
-          if (canvasContextRef.current) {
-            canvasContextRef.current.scale(dpr, dpr);
-          }
-
           worker.postMessage({ type: "INIT" });
-          worker.postMessage({
-            type: "UPDATE_DIMENSIONS",
-            payload: { width, height, numBodies },
-          });
         };
 
         initializeWorker();
@@ -457,7 +326,6 @@ export const PhysicsSVG = memo(
           if (resizeTimeoutRef.current) {
             clearTimeout(resizeTimeoutRef.current);
           }
-          if (unregisterResizeObserver) unregisterResizeObserver();
           if (renderRequestRef.current) {
             cancelAnimationFrame(renderRequestRef.current);
           }
@@ -468,6 +336,31 @@ export const PhysicsSVG = memo(
           }
         };
       }, []);
+
+      // Dimensions effect
+      useEffect(() => {
+        if (!dimensions || !canvasRef.current || !workerRef.current) return;
+        if (dimensions.width === 0 || dimensions.height === 0) return;
+
+        const canvas = canvasRef.current;
+        const { width, height } = dimensions;
+        const dpr = window.devicePixelRatio || 1;
+
+        dimensionsRef.current = { width, height };
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+
+        if (canvasContextRef.current) {
+          canvasContextRef.current.scale(dpr, dpr);
+        }
+
+        workerRef.current.postMessage({
+          type: "UPDATE_DIMENSIONS",
+          payload: { width, height, numBodies },
+        });
+      }, [dimensions, numBodies]);
 
       // Settings-only effect
       useEffect(() => {
