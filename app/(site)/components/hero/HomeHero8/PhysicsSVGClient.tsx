@@ -8,17 +8,15 @@ import {
 } from "react";
 import { PhysicsSVG, type PhysicsSVGRef } from "./PhysicsSVG";
 
-const noop = () => {};
-
 const DESKTOP_SETTINGS = {
-  gravity: 40,
+  gravity: 80,
   timeStep: 1,
   damping: 0,
   friction: 0,
   restitution: 0,
-  numBodies: 800,
-  bodySize: 0.35,
-  bodySizeVariance: 0.7,
+  numBodies: 500,
+  bodySize: 0.55,
+  bodySizeVariance: 5,
   bodiesStartSpread: 0.7,
   bodiesStartRadius: 0.6,
   colorLevel: 4,
@@ -29,7 +27,7 @@ const DESKTOP_SETTINGS = {
   shockwaveDirectionality: 0.2,
   centerCircleRadius: 0.3,
   initialClockwiseVelocity: 2,
-  scrollForceMultiplier: 2.5,
+  scrollForceMultiplier: 0.5,
   scrollVelocityDamping: 0.95,
   scrollInertiaDecay: 0.92,
   scrollDirectionInfluence: 1.0,
@@ -63,6 +61,7 @@ const MOBILE_SETTINGS = {
 const PhysicsSVGClient = forwardRef<PhysicsSVGRef>((_, ref) => {
   const [isMobile, setIsMobile] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [colorLevel, setColorLevel] = useState(4);
   const physicsRef = useRef<PhysicsSVGRef>(null);
 
   useImperativeHandle(ref, () => ({
@@ -70,6 +69,8 @@ const PhysicsSVGClient = forwardRef<PhysicsSVGRef>((_, ref) => {
     applyScrollForce: (force: number, direction: number) =>
       physicsRef.current?.applyScrollForce(force, direction),
     getCanvasBounds: () => physicsRef.current?.getCanvasBounds() || null,
+    getCanvasDimensions: () =>
+      physicsRef.current?.getCanvasDimensions() || { width: 0, height: 0 },
   }));
 
   useEffect(() => {
@@ -79,10 +80,30 @@ const PhysicsSVGClient = forwardRef<PhysicsSVGRef>((_, ref) => {
       setIsMobile(isMobileDevice);
     };
 
+    const getColorLevel = () => {
+      const cssValue = getComputedStyle(document.documentElement)
+        .getPropertyValue("--physics-color-level")
+        .trim();
+      const level = parseInt(cssValue, 10);
+      return isNaN(level) ? 4 : level;
+    };
+
+    const handleColorSchemeChange = () => {
+      setColorLevel(getColorLevel());
+    };
+
     setMounted(true);
     handleResize();
+    setColorLevel(getColorLevel());
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    mediaQuery.addEventListener("change", handleColorSchemeChange);
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleColorSchemeChange);
+      window.removeEventListener("resize", handleResize);
+    };
   }, [mounted]);
 
   useEffect(() => {
@@ -121,6 +142,38 @@ const PhysicsSVGClient = forwardRef<PhysicsSVGRef>((_, ref) => {
             lastTime = now;
           };
 
+          const handleMouseDown = (e: MouseEvent) => {
+            if (isMobile) return;
+
+            const target = e.target as Element;
+            if (
+              target.tagName === "CANVAS" &&
+              isPointInCanvas(e.clientX, e.clientY)
+            ) {
+              const canvasCoords = convertToCanvasCoords(e.clientX, e.clientY);
+              physicsRef.current?.shockwave(canvasCoords.x, canvasCoords.y);
+            }
+          };
+
+          const handleMouseMove = (e: MouseEvent) => {
+            if (isMobile) return;
+
+            if (e.buttons === 1) {
+              // Left mouse button is pressed
+              const target = e.target as Element;
+              if (
+                target.tagName === "CANVAS" &&
+                isPointInCanvas(e.clientX, e.clientY)
+              ) {
+                const canvasCoords = convertToCanvasCoords(
+                  e.clientX,
+                  e.clientY,
+                );
+                physicsRef.current?.shockwave(canvasCoords.x, canvasCoords.y);
+              }
+            }
+          };
+
           const isPointInCanvas = (
             clientX: number,
             clientY: number,
@@ -138,11 +191,16 @@ const PhysicsSVGClient = forwardRef<PhysicsSVGRef>((_, ref) => {
 
           const convertToCanvasCoords = (clientX: number, clientY: number) => {
             const canvasBounds = physicsRef.current?.getCanvasBounds();
-            if (!canvasBounds) return { x: 0, y: 0 };
+            const canvasDimensions = physicsRef.current?.getCanvasDimensions();
+            if (!canvasBounds || !canvasDimensions) return { x: 0, y: 0 };
 
             return {
-              x: clientX - canvasBounds.left,
-              y: clientY - canvasBounds.top,
+              x:
+                (clientX - canvasBounds.left) *
+                (canvasDimensions.width / canvasBounds.width),
+              y:
+                (clientY - canvasBounds.top) *
+                (canvasDimensions.height / canvasBounds.height),
             };
           };
 
@@ -200,11 +258,15 @@ const PhysicsSVGClient = forwardRef<PhysicsSVGRef>((_, ref) => {
           document.addEventListener("touchmove", handleTouchMove, {
             passive: true,
           });
+          document.addEventListener("mousedown", handleMouseDown);
+          document.addEventListener("mousemove", handleMouseMove);
 
           return () => {
             window.removeEventListener("scroll", handleScroll);
             document.removeEventListener("touchstart", handleTouchStart);
             document.removeEventListener("touchmove", handleTouchMove);
+            document.removeEventListener("mousedown", handleMouseDown);
+            document.removeEventListener("mousemove", handleMouseMove);
           };
         }
       },
@@ -234,15 +296,17 @@ const PhysicsSVGClient = forwardRef<PhysicsSVGRef>((_, ref) => {
     return null;
   }
 
-  const settings = isMobile ? MOBILE_SETTINGS : DESKTOP_SETTINGS;
+  const baseSettings = isMobile ? MOBILE_SETTINGS : DESKTOP_SETTINGS;
+  const settings = {
+    ...baseSettings,
+    colorLevel,
+  };
 
   return (
     <PhysicsSVG
-      key={`physics-${isMobile ? "mobile" : "desktop"}`}
+      key={`physics-${isMobile ? "mobile" : "desktop"}-${colorLevel}`}
       ref={physicsRef}
       {...settings}
-      onDragStateChange={noop}
-      onHoverStateChange={noop}
     />
   );
 });

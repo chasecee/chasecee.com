@@ -71,20 +71,6 @@ export default function CustomDashboardCard({
         <div className="absolute inset-0"></div>
       </div>
 
-      {project.image && (
-        <div className="view-actor-image absolute top-[100%] right-[10%] left-[10%] translate-y-0 rounded-xl transition-transform duration-300 group-hover:-translate-y-[75%] group-active:scale-95">
-          <Image
-            src={urlFor(project.image).width(515).height(515).dpr(1.5).url()}
-            alt={project.name}
-            width={515}
-            height={515}
-            priority={index < 2}
-            sizes="(max-width: 640) 314px, 515px"
-            className="rounded-xl object-cover opacity-90"
-          />
-        </div>
-      )}
-
       {project.svgcode?.code && (
         <div className="view-actor absolute inset-0 transition-transform delay-[25ms] duration-500 group-hover:-translate-y-[28%] group-hover:duration-300">
           <div

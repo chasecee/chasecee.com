@@ -2,7 +2,6 @@
 import React, {
   useRef,
   useEffect,
-  useLayoutEffect,
   useCallback,
   memo,
   forwardRef,
@@ -44,8 +43,7 @@ export interface PhysicsSVGProps {
   scrollVelocityDamping: number;
   scrollInertiaDecay: number;
   scrollDirectionInfluence: number;
-  onDragStateChange: (isDragging: boolean) => void;
-  onHoverStateChange: (isHovering: boolean) => void;
+
   palette?: Record<string, string[]>;
 }
 
@@ -53,6 +51,7 @@ export interface PhysicsSVGRef {
   shockwave: (x?: number, y?: number) => void;
   applyScrollForce: (force: number, direction: number) => void;
   getCanvasBounds: () => DOMRect | null;
+  getCanvasDimensions: () => { width: number; height: number };
 }
 
 interface PhysicsBodyData {
@@ -69,13 +68,6 @@ interface PhysicsBodyData {
 interface CanvasProps {
   canvasRef: RefObject<HTMLCanvasElement | null>;
   cursorStyle: string;
-}
-
-interface ControlsProps {
-  onPointerDown: (e: PointerEvent) => void;
-  onPointerMove: (e: PointerEvent) => void;
-  onPointerUp: () => void;
-  canvasRef: RefObject<HTMLCanvasElement | null>;
 }
 
 const parseHSLA = (hslaString: string) => {
@@ -161,31 +153,6 @@ const MemoizedCanvas = memo(({ canvasRef, cursorStyle }: CanvasProps) => (
 
 MemoizedCanvas.displayName = "MemoizedCanvas";
 
-const PointerControls = memo(
-  ({ onPointerDown, onPointerMove, onPointerUp, canvasRef }: ControlsProps) => {
-    useLayoutEffect(() => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-
-      canvas.addEventListener("pointerdown", onPointerDown);
-      canvas.addEventListener("pointermove", onPointerMove);
-      canvas.addEventListener("pointerup", onPointerUp);
-      canvas.addEventListener("pointerleave", onPointerUp);
-
-      return () => {
-        canvas.removeEventListener("pointerdown", onPointerDown);
-        canvas.removeEventListener("pointermove", onPointerMove);
-        canvas.removeEventListener("pointerup", onPointerUp);
-        canvas.removeEventListener("pointerleave", onPointerUp);
-      };
-    }, [onPointerDown, onPointerMove, onPointerUp]);
-
-    return null;
-  },
-);
-
-PointerControls.displayName = "PointerControls";
-
 export const PhysicsSVG = memo(
   forwardRef<PhysicsSVGRef, PhysicsSVGProps>(
     (
@@ -212,8 +179,6 @@ export const PhysicsSVG = memo(
         scrollVelocityDamping,
         scrollInertiaDecay,
         scrollDirectionInfluence,
-        onDragStateChange,
-        onHoverStateChange,
         palette = importedPalette,
       },
       ref,
@@ -223,15 +188,9 @@ export const PhysicsSVG = memo(
       const workerRef = useRef<Worker | null>(null);
       const dimensionsRef = useRef({ width: 0, height: 0 });
       const bodiesRef = useRef<PhysicsBodyData[]>([]);
-      const isHoveringRef = useRef(false);
-      const isDraggingRef = useRef(false);
-      const isDrawingShockwaveRef = useRef(false);
-      const shockwaveThrottledRef = useRef(false);
-      const lastShockwavePos = useRef({ x: 0, y: 0 });
       const resizeTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
       const renderRequestRef = useRef<number>(0);
       const canvasContextRef = useRef<CanvasRenderingContext2D | null>(null);
-      const [cursorStyle, setCursorStyle] = React.useState("default");
 
       useImperativeHandle(ref, () => ({
         shockwave: (x?: number, y?: number) => {
@@ -252,100 +211,10 @@ export const PhysicsSVG = memo(
         getCanvasBounds: () => {
           return canvasRef.current?.getBoundingClientRect() || null;
         },
+        getCanvasDimensions: () => {
+          return dimensionsRef.current;
+        },
       }));
-
-      const getPointerPos = useCallback((e: PointerEvent) => {
-        const canvas = canvasRef.current;
-        if (!canvas) return { x: 0, y: 0 };
-
-        const rect = canvas.getBoundingClientRect();
-        return {
-          x:
-            (e.clientX - rect.left) *
-            (dimensionsRef.current.width / rect.width),
-          y:
-            (e.clientY - rect.top) *
-            (dimensionsRef.current.height / rect.height),
-        };
-      }, []);
-
-      const onPointerDown = useCallback(
-        (e: PointerEvent) => {
-          e.preventDefault();
-          e.stopPropagation();
-
-          isDrawingShockwaveRef.current = true;
-
-          const pos = getPointerPos(e);
-          const centerX = dimensionsRef.current.width / 2;
-          const centerY = dimensionsRef.current.height / 2;
-          const centerRadius =
-            Math.min(
-              dimensionsRef.current.width,
-              dimensionsRef.current.height,
-            ) * centerCircleRadius;
-
-          const distanceFromCenter = Math.sqrt(
-            Math.pow(pos.x - centerX, 2) + Math.pow(pos.y - centerY, 2),
-          );
-
-          if (distanceFromCenter <= centerRadius) {
-            workerRef.current?.postMessage({
-              type: "CENTER_SHOCKWAVE",
-              payload: { x: centerX, y: centerY },
-            });
-          } else {
-            workerRef.current?.postMessage({
-              type: "SHOCKWAVE",
-              payload: { x: pos.x, y: pos.y },
-            });
-          }
-        },
-        [getPointerPos, centerCircleRadius],
-      );
-
-      const onPointerMove = useCallback(
-        (e: PointerEvent) => {
-          e.preventDefault();
-          e.stopPropagation();
-
-          const pos = getPointerPos(e);
-          lastShockwavePos.current = pos;
-
-          if (isDrawingShockwaveRef.current && !shockwaveThrottledRef.current) {
-            shockwaveThrottledRef.current = true;
-            requestAnimationFrame(() => {
-              workerRef.current?.postMessage({
-                type: "SHOCKWAVE",
-                payload: {
-                  x: lastShockwavePos.current.x,
-                  y: lastShockwavePos.current.y,
-                },
-              });
-              shockwaveThrottledRef.current = false;
-            });
-          }
-
-          const isOverBody = bodiesRef.current.some((body) => {
-            const dx = pos.x - body.x;
-            const dy = pos.y - body.y;
-            const radius = Math.sqrt(body.width * body.height) / 2;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            return distance <= radius;
-          });
-
-          if (isOverBody !== isHoveringRef.current) {
-            isHoveringRef.current = isOverBody;
-            setCursorStyle(isOverBody ? "pointer" : "default");
-            onHoverStateChange(isOverBody);
-          }
-        },
-        [getPointerPos, onHoverStateChange],
-      );
-
-      const onPointerUp = useCallback(() => {
-        isDrawingShockwaveRef.current = false;
-      }, []);
 
       const renderBodies = useCallback(() => {
         renderRequestRef.current = 0;
@@ -671,13 +540,7 @@ export const PhysicsSVG = memo(
           className="relative top-1/2 h-[100svh] w-full max-w-full -translate-y-1/2 lg:h-[110svh]"
           style={containerStyle}
         >
-          <PointerControls
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            canvasRef={canvasRef}
-          />
-          <MemoizedCanvas canvasRef={canvasRef} cursorStyle={cursorStyle} />
+          <MemoizedCanvas canvasRef={canvasRef} cursorStyle="default" />
         </div>
       );
     },
