@@ -27,7 +27,7 @@ export type ShockMainMessage = {
 export type ScrollForceMainMessage = {
   type: "SCROLL_FORCE";
   force: number;
-  direction: number;
+  direction?: number;
 };
 
 export type SetPausedMainMessage = {

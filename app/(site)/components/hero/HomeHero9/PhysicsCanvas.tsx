@@ -25,8 +25,7 @@ export function PhysicsCanvas() {
 
       const message: Extract<MainToWorkerMessage, { type: "SCROLL_FORCE" }> = {
         type: "SCROLL_FORCE",
-        force: scrollVelocity,
-        direction: Math.sign(scrollVelocity),
+        force: scrollVelocity * 5,
       };
       workerRef.current?.postMessage(message);
 
@@ -48,8 +47,7 @@ export function PhysicsCanvas() {
 
       const message: Extract<MainToWorkerMessage, { type: "SCROLL_FORCE" }> = {
         type: "SCROLL_FORCE",
-        force: deltaY * 2.5,
-        direction: Math.sign(deltaY),
+        force: deltaY * 25,
       };
       workerRef.current?.postMessage(message);
     };

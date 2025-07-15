@@ -367,11 +367,11 @@ function update(currentTime: number) {
   const centerXMeters = centerX / PIXELS_PER_METER;
   const centerYMeters = centerY / PIXELS_PER_METER;
 
-  const normalizedScroll = Math.tanh(scrollForce * 0.01);
+  const normalizedScroll = Math.tanh(scrollForce * 0.005);
   const scrollInfluence =
     normalizedScroll * settings.interactions.scroll.forceMultiplier;
   if (Math.abs(scrollInfluence) > 0.05) {
-    const impulseStrength = scrollInfluence * 1.5;
+    const impulseStrength = scrollInfluence * 2.5;
 
     for (const body of rigidBodies) {
       const vel = body.linvel();
