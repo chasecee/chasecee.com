@@ -1,0 +1,32 @@
+import { getPersonalProjects, getClientProjects } from "@/sanity/sanity-utils";
+import ContainerHome from "../components/ContainerHome";
+import ProjectsList from "../components/ProjectsList";
+import HomeHero9 from "../components/hero/HomeHero9/HomeHero9";
+
+export default async function HomeNew() {
+  const [personalProjects, clientProjects] = await Promise.all([
+    getPersonalProjects(),
+    getClientProjects(),
+  ]);
+
+  return (
+    <>
+      <ContainerHome className="relative z-10" showCTA={true}>
+        <HomeHero9 />
+        <div className="relative z-10 flex flex-col gap-10">
+          <ProjectsList
+            projects={personalProjects}
+            title="Personal Projects"
+            columns={3}
+          />
+          <ProjectsList
+            projects={clientProjects}
+            title="Client Work"
+            columns={4}
+            forceLoading={false}
+          />
+        </div>
+      </ContainerHome>
+    </>
+  );
+}
