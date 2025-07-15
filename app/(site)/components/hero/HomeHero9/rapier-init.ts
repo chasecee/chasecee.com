@@ -9,8 +9,6 @@ export const initRapier = (): Promise<typeof RAPIER> => {
 
   rapierPromise = new Promise(async (resolve) => {
     const rapier = await import("@dimforge/rapier2d");
-    // No need to call .init() on the standard package
-    console.log("Rapier WASM module loaded.");
     resolve(rapier);
   });
 

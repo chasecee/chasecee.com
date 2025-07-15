@@ -19,6 +19,9 @@ export default function CustomDashboardCard({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const target = containerRef.current;
+    if (!target) return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !shouldLoadIframe) {
@@ -32,14 +35,10 @@ export default function CustomDashboardCard({
       },
     );
 
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
+    observer.observe(target);
 
     return () => {
-      if (containerRef.current) {
-        observer.unobserve(containerRef.current);
-      }
+      observer.unobserve(target);
     };
   }, [shouldLoadIframe]);
 

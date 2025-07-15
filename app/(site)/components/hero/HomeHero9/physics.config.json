@@ -9,11 +9,11 @@
   "bodies": {
     "count": 1024,
     "startPlacement": "grid",
-    "radius": 6,
+    "radius": 5,
     "radiusVariance": 0.01,
     "friction": 0.1,
     "restitution": 0.5,
-    "startRadius": 0.6,
+    "startRadius": 0.35,
     "startSpread": 0.3
   },
   "world": {
@@ -46,11 +46,13 @@
       "tangentialDamping": 0.1
     },
     "bodies": {
-      "count": 350,
-      "startPlacement": "ring",
-      "radius": 6,
+      "count": 800,
+      "startPlacement": "grid",
+      "radius": 4,
       "friction": 0.01,
-      "restitution": 0.1
+      "restitution": 0.1,
+      "startRadius": 0.4,
+      "startSpread": 0.3
     },
     "world": {
       "centerCircleRadius": 0.4,
@@ -66,7 +68,7 @@
         "radius": 0.4
       },
       "scroll": {
-        "forceMultiplier": -0.9,
+        "forceMultiplier": -0.3,
         "velocityDamping": 0.97
       }
     }

@@ -48,7 +48,7 @@ export function PhysicsCanvas() {
 
       const message: Extract<MainToWorkerMessage, { type: "SCROLL_FORCE" }> = {
         type: "SCROLL_FORCE",
-        force: deltaY * 2.5, // Amplify touch scroll
+        force: deltaY * 2.5,
         direction: Math.sign(deltaY),
       };
       workerRef.current?.postMessage(message);
@@ -88,6 +88,16 @@ export function PhysicsCanvas() {
     canvas.addEventListener("touchstart", handleTouchStart, { passive: true });
     canvas.addEventListener("touchmove", handleTouchMove, { passive: true });
 
+    const handleVisibilityChange = () => {
+      const pauseMessage: Extract<MainToWorkerMessage, { type: "SET_PAUSED" }> =
+        {
+          type: "SET_PAUSED",
+          paused: document.hidden,
+        };
+      workerRef.current?.postMessage(pauseMessage);
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     const resizeObserver = new ResizeObserver((entries) => {
       if (!entries || entries.length === 0) return;
       const { width, height } = entries[0].contentRect;
@@ -107,6 +117,7 @@ export function PhysicsCanvas() {
       window.removeEventListener("scroll", handleScroll);
       canvas.removeEventListener("touchstart", handleTouchStart);
       canvas.removeEventListener("touchmove", handleTouchMove);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       const terminateMessage: Extract<
         MainToWorkerMessage,
         { type: "TERMINATE" }

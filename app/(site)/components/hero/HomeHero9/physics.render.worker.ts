@@ -1,7 +1,7 @@
 import { initRapier } from "./rapier-init";
 import { MainToWorkerMessage } from "./messages";
 import * as WebGL from "./gl";
-import { makeSlabs, PhysicsSlabs } from "./struct";
+import { makeSlabs, PhysicsSlabs, MAX_BODIES } from "./struct";
 import config from "./physics.config.json";
 import type RAPIER_API from "@dimforge/rapier2d";
 import { interpolatedColorWheels } from "./palette-rgb";
@@ -10,7 +10,6 @@ type DeepPartial<T> = T extends object
   ? { [P in keyof T]?: DeepPartial<T[P]> }
   : T;
 
-// A single meter in the simulation is this many pixels on screen.
 const PIXELS_PER_METER = 50;
 
 type PhysicsSettings = typeof config;
@@ -18,7 +17,6 @@ type MobileOverrides = DeepPartial<Omit<PhysicsSettings, "mobileOverrides">>;
 
 let rapier: typeof RAPIER_API;
 
-// State
 let canvas: OffscreenCanvas | null = null;
 let gl: WebGL2RenderingContext | null = null;
 let world: import("@dimforge/rapier2d").World;
@@ -27,27 +25,24 @@ let rigidBodies: import("@dimforge/rapier2d").RigidBody[] = [];
 let planetBody: import("@dimforge/rapier2d").RigidBody | null = null;
 let planetCollider: import("@dimforge/rapier2d").Collider | null = null;
 
-// Add a list for active shockwaves
-let shockwaves: { x: number; y: number; force: number; radius: number }[] = [];
-
-// Scroll force state
 let scrollForce = 0;
-let scrollDirection = 0;
 
 let program: WebGLProgram | null = null;
 let projectionMatrix: WebGLUniformLocation | null = null;
 
 let wallColliderHandles: number[] = [];
 let vao: WebGLVertexArrayObject | null = null;
-let positionsVbo: WebGLBuffer | null = null;
-let anglesVbo: WebGLBuffer | null = null;
-let radiiVbo: WebGLBuffer | null = null;
-let colorsVbo: WebGLBuffer | null = null;
+let interleavedVbo: WebGLBuffer | null = null;
+let cornerVbo: WebGLBuffer | null = null;
+let interleavedBuffer: ArrayBuffer;
+let interleavedFloat32: Float32Array;
+let interleavedUint8: Uint8Array;
+const BYTES_PER_VERTEX = 20;
 
 let isRunning = false;
+let isPaused = false;
 let bodyCount = 0;
 
-// Cached canvas dimensions
 let canvasWidth = 0;
 let canvasHeight = 0;
 let centerX = 0;
@@ -56,14 +51,14 @@ let centerY = 0;
 let frameCount = 0;
 const scratchDir = { x: 0, y: 0 };
 const scratchForce = { x: 0, y: 0 };
+const tmpLinvel = { x: 0, y: 0 };
 
 let lastTime = 0;
-let dt = 1 / 60; // Default timestep
+let dt = 1 / 60;
 let accumulator = 0;
 let simulationTime = 0;
 let wallsEnabled = false;
 
-// Get the correct settings based on mobile or desktop
 function getSettings(isMobile: boolean): PhysicsSettings {
   if (!isMobile) {
     return config;
@@ -72,7 +67,6 @@ function getSettings(isMobile: boolean): PhysicsSettings {
   const baseConfig = { ...config };
   const mobileOverrides: MobileOverrides = config.mobileOverrides || {};
 
-  // A simple deep merge for one level of nesting
   const mergedConfig = {
     ...baseConfig,
     ...mobileOverrides,
@@ -107,12 +101,12 @@ function setupWebgl() {
   const vertexShader = WebGL.createShader(
     gl,
     gl.VERTEX_SHADER,
-    WebGL.VERTEX_SHADER_SOURCE,
+    WebGL.QUAD_VERTEX_SHADER_SOURCE,
   );
   const fragmentShader = WebGL.createShader(
     gl,
     gl.FRAGMENT_SHADER,
-    WebGL.FRAGMENT_SHADER_SOURCE,
+    WebGL.QUAD_FRAGMENT_SHADER_SOURCE,
   );
 
   if (!vertexShader || !fragmentShader) return;
@@ -124,47 +118,49 @@ function setupWebgl() {
 
   slabs = makeSlabs();
 
-  positionsVbo = WebGL.createVbo(gl, slabs.positions.buffer as ArrayBuffer);
-  anglesVbo = WebGL.createVbo(gl, slabs.angles.buffer as ArrayBuffer);
-  radiiVbo = WebGL.createVbo(gl, slabs.radii.buffer as ArrayBuffer);
-  colorsVbo = WebGL.createVbo(
-    gl,
-    slabs.colors.buffer as ArrayBuffer,
-    gl.STATIC_DRAW,
-  );
+  interleavedBuffer = new ArrayBuffer(MAX_BODIES * BYTES_PER_VERTEX);
+  interleavedFloat32 = new Float32Array(interleavedBuffer);
+  interleavedUint8 = new Uint8Array(interleavedBuffer);
+
+  interleavedVbo = WebGL.createVbo(gl, interleavedBuffer, gl.STREAM_DRAW);
+
+  const cornerData = new Float32Array([-1, -1, -1, 1, 1, -1, 1, 1]);
+  cornerVbo = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, cornerVbo);
+  gl.bufferData(gl.ARRAY_BUFFER, cornerData, gl.STATIC_DRAW);
 
   vao = gl.createVertexArray();
   gl.bindVertexArray(vao);
 
-  const setupAttribute = (
-    vbo: WebGLBuffer,
-    location: number,
-    size: number,
-    type: number,
-    divisor: number = 1,
-    normalized: boolean = false,
-  ) => {
-    if (!gl) return;
-    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-    gl.enableVertexAttribArray(location);
-    if (type === gl.UNSIGNED_INT) {
-      gl.vertexAttribIPointer(location, size, type, 0, 0);
-    } else {
-      gl.vertexAttribPointer(location, size, type, normalized, 0, 0);
-    }
-    gl.vertexAttribDivisor(location, divisor);
-  };
+  gl.bindBuffer(gl.ARRAY_BUFFER, cornerVbo);
+  const cornerLoc = gl.getAttribLocation(program, "a_corner");
+  gl.enableVertexAttribArray(cornerLoc);
+  gl.vertexAttribPointer(cornerLoc, 2, gl.FLOAT, false, 0, 0);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
 
   const positionLoc = gl.getAttribLocation(program, "a_position");
   const angleLoc = gl.getAttribLocation(program, "a_angle");
   const radiusLoc = gl.getAttribLocation(program, "a_radius");
   const colorLoc = gl.getAttribLocation(program, "a_color");
 
-  if (positionsVbo) setupAttribute(positionsVbo, positionLoc, 2, gl.FLOAT);
-  if (anglesVbo) setupAttribute(anglesVbo, angleLoc, 1, gl.FLOAT);
-  if (radiiVbo) setupAttribute(radiiVbo, radiusLoc, 1, gl.FLOAT);
-  if (colorsVbo)
-    setupAttribute(colorsVbo, colorLoc, 4, gl.UNSIGNED_BYTE, 1, true);
+  const stride = BYTES_PER_VERTEX;
+
+  gl.enableVertexAttribArray(positionLoc);
+  gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, stride, 0);
+  gl.vertexAttribDivisor(positionLoc, 1);
+
+  gl.enableVertexAttribArray(angleLoc);
+  gl.vertexAttribPointer(angleLoc, 1, gl.FLOAT, false, stride, 8);
+  gl.vertexAttribDivisor(angleLoc, 1);
+
+  gl.enableVertexAttribArray(radiusLoc);
+  gl.vertexAttribPointer(radiusLoc, 1, gl.FLOAT, false, stride, 12);
+  gl.vertexAttribDivisor(radiusLoc, 1);
+
+  gl.enableVertexAttribArray(colorLoc);
+  gl.vertexAttribPointer(colorLoc, 4, gl.UNSIGNED_BYTE, true, stride, 16);
+  gl.vertexAttribDivisor(colorLoc, 1);
 
   gl.bindVertexArray(null);
 }
@@ -176,10 +172,8 @@ function createBodies(isMobile: boolean) {
   const radiusVariance = settings.bodies.radiusVariance;
   const initialClockwiseVelocity = settings.simulation.initialClockwiseVelocity;
 
-  // Use cached dimensions
   const center = { x: centerX, y: centerY };
 
-  // Create invisible center planet (physics only, no visual)
   const planetRadiusPixels =
     settings.world.centerCircleRadius * Math.min(canvasWidth, canvasHeight);
   if (planetRadiusPixels > 0) {
@@ -192,27 +186,20 @@ function createBodies(isMobile: boolean) {
       planetRadiusPixels / PIXELS_PER_METER,
     )
       .setFriction(5)
-      .setRestitution(1); // No bounce
+      .setRestitution(1);
     planetCollider = world.createCollider(planetColliderDesc, planetBody);
   }
 
-  rigidBodies = [];
-  console.log("🏗️ Creating Bodies:", {
-    placement: settings.bodies.startPlacement,
-    bodyCount: bodyCount,
-    initialClockwiseVelocity: initialClockwiseVelocity,
-    damping: settings.simulation.damping,
-    centerPosition: { x: center.x, y: center.y },
-  });
+  rigidBodies.length = 0;
 
   const placement = settings.bodies.startPlacement || "ring";
 
   if (placement === "grid") {
-    const planetRadiusPixels =
-      settings.world.centerCircleRadius * Math.min(canvasWidth, canvasHeight);
+    const startRadiusPixels =
+      settings.bodies.startRadius * Math.min(canvasWidth, canvasHeight);
 
     const canvasArea = canvasWidth * canvasHeight;
-    const circleArea = Math.PI * Math.pow(planetRadiusPixels, 2);
+    const circleArea = Math.PI * Math.pow(startRadiusPixels, 2);
     const usableArea = Math.max(0, canvasArea - circleArea);
 
     const targetDensity = bodyCount / usableArea;
@@ -235,7 +222,7 @@ function createBodies(isMobile: boolean) {
         const dy = y - centerY;
         const distSq = dx * dx + dy * dy;
 
-        if (distSq > planetRadiusPixels * planetRadiusPixels) {
+        if (distSq > startRadiusPixels * startRadiusPixels) {
           const angle = Math.atan2(dy, dx) + Math.PI;
 
           const radiusMultiplier = 1.0 + (Math.random() - 0.5) * radiusVariance;
@@ -243,8 +230,7 @@ function createBodies(isMobile: boolean) {
 
           const rigidBodyDesc = rapier.RigidBodyDesc.dynamic()
             .setTranslation(x / PIXELS_PER_METER, y / PIXELS_PER_METER)
-            .setLinearDamping(settings.simulation.damping)
-            .setCcdEnabled(true);
+            .setLinearDamping(settings.simulation.damping);
 
           const rigidBody = world.createRigidBody(rigidBodyDesc);
           const colliderDesc = rapier.ColliderDesc.ball(
@@ -278,13 +264,10 @@ function createBodies(isMobile: boolean) {
       if (currentBodyIndex >= bodyCount) break;
     }
     bodyCount = rigidBodies.length;
-    console.log(`Grid generation complete. Actual body count: ${bodyCount}`);
   } else {
-    // Original ring placement
     for (let i = 0; i < bodyCount; i++) {
       const angle = (i / bodyCount) * Math.PI * 2;
 
-      // Apply startSpread to add randomness to the initial radius
       const spreadMultiplier =
         1.0 + (Math.random() - 0.5) * settings.bodies.startSpread;
       const actualRadius =
@@ -300,25 +283,11 @@ function createBodies(isMobile: boolean) {
 
       const rigidBodyDesc = rapier.RigidBodyDesc.dynamic()
         .setTranslation(x / PIXELS_PER_METER, y / PIXELS_PER_METER)
-        .setLinearDamping(settings.simulation.damping)
-        .setCcdEnabled(true);
+        .setLinearDamping(settings.simulation.damping);
 
-      // Correct clockwise velocity calculation (from mathUtils.ts)
       const velocityX = -initialClockwiseVelocity * Math.sin(angle);
       const velocityY = initialClockwiseVelocity * Math.cos(angle);
       rigidBodyDesc.setLinvel(velocityX, velocityY);
-
-      // Log first few bodies for debugging
-      if (i < 3) {
-        console.log(`📍 Body ${i}:`, {
-          position: { x: x.toFixed(1), y: y.toFixed(1) },
-          velocity: { x: velocityX.toFixed(3), y: velocityY.toFixed(3) },
-          angle: ((angle * 180) / Math.PI).toFixed(1) + "°",
-          radius: finalRadiusPixels.toFixed(1),
-          spreadMultiplier: spreadMultiplier.toFixed(3),
-          actualRadius: actualRadius.toFixed(1),
-        });
-      }
 
       const rigidBody = world.createRigidBody(rigidBodyDesc);
       const colliderDesc = rapier.ColliderDesc.ball(
@@ -326,16 +295,13 @@ function createBodies(isMobile: boolean) {
       )
         .setRestitution(settings.bodies.restitution)
         .setFriction(settings.bodies.friction);
-      // Remove sensor flag - bodies should collide with center planet
       world.createCollider(colliderDesc, rigidBody);
       rigidBodies.push(rigidBody);
 
       slabs.radii[i] = finalRadiusPixels;
 
-      // Get the pre-computed, interpolated color wheel for the current color level
       const colorLevel = settings.rendering.colorLevel;
-      // Map angle to color index (0-6 for 7 colors)
-      const normalizedPosition = (angle / (Math.PI * 2)) % 1; // 0-1
+      const normalizedPosition = (angle / (Math.PI * 2)) % 1;
       const colorPalette =
         interpolatedColorWheels[
           String(colorLevel) as keyof typeof interpolatedColorWheels
@@ -346,30 +312,44 @@ function createBodies(isMobile: boolean) {
 
       const color = (255 << 24) | (b << 16) | (g << 8) | r;
       slabs.colors[i] = color;
-
-      // Debug logging for first few bodies
-      if (i < 3) {
-        console.log(`🎨 Body ${i} color:`, {
-          angle: ((angle * 180) / Math.PI).toFixed(1) + "°",
-          colorLevel,
-          colorIndex,
-          rgb: [r, g, b],
-        });
-      }
     }
   }
 
-  if (gl && radiiVbo && colorsVbo) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, radiiVbo);
-    gl.bufferSubData(gl.ARRAY_BUFFER, 0, slabs.radii);
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorsVbo);
-    gl.bufferSubData(gl.ARRAY_BUFFER, 0, slabs.colors);
+  if (gl && interleavedVbo) {
+    // Rebuild interleaved buffer for visible bodies
+    for (let i = 0; i < bodyCount; i++) {
+      const baseByte = i * BYTES_PER_VERTEX;
+      const baseFloat = baseByte >> 2;
+
+      interleavedFloat32[baseFloat] = slabs.positions[i * 2];
+      interleavedFloat32[baseFloat + 1] = slabs.positions[i * 2 + 1];
+      interleavedFloat32[baseFloat + 2] = slabs.angles[i];
+      interleavedFloat32[baseFloat + 3] = slabs.radii[i];
+
+      const color = slabs.colors[i];
+      interleavedUint8[baseByte + 16] = color & 0xff;
+      interleavedUint8[baseByte + 17] = (color >> 8) & 0xff;
+      interleavedUint8[baseByte + 18] = (color >> 16) & 0xff;
+      interleavedUint8[baseByte + 19] = (color >> 24) & 0xff;
+    }
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
+    gl.bufferSubData(
+      gl.ARRAY_BUFFER,
+      0,
+      interleavedUint8.subarray(0, bodyCount * BYTES_PER_VERTEX),
+    );
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
   }
 }
 
 function update(currentTime: number) {
   if (!isRunning || !canvas) return;
+
+  if (isPaused) {
+    requestAnimationFrame(update);
+    return;
+  }
 
   if (lastTime === 0) {
     lastTime = currentTime;
@@ -379,33 +359,32 @@ function update(currentTime: number) {
 
   const frameTime = (currentTime - lastTime) / 1000.0;
   lastTime = currentTime;
-  accumulator += Math.min(frameTime, 0.2); // Clamp to avoid death spiral
+  accumulator += Math.min(frameTime, 0.2);
 
   frameCount++;
 
   const settings = getSettings(canvas.width < 768);
-  // No need to recalculate these every frame
   const centerXMeters = centerX / PIXELS_PER_METER;
   const centerYMeters = centerY / PIXELS_PER_METER;
 
-  // Apply scroll impulse once per frame
   const normalizedScroll = Math.tanh(scrollForce * 0.01);
   const scrollInfluence =
     normalizedScroll * settings.interactions.scroll.forceMultiplier;
   if (Math.abs(scrollInfluence) > 0.05) {
-    const impulseStrength = scrollInfluence * 1.5; // Make it feel more direct
+    const impulseStrength = scrollInfluence * 1.5;
 
     for (const body of rigidBodies) {
       const vel = body.linvel();
-      // Apply a purely vertical impulse. The direction is handled by the sign of impulseStrength.
-      body.setLinvel({ x: vel.x, y: vel.y + impulseStrength }, true);
+      tmpLinvel.x = vel.x;
+      tmpLinvel.y = vel.y + impulseStrength;
+      body.setLinvel(tmpLinvel, true);
     }
   }
 
-  // Decay scroll force once per frame
   scrollForce *= settings.interactions.scroll.velocityDamping ?? 0.98;
 
-  while (accumulator >= dt) {
+  let stepCount = 0;
+  while (accumulator >= dt && stepCount < 5) {
     simulationTime += dt;
     if (
       !wallsEnabled &&
@@ -419,21 +398,13 @@ function update(currentTime: number) {
         }
       }
       wallsEnabled = true;
-      console.log("Walls enabled");
     }
 
     const planetRadiusPixels =
       settings.world.centerCircleRadius * Math.min(canvasWidth, canvasHeight);
     const planetRadiusMeters = planetRadiusPixels / PIXELS_PER_METER;
 
-    // These are now cached
-    // const centerX = canvas.width / 2;
-    // const centerY = canvas.height / 2;
-    // const centerXMeters = centerX / PIXELS_PER_METER;
-    // const centerYMeters = centerY / PIXELS_PER_METER;
     const gravityCoeff = settings.simulation.gravity;
-
-    // Scroll impulses temporarily disabled for stability.
 
     let maxForce = 0;
     let avgDistance = 0;
@@ -450,38 +421,38 @@ function update(currentTime: number) {
 
       if (distSq < 1e-6) continue;
 
-      const dist = Math.sqrt(distSq);
+      const invDist = 1 / Math.sqrt(distSq);
+      const dist = 1 / invDist;
 
-      // Only apply gravity if the body is outside the central planet.
       if (dist > planetRadiusMeters) {
         gravityApplications++;
-        // Simple attractive gravity. Damping is handled by Rapier's linearDamping.
         const F_gravity = gravityCoeff * mass;
 
-        scratchForce.x = (scratchDir.x / dist) * F_gravity;
-        scratchForce.y = (scratchDir.y / dist) * F_gravity;
+        const coeff = invDist * F_gravity;
+        scratchForce.x = scratchDir.x * coeff;
+        scratchForce.y = scratchDir.y * coeff;
 
         body.addForce(scratchForce, true);
 
-        // --- Tangential drag to counteract scroll-induced orbits ---
         const vel = body.linvel();
-        const radialVel = (vel.x * scratchDir.x + vel.y * scratchDir.y) / dist;
-        const tangVelX = vel.x - radialVel * (scratchDir.x / dist);
-        const tangVelY = vel.y - radialVel * (scratchDir.y / dist);
+        const radialVel =
+          (vel.x * scratchDir.x + vel.y * scratchDir.y) * invDist;
+        const tangVelX = vel.x - radialVel * scratchDir.x * invDist;
+        const tangVelY = vel.y - radialVel * scratchDir.y * invDist;
         const tangentialDamping = settings.simulation.tangentialDamping ?? 1.0;
         const tangDragX = -tangentialDamping * tangVelX * mass;
         const tangDragY = -tangentialDamping * tangVelY * mass;
         body.addForce({ x: tangDragX, y: tangDragY }, true);
 
-        const forceMagnitude = Math.sqrt(
-          scratchForce.x * scratchForce.x + scratchForce.y * scratchForce.y,
-        );
-        maxForce = Math.max(maxForce, forceMagnitude);
+        const magSq =
+          scratchForce.x * scratchForce.x + scratchForce.y * scratchForce.y;
+        maxForce = Math.max(maxForce, Math.sqrt(magSq));
       }
       avgDistance += dist;
     }
     world.step();
     accumulator -= dt;
+    stepCount++;
   }
 
   for (let i = 0; i < bodyCount; i++) {
@@ -494,11 +465,30 @@ function update(currentTime: number) {
     slabs.angles[i] = rot;
   }
 
-  if (gl && positionsVbo && anglesVbo) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionsVbo);
-    gl.bufferSubData(gl.ARRAY_BUFFER, 0, slabs.positions);
-    gl.bindBuffer(gl.ARRAY_BUFFER, anglesVbo);
-    gl.bufferSubData(gl.ARRAY_BUFFER, 0, slabs.angles);
+  if (gl && interleavedVbo) {
+    // Rebuild interleaved buffer for visible bodies
+    for (let i = 0; i < bodyCount; i++) {
+      const baseByte = i * BYTES_PER_VERTEX;
+      const baseFloat = baseByte >> 2;
+
+      interleavedFloat32[baseFloat] = slabs.positions[i * 2];
+      interleavedFloat32[baseFloat + 1] = slabs.positions[i * 2 + 1];
+      interleavedFloat32[baseFloat + 2] = slabs.angles[i];
+      interleavedFloat32[baseFloat + 3] = slabs.radii[i];
+
+      const color = slabs.colors[i];
+      interleavedUint8[baseByte + 16] = color & 0xff;
+      interleavedUint8[baseByte + 17] = (color >> 8) & 0xff;
+      interleavedUint8[baseByte + 18] = (color >> 16) & 0xff;
+      interleavedUint8[baseByte + 19] = (color >> 24) & 0xff;
+    }
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
+    gl.bufferSubData(
+      gl.ARRAY_BUFFER,
+      0,
+      interleavedUint8.subarray(0, bodyCount * BYTES_PER_VERTEX),
+    );
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
   }
 
@@ -507,7 +497,7 @@ function update(currentTime: number) {
     gl.useProgram(program);
     gl.bindVertexArray(vao);
 
-    gl.drawArraysInstanced(gl.POINTS, 0, 1, bodyCount);
+    gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, bodyCount);
 
     gl.bindVertexArray(null);
   }
@@ -563,26 +553,15 @@ async function handleInit(msg: Extract<MainToWorkerMessage, { type: "INIT" }>) {
     const gravity = { x: 0.0, y: 0.0 };
     world = new rapier.World(gravity);
 
-    // Apply custom timestep from config, with safety guards.
     const settingsInit = getSettings(msg.isMobile);
-    let dtCfg = settingsInit.simulation.timeStep ?? 60; // Default to 60Hz if not provided
-    // Heuristic: if value > 1, assume it's in milliseconds.
+    let dtCfg = settingsInit.simulation.timeStep ?? 60;
     if (dtCfg > 1) {
       dtCfg /= 1000;
     }
-    // Clamp to a sane range to prevent instability.
     dt = Math.min(Math.max(dtCfg, 0.001), 0.1);
 
     world.integrationParameters.dt = dt;
-    // Increase position iterations to prevent "squishing".
-    // This makes collision response more rigid at a small performance cost.
     (world.integrationParameters as any).maxPositionIterations = 8;
-    console.log(`[Worker] Physics timestep set to ${dt} s per step`);
-    console.log(
-      `[Worker] Position iterations set to ${
-        (world.integrationParameters as any).maxPositionIterations
-      }`,
-    );
 
     setupWebgl();
 
@@ -594,8 +573,6 @@ async function handleInit(msg: Extract<MainToWorkerMessage, { type: "INIT" }>) {
     requestAnimationFrame(update);
     self.postMessage({ type: "INITIALIZED" });
   } catch (e) {
-    console.error("[Worker] Failed during initialization:", e);
-    // Terminate the worker if init fails
     handleTerminate();
   }
 }
@@ -603,7 +580,6 @@ async function handleInit(msg: Extract<MainToWorkerMessage, { type: "INIT" }>) {
 function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
   if (!canvas || !gl || !program || !rapier) return;
 
-  // Update cached dimensions
   canvasWidth = msg.width;
   canvasHeight = msg.height;
   centerX = canvasWidth / 2;
@@ -618,7 +594,6 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
   const centerXMeters = centerX / PIXELS_PER_METER;
   const centerYMeters = centerY / PIXELS_PER_METER;
 
-  // Recalculate and update the central planet
   if (planetBody && planetCollider) {
     const planetRadiusPixels =
       settings.world.centerCircleRadius * Math.min(canvasWidth, canvasHeight);
@@ -627,7 +602,6 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
     planetBody.setTranslation({ x: centerXMeters, y: centerYMeters }, true);
     planetCollider.setRadius(planetRadiusMeters);
 
-    // After resizing, ensure no bodies are inside the new planet radius
     const planetRadiusMetersSq = planetRadiusMeters * planetRadiusMeters;
 
     for (const body of rigidBodies) {
@@ -639,14 +613,12 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
       if (distSq < planetRadiusMetersSq) {
         const dist = Math.sqrt(distSq);
         if (dist < 1e-6) {
-          // Body is at the center, move it to the edge
           body.setTranslation(
             { x: centerXMeters + planetRadiusMeters + 0.01, y: centerYMeters },
             true,
           );
         } else {
           const overlap = planetRadiusMeters - dist;
-          // Push out along the vector from center to body
           const pushOutX = (dx / dist) * (overlap + 0.01);
           const pushOutY = (dy / dist) * (overlap + 0.01);
           body.setTranslation(
@@ -658,10 +630,8 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
     }
   }
 
-  // Remove old walls before creating new ones.
   for (const handle of wallColliderHandles) {
     const collider = world.getCollider(handle);
-    // It's possible the collider doens't exist if the world was just created
     if (collider) {
       world.removeCollider(collider, false);
     }
@@ -674,13 +644,10 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
   const widthMeters = canvasWidth / PIXELS_PER_METER;
   const heightMeters = canvasHeight / PIXELS_PER_METER;
 
-  // Optional perimeter offset – negative values push walls outward,
-  // positive pull them inward. Default 0.
   const wallOffset = (settings.world as any).wallOffset ?? 0;
   const offsetXMeters = widthMeters * wallOffset;
   const offsetYMeters = heightMeters * wallOffset;
 
-  // Pre-compute reusable dimensions taking the offset into account
   const leftX = 0 + offsetXMeters;
   const rightX = widthMeters - offsetXMeters;
   const bottomY = 0 + offsetYMeters;
@@ -691,7 +658,6 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
 
   const initiallyDisabled = settings.world.walls?.initiallyDisabled ?? false;
 
-  // Top wall
   let wallDesc = rapier.ColliderDesc.cuboid(halfSpanX, wallThicknessMeters / 2)
     .setTranslation((leftX + rightX) / 2, topY + wallThicknessMeters / 2)
     .setFriction(0.1)
@@ -699,7 +665,6 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
     .setRestitution(0.0);
   wallColliderHandles.push(world.createCollider(wallDesc).handle);
 
-  // Bottom wall
   wallDesc = rapier.ColliderDesc.cuboid(halfSpanX, wallThicknessMeters / 2)
     .setTranslation((leftX + rightX) / 2, bottomY - wallThicknessMeters / 2)
     .setFriction(0.1)
@@ -707,7 +672,6 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
     .setRestitution(0.0);
   wallColliderHandles.push(world.createCollider(wallDesc).handle);
 
-  // Left wall
   wallDesc = rapier.ColliderDesc.cuboid(wallThicknessMeters / 2, halfSpanY)
     .setTranslation(leftX - wallThicknessMeters / 2, (bottomY + topY) / 2)
     .setFriction(0.1)
@@ -715,7 +679,6 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
     .setRestitution(0.0);
   wallColliderHandles.push(world.createCollider(wallDesc).handle);
 
-  // Right wall
   wallDesc = rapier.ColliderDesc.cuboid(wallThicknessMeters / 2, halfSpanY)
     .setTranslation(rightX + wallThicknessMeters / 2, (bottomY + topY) / 2)
     .setFriction(0.1)
@@ -786,10 +749,14 @@ self.onmessage = (event: MessageEvent<MainToWorkerMessage>) => {
         break;
       case "SCROLL_FORCE":
         scrollForce = msg.force;
-        scrollDirection = msg.direction;
+        break;
+      case "SET_PAUSED":
+        isPaused = msg.paused;
+        if (!isPaused) {
+          lastTime = 0;
+          requestAnimationFrame(update);
+        }
         break;
     }
-  } catch (e) {
-    console.error(`[Worker] Error processing message type ${msg.type}:`, e);
-  }
+  } catch (e) {}
 };

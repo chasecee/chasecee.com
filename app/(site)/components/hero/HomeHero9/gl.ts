@@ -3,7 +3,6 @@ export function createContext(
 ): WebGL2RenderingContext | null {
   const gl = canvas.getContext("webgl2", { alpha: true, antialias: true });
   if (!gl) {
-    console.error("WebGL2 not supported");
   }
   return gl;
 }
@@ -20,7 +19,6 @@ export function createShader(
   if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
     return shader;
   }
-  console.error("Error compiling shader:", gl.getShaderInfoLog(shader));
   gl.deleteShader(shader);
   return null;
 }
@@ -38,7 +36,6 @@ export function createProgram(
   if (gl.getProgramParameter(program, gl.LINK_STATUS)) {
     return program;
   }
-  console.error("Error linking program:", gl.getProgramInfoLog(program));
   gl.deleteProgram(program);
   return null;
 }
@@ -58,10 +55,10 @@ export function createVbo(
 export const VERTEX_SHADER_SOURCE = `#version 300 es
 precision highp float;
 
-in vec2 a_position;    // Instanced: body position
-in float a_angle;      // Instanced: body angle
-in float a_radius;     // Instanced: body radius
-in vec4 a_color;       // Instanced: body color
+in vec2 a_position;
+in float a_angle;
+in float a_radius;
+in vec4 a_color;
 
 uniform mat4 u_projection;
 
@@ -72,7 +69,6 @@ void main() {
   gl_Position = u_projection * vec4(a_position, 0, 1);
   gl_PointSize = a_radius * 2.0;
   v_color = a_color;
-  // Use a_angle in a no-op calculation to prevent the compiler from optimizing it out.
   v_radius = a_radius + a_angle * 0.0;
 }
 `;
@@ -89,9 +85,6 @@ void main() {
   vec2 coord = gl_PointCoord - vec2(0.5);
   float distance = length(coord);
 
-  // Smooth the edge of the circle instead of a hard cut-off.
-  // fwidth() gives an estimate of the width of one pixel,
-  // allowing us to create a smooth, anti-aliased edge.
   float smooth_width = fwidth(distance);
   float alpha = 1.0 - smoothstep(0.5 - smooth_width, 0.5, distance);
 
@@ -102,3 +95,44 @@ void main() {
   out_color = vec4(v_color.rgb, v_color.a * alpha);
 }
 `;
+
+export const QUAD_VERTEX_SHADER_SOURCE = `#version 300 es
+precision highp float;
+
+in vec2 a_corner;
+in vec2 a_position;
+in float a_angle;
+in float a_radius;
+in vec4 a_color;
+
+uniform mat4 u_projection;
+
+out vec2 v_corner;
+out vec4 v_color;
+
+void main() {
+  vec2 rotatedCorner = vec2(
+    a_corner.x * cos(a_angle) - a_corner.y * sin(a_angle),
+    a_corner.x * sin(a_angle) + a_corner.y * cos(a_angle)
+  );
+  vec2 worldPos = a_position + rotatedCorner * a_radius;
+  gl_Position = u_projection * vec4(worldPos, 0.0, 1.0);
+  v_corner = a_corner;
+  v_color = a_color;
+}`;
+
+export const QUAD_FRAGMENT_SHADER_SOURCE = `#version 300 es
+precision highp float;
+
+in vec2 v_corner;
+in vec4 v_color;
+
+out vec4 out_color;
+
+void main() {
+  float dist = length(v_corner);
+  float smooth_width = fwidth(dist);
+  float alpha = 1.0 - smoothstep(1.0 - smooth_width, 1.0, dist);
+  if (alpha < 0.01) discard;
+  out_color = vec4(v_color.rgb, v_color.a * alpha);
+}`;

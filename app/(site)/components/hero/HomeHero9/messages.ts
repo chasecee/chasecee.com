@@ -30,6 +30,11 @@ export type ScrollForceMainMessage = {
   direction: number;
 };
 
+export type SetPausedMainMessage = {
+  type: "SET_PAUSED";
+  paused: boolean;
+};
+
 export type TerminateMainMessage = {
   type: "TERMINATE";
 };
@@ -44,6 +49,7 @@ export type MainToWorkerMessage =
   | PointerMainMessage
   | ShockMainMessage
   | ScrollForceMainMessage
+  | SetPausedMainMessage
   | TerminateMainMessage
   | GetStateMainMessage;
 
