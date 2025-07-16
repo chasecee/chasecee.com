@@ -1,4 +1,4 @@
-export const MAX_BODIES = 1024;
+export const MAX_BODIES = 4096;
 export const BYTES_PER_BODY = {
   positions: 2 * 4,
   angles: 1 * 4,
@@ -6,6 +6,8 @@ export const BYTES_PER_BODY = {
   velocities: 2 * 4,
   colors: 1 * 4,
 };
+
+export const BYTES_PER_VERTEX = 2 * 4 + 1 * 4 + 1 * 4 + 4; // position(2)+angle+radius+color
 
 export const TOTAL_BYTES =
   MAX_BODIES *

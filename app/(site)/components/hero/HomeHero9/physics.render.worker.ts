@@ -1,10 +1,16 @@
 import { initRapier } from "./rapier-init";
 import { MainToWorkerMessage } from "./messages";
 import * as WebGL from "./gl";
-import { makeSlabs, PhysicsSlabs, MAX_BODIES } from "./struct";
+import {
+  makeSlabs,
+  PhysicsSlabs,
+  MAX_BODIES,
+  BYTES_PER_VERTEX,
+} from "./struct";
 import config from "./physics.config.json";
 import type RAPIER_API from "@dimforge/rapier2d";
 import { keyColorLevels } from "./palette";
+import { parseHsla, hslToRgb, lerpColor } from "../../../utils/color";
 // Compact palette will be loaded at runtime from binary file
 const BYTES_PER_COLOR = 3;
 let activeSettings: PhysicsSettings;
@@ -12,42 +18,9 @@ let activeSettings: PhysicsSettings;
 // Palette cache: key "level|steps" -> Uint8Array RGB triples
 const paletteCache = new Map<string, Uint8Array>();
 
-function parseHsla(hsla: string) {
-  const [h, s, l] = hsla.match(/(\d+(?:\.\d+)?)/g)!.map(Number);
-  return { h: h / 360, s: s / 100, l: l / 100 };
-}
-
-function hslToRgb(h: number, s: number, l: number) {
-  let r: number, g: number, b: number;
-  if (s === 0) r = g = b = l;
-  else {
-    const hue2rgb = (p: number, q: number, t: number) => {
-      if (t < 0) t += 1;
-      if (t > 1) t -= 1;
-      if (t < 1 / 6) return p + (q - p) * 6 * t;
-      if (t < 1 / 2) return q;
-      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-      return p;
-    };
-    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-    const p = 2 * l - q;
-    r = hue2rgb(p, q, h + 1 / 3);
-    g = hue2rgb(p, q, h);
-    b = hue2rgb(p, q, h - 1 / 3);
-  }
-  return {
-    r: Math.round(r * 255),
-    g: Math.round(g * 255),
-    b: Math.round(b * 255),
-  };
-}
-
-function lerpColor(c1: any, c2: any, f: number) {
-  return {
-    r: Math.round(c1.r + (c2.r - c1.r) * f),
-    g: Math.round(c1.g + (c2.g - c1.g) * f),
-    b: Math.round(c1.b + (c2.b - c1.b) * f),
-  } as const;
+function hslToRgbObj(h: number, s: number, l: number) {
+  const [r, g, b] = hslToRgb(h, s, l);
+  return { r, g, b } as const;
 }
 
 function buildPalette(level: number, steps: number): Uint8Array {
@@ -61,7 +34,7 @@ function buildPalette(level: number, steps: number): Uint8Array {
 
   const keyRgb = keyHsla.map((hsla) => {
     const { h, s, l } = parseHsla(hsla);
-    return hslToRgb(h, s, l);
+    return hslToRgbObj(h, s, l);
   });
 
   const lut = new Uint8Array(steps * BYTES_PER_COLOR);
@@ -118,7 +91,6 @@ let cornerVbo: WebGLBuffer | null = null;
 let interleavedBuffer: ArrayBuffer;
 let interleavedFloat32: Float32Array;
 let interleavedUint8: Uint8Array;
-const BYTES_PER_VERTEX = 20;
 
 let isRunning = false;
 let isPaused = false;
@@ -439,17 +411,6 @@ function createBodies(isMobile: boolean) {
     );
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
   }
-
-  // Upload static parts (radius & color) after bodies are created
-  if (gl && interleavedVbo) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
-    gl.bufferSubData(
-      gl.ARRAY_BUFFER,
-      0,
-      interleavedUint8.subarray(0, bodyCount * BYTES_PER_VERTEX),
-    );
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
-  }
 }
 
 function update(currentTime: number) {
@@ -469,6 +430,10 @@ function update(currentTime: number) {
   const frameTime = (currentTime - lastTime) / 1000.0;
   lastTime = currentTime;
   accumulator += Math.min(frameTime, 0.2);
+  const MAX_ACCUMULATED_STEPS = 5;
+  if (accumulator > dt * MAX_ACCUMULATED_STEPS) {
+    accumulator = dt * MAX_ACCUMULATED_STEPS;
+  }
 
   frameCount++;
 

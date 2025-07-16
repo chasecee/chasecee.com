@@ -1,11 +1,12 @@
 "use client";
 
-import { useRef, useEffect, RefObject } from "react";
+import { useRef, useEffect } from "react";
 import type { MainToWorkerMessage } from "./messages";
 
 export function PhysicsCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const workerRef = useRef<Worker | null>(null);
+  const offscreenRef = useRef<OffscreenCanvas | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -57,6 +58,7 @@ export function PhysicsCanvas() {
     );
 
     const offscreenCanvas = canvas.transferControlToOffscreen();
+    offscreenRef.current = offscreenCanvas;
 
     const initMessage: Extract<MainToWorkerMessage, { type: "INIT" }> = {
       type: "INIT",
@@ -105,13 +107,19 @@ export function PhysicsCanvas() {
       sendShockwave(e.clientX, e.clientY, 0.25, true);
     };
 
+    let pendingPointer = false;
     const handlePointerMove = (e: PointerEvent) => {
       if (!isDragging) return;
-      const dx = e.clientX - lastShockX;
-      const dy = e.clientY - lastShockY;
-      if (dx * dx + dy * dy >= SHOCK_DISTANCE * SHOCK_DISTANCE) {
-        sendShockwave(e.clientX, e.clientY, 0.5);
-      }
+      if (pendingPointer) return;
+      pendingPointer = true;
+      requestAnimationFrame(() => {
+        pendingPointer = false;
+        const dx = e.clientX - lastShockX;
+        const dy = e.clientY - lastShockY;
+        if (dx * dx + dy * dy >= SHOCK_DISTANCE * SHOCK_DISTANCE) {
+          sendShockwave(e.clientX, e.clientY, 0.5);
+        }
+      });
     };
 
     const endDrag = () => {
@@ -140,12 +148,19 @@ export function PhysicsCanvas() {
     const resizeObserver = new ResizeObserver((entries) => {
       if (!entries || entries.length === 0) return;
       const { width, height } = entries[0].contentRect;
-      const resizeMessage: Extract<MainToWorkerMessage, { type: "RESIZE" }> = {
-        type: "RESIZE",
-        width,
-        height,
-      };
-      workerRef.current?.postMessage(resizeMessage);
+
+      if ((resizeObserver as any)._debounceId) {
+        clearTimeout((resizeObserver as any)._debounceId);
+      }
+      (resizeObserver as any)._debounceId = setTimeout(() => {
+        const resizeMessage: Extract<MainToWorkerMessage, { type: "RESIZE" }> =
+          {
+            type: "RESIZE",
+            width,
+            height,
+          };
+        workerRef.current?.postMessage(resizeMessage);
+      }, 100);
     });
 
     resizeObserver.observe(canvas);
@@ -165,6 +180,12 @@ export function PhysicsCanvas() {
         { type: "TERMINATE" }
       > = { type: "TERMINATE" };
       workerRef.current?.postMessage(terminateMessage);
+      // Kill the worker thread completely
+      workerRef.current?.terminate();
+      // Release GPU memory held by OffscreenCanvas
+      if (offscreenRef.current) {
+        offscreenRef.current.width = 0;
+      }
     };
   }, []);
 

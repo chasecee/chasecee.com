@@ -19,6 +19,7 @@ export function createShader(
   if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
     return shader;
   }
+  console.error("Shader compile error:", gl.getShaderInfoLog(shader));
   gl.deleteShader(shader);
   return null;
 }
@@ -36,6 +37,7 @@ export function createProgram(
   if (gl.getProgramParameter(program, gl.LINK_STATUS)) {
     return program;
   }
+  console.error("Program link error:", gl.getProgramInfoLog(program));
   gl.deleteProgram(program);
   return null;
 }

@@ -74,3 +74,24 @@ export const parseHSLA = (
     a: parseFloat(match[4]),
   };
 };
+
+export const parseHsla = (
+  hsla: string,
+): { h: number; s: number; l: number } => {
+  const matches = hsla.match(/(\d+(?:\.\d+)?)/g);
+  if (!matches || matches.length < 3) return { h: 0, s: 0, l: 0 };
+  const [h, s, l] = matches.map(Number);
+  return { h: h / 360, s: s / 100, l: l / 100 };
+};
+
+export const lerpColor = (
+  c1: { r: number; g: number; b: number },
+  c2: { r: number; g: number; b: number },
+  f: number,
+): { r: number; g: number; b: number } => {
+  return {
+    r: Math.round(c1.r + (c2.r - c1.r) * f),
+    g: Math.round(c1.g + (c2.g - c1.g) * f),
+    b: Math.round(c1.b + (c2.b - c1.b) * f),
+  } as const;
+};

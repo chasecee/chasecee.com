@@ -1,17 +1,17 @@
 {
   "simulation": {
     "timeStep": 16.666,
-    "gravity": 0.05,
-    "damping": 2.5,
+    "gravity": 0.01,
+    "damping": 2,
     "initialClockwiseVelocity": 0,
-    "tangentialDamping": 0.15
+    "tangentialDamping": 0.1
   },
   "bodies": {
-    "count": 1024,
+    "count": 2048,
     "startPlacement": "grid",
-    "radius": 5,
-    "radiusVariance": 0.01,
-    "friction": 0.1,
+    "radius": 4.5,
+    "radiusVariance": 0,
+    "friction": 0.001,
     "restitution": 0.5,
     "startRadius": 0.4,
     "startSpread": 0.3
@@ -31,8 +31,8 @@
       "radius": 0.4
     },
     "scroll": {
-      "forceMultiplier": -0.2,
-      "velocityDamping": 0.95
+      "forceMultiplier": -0.3,
+      "velocityDamping": 0.9
     }
   },
   "rendering": {
@@ -42,15 +42,15 @@
   "mobileOverrides": {
     "simulation": {
       "gravity": 0.02,
-      "damping": 2.5,
-      "initialClockwiseVelocity": 0.5,
+      "damping": 2,
+      "initialClockwiseVelocity": 1,
       "tangentialDamping": 0.1
     },
     "bodies": {
-      "count": 800,
+      "count": 2048,
       "startPlacement": "grid",
-      "radius": 5,
-      "friction": 0.01,
+      "radius": 4,
+      "friction": 0.001,
       "restitution": 0.1,
       "startRadius": 0.4,
       "startSpread": 0.3
