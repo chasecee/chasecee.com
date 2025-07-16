@@ -1,18 +1,29 @@
 "use client";
 
 import { useRef, useEffect } from "react";
+import { keyColorLevels } from "./palette";
 import type { MainToWorkerMessage } from "./messages";
 
 export function PhysicsCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const workerRef = useRef<Worker | null>(null);
   const offscreenRef = useRef<OffscreenCanvas | null>(null);
-  const hasTransferredRef = useRef(false);
   const gradient =
     "linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 10%)";
   // Generate a stable unique key for this component instance so React always
   // creates a fresh <canvas> element on remount.
   const instanceKeyRef = useRef(Math.random().toString(36).slice(2));
+
+  // Utility: resolve numeric palette level from the global CSS variable.
+  // Falls back to 4 (dark) if value is absent/invalid.
+  const getColorLevel = () => {
+    if (typeof window === "undefined") return 4;
+    const cssValue = getComputedStyle(document.documentElement)
+      .getPropertyValue("--physics-color-level")
+      .trim();
+    const level = parseInt(cssValue, 10);
+    return Number.isNaN(level) ? 4 : level;
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -63,21 +74,22 @@ export function PhysicsCanvas() {
       new URL("./physics.render.worker.ts", import.meta.url),
     );
 
-    let offscreenCanvas: OffscreenCanvas;
-    let transferList: Transferable[] = [];
-
-    const existing = (canvas as any).__offscreenCanvas as
-      | OffscreenCanvas
-      | undefined;
-    if (existing) {
-      offscreenCanvas = existing;
-    } else {
-      offscreenCanvas = canvas.transferControlToOffscreen();
-      (canvas as any).__offscreenCanvas = offscreenCanvas;
-      transferList = [offscreenCanvas];
-    }
+    // Always create a *fresh* OffscreenCanvas for the new worker. Re-using a
+    // previously-transferred instance trips `DataCloneError` in dev/HMR because
+    // an OffscreenCanvas can be transferred only once. Creating a new instance
+    // avoids the detached-canvas issue entirely.
+    const offscreenCanvas = canvas.transferControlToOffscreen();
+    const transferList: Transferable[] = [offscreenCanvas];
 
     offscreenRef.current = offscreenCanvas;
+
+    const level = getColorLevel();
+    // eslint-disable-next-line no-console
+    console.log(
+      "PhysicsCanvas palette level",
+      level,
+      keyColorLevels[level as keyof typeof keyColorLevels],
+    );
 
     const initMessage: Extract<MainToWorkerMessage, { type: "INIT" }> = {
       type: "INIT",
@@ -85,13 +97,9 @@ export function PhysicsCanvas() {
       width: canvas.clientWidth,
       height: canvas.clientHeight,
       isMobile: window.innerWidth < 768,
+      colorLevel: level,
     };
-    if (transferList.length > 0) {
-      workerRef.current.postMessage(initMessage, transferList);
-    } else {
-      // Already transferred previously; send message without transferable list
-      workerRef.current.postMessage(initMessage);
-    }
+    workerRef.current.postMessage(initMessage, transferList);
 
     let isDragging = false;
     let lastShockX = 0;

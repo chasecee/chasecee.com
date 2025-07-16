@@ -217,8 +217,7 @@ function setupWebgl() {
   gl.bindVertexArray(null);
 }
 
-function createBodies(isMobile: boolean) {
-  const settings = getSettings(isMobile);
+function createBodies(settings: PhysicsSettings) {
   bodyCount = settings.bodies.count;
   const baseRadius = settings.bodies.radius;
   const radiusVariance = settings.bodies.radiusVariance;
@@ -615,7 +614,17 @@ async function handleInit(msg: Extract<MainToWorkerMessage, { type: "INIT" }>) {
     const gravity = { x: 0.0, y: 0.0 };
     world = new rapier.World(gravity);
 
-    const settingsInit = getSettings(msg.isMobile);
+    let settingsInit = getSettings(msg.isMobile);
+    // Apply override from main thread when provided to align with CSS variable.
+    if (typeof msg.colorLevel === "number") {
+      settingsInit = {
+        ...settingsInit,
+        rendering: {
+          ...settingsInit.rendering,
+          colorLevel: msg.colorLevel,
+        },
+      } as PhysicsSettings;
+    }
     activeSettings = settingsInit;
     let dtCfg = settingsInit.simulation.timeStep ?? 60;
     if (dtCfg > 1) {
@@ -630,7 +639,7 @@ async function handleInit(msg: Extract<MainToWorkerMessage, { type: "INIT" }>) {
 
     handleResize({ type: "RESIZE", width: msg.width, height: msg.height });
 
-    createBodies(msg.isMobile);
+    createBodies(settingsInit);
 
     isRunning = true;
     requestAnimationFrame(update);
@@ -653,7 +662,17 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
 
   gl.viewport(0, 0, canvasWidth, canvasHeight);
 
-  activeSettings = getSettings(msg.width < 768);
+  const nextSettings = getSettings(msg.width < 768);
+  // Preserve any colorLevel override that may have been applied during INIT.
+  activeSettings = {
+    ...nextSettings,
+    rendering: {
+      ...nextSettings.rendering,
+      colorLevel:
+        activeSettings?.rendering.colorLevel ??
+        nextSettings.rendering.colorLevel,
+    },
+  } as PhysicsSettings;
   const settings = activeSettings;
   const centerXMeters = centerX / PIXELS_PER_METER;
   const centerYMeters = centerY / PIXELS_PER_METER;

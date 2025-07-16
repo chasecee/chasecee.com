@@ -4,6 +4,8 @@ export type InitMainMessage = {
   width: number;
   height: number;
   isMobile: boolean;
+  /** Palette color level to use for rendering (e.g., 4 | 8). Optional for backwards compatibility. */
+  colorLevel?: number;
 };
 
 export type ResizeMainMessage = {
@@ -22,7 +24,7 @@ export type ShockMainMessage = {
   type: "SHOCKWAVE";
   x: number;
   y: number;
-  strength?: number; 
+  strength?: number;
 };
 
 export type ScrollForceMainMessage = {
