@@ -1,23 +1,23 @@
 {
   "simulation": {
     "timeStep": 16.666,
-    "gravity": 0.04,
+    "gravity": 0.03,
     "damping": 1.9,
     "initialClockwiseVelocity": 0,
-    "tangentialDamping": 0.15
+    "tangentialDamping": 0.05
   },
   "bodies": {
     "count": 2048,
     "startPlacement": "grid",
-    "radius": 4,
+    "radius": 3.5,
     "radiusVariance": 0.1,
     "friction": 0.001,
-    "restitution": 0.45,
+    "restitution": 0.4,
     "startRadius": 0.4,
     "startSpread": 0.3
   },
   "world": {
-    "centerCircleRadius": 0.3,
+    "centerCircleRadius": 0.25,
     "wallOffset": 0,
     "wallThickness": 200,
     "walls": {
