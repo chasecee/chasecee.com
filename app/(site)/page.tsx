@@ -1,7 +1,7 @@
 import { getPersonalProjects, getClientProjects } from "@/sanity/sanity-utils";
 import ContainerHome from "./components/ContainerHome";
 import ProjectsList from "./components/ProjectsList";
-import HomeHero8 from "./components/hero/HomeHero8/HomeHero8";
+import HomeHero9 from "./components/hero/HomeHero9/HomeHero9";
 
 export default async function Home() {
   const [personalProjects, clientProjects] = await Promise.all([
@@ -12,7 +12,7 @@ export default async function Home() {
   return (
     <>
       <ContainerHome className="relative z-10" showCTA={true}>
-        <HomeHero8 />
+        <HomeHero9 />
         <div className="relative z-10 flex flex-col gap-10">
           <ProjectsList
             projects={personalProjects}

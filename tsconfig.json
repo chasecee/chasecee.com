@@ -38,5 +38,5 @@
     "app/(site)/components/HueAnimation.jsx",
     "app/(site)/about/ProfilePic.jsx"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "app/(site)/components/hero/HomeHero8/**/*"]
 }

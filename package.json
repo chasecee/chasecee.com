@@ -43,7 +43,6 @@
     "next": "^15.3.5",
     "next-sanity": "^9.12.2",
     "next-sanity-image": "^6.2.0",
-    "planck": "^1.4.2",
     "postcss": "^8.5.6",
     "postcss-nested": "^7.0.2",
     "react": "^19.1.0",
