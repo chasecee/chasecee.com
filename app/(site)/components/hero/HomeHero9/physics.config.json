@@ -52,7 +52,7 @@
       "radius": 3.5,
       "friction": 0.001,
       "restitution": 0.16,
-      "startRadius": 0.45,
+      "startRadius": 0.425,
       "startSpread": 0.3
     },
     "world": {
