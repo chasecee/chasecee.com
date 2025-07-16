@@ -22,7 +22,7 @@ export type ShockMainMessage = {
   type: "SHOCKWAVE";
   x: number;
   y: number;
-  strength?: number; // 0-1 multiplier for shockwave force
+  strength?: number; 
 };
 
 export type ScrollForceMainMessage = {

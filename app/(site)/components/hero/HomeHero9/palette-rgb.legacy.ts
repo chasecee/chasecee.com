@@ -1,5 +1,5 @@
-// This file is auto-generated. Do not edit.
-// Run 'node generate-palette.mjs' to regenerate.
+
+
 
 export const interpolatedColorWheels = {
   "0": [

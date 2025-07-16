@@ -1,7 +1,6 @@
 "use client";
 import { PhysicsCanvas } from "./PhysicsCanvas";
 import HeroText from "./HeroText";
-
 const HomeHero9 = () => {
   return (
     <>

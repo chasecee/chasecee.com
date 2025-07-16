@@ -7,7 +7,7 @@ export const BYTES_PER_BODY = {
   colors: 1 * 4,
 };
 
-export const BYTES_PER_VERTEX = 2 * 4 + 1 * 4 + 1 * 4 + 4; // position(2)+angle+radius+color
+export const BYTES_PER_VERTEX = 2 * 4 + 1 * 4 + 1 * 4 + 4; 
 
 export const TOTAL_BYTES =
   MAX_BODIES *

@@ -7,6 +7,12 @@ export function PhysicsCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const workerRef = useRef<Worker | null>(null);
   const offscreenRef = useRef<OffscreenCanvas | null>(null);
+  const hasTransferredRef = useRef(false);
+  const gradient =
+    "linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 10%)";
+  // Generate a stable unique key for this component instance so React always
+  // creates a fresh <canvas> element on remount.
+  const instanceKeyRef = useRef(Math.random().toString(36).slice(2));
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -57,7 +63,20 @@ export function PhysicsCanvas() {
       new URL("./physics.render.worker.ts", import.meta.url),
     );
 
-    const offscreenCanvas = canvas.transferControlToOffscreen();
+    let offscreenCanvas: OffscreenCanvas;
+    let transferList: Transferable[] = [];
+
+    const existing = (canvas as any).__offscreenCanvas as
+      | OffscreenCanvas
+      | undefined;
+    if (existing) {
+      offscreenCanvas = existing;
+    } else {
+      offscreenCanvas = canvas.transferControlToOffscreen();
+      (canvas as any).__offscreenCanvas = offscreenCanvas;
+      transferList = [offscreenCanvas];
+    }
+
     offscreenRef.current = offscreenCanvas;
 
     const initMessage: Extract<MainToWorkerMessage, { type: "INIT" }> = {
@@ -67,15 +86,19 @@ export function PhysicsCanvas() {
       height: canvas.clientHeight,
       isMobile: window.innerWidth < 768,
     };
-    workerRef.current.postMessage(initMessage, [offscreenCanvas]);
+    if (transferList.length > 0) {
+      workerRef.current.postMessage(initMessage, transferList);
+    } else {
+      // Already transferred previously; send message without transferable list
+      workerRef.current.postMessage(initMessage);
+    }
 
-    // --- Pointer-based shockwave line ---
     let isDragging = false;
     let lastShockX = 0;
     let lastShockY = 0;
-    const SHOCK_DISTANCE = 20; // px between shockwave points
+    const SHOCK_DISTANCE = 20;
 
-    const MIN_SHOCK_INTERVAL = 100; // ms
+    const MIN_SHOCK_INTERVAL = 100;
     let lastShockTime = 0;
 
     const sendShockwave = (
@@ -103,7 +126,7 @@ export function PhysicsCanvas() {
 
     const handlePointerDown = (e: PointerEvent) => {
       isDragging = true;
-      // small pre-shock (force send)
+
       sendShockwave(e.clientX, e.clientY, 0.25, true);
     };
 
@@ -180,14 +203,26 @@ export function PhysicsCanvas() {
         { type: "TERMINATE" }
       > = { type: "TERMINATE" };
       workerRef.current?.postMessage(terminateMessage);
-      // Kill the worker thread completely
+
       workerRef.current?.terminate();
-      // Release GPU memory held by OffscreenCanvas
+
       if (offscreenRef.current) {
         offscreenRef.current.width = 0;
       }
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="h-full w-full" />;
+  return (
+    <canvas
+      key={instanceKeyRef.current}
+      ref={canvasRef}
+      className="h-full w-full"
+      style={{
+        WebkitMaskImage: gradient,
+        maskImage: gradient,
+        WebkitMaskRepeat: "no-repeat",
+        maskRepeat: "no-repeat",
+      }}
+    />
+  );
 }

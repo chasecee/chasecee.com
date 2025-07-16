@@ -11,11 +11,10 @@ import config from "./physics.config.json";
 import type RAPIER_API from "@dimforge/rapier2d";
 import { keyColorLevels } from "./palette";
 import { parseHsla, hslToRgb, lerpColor } from "../../../utils/color";
-// Compact palette will be loaded at runtime from binary file
+
 const BYTES_PER_COLOR = 3;
 let activeSettings: PhysicsSettings;
 
-// Palette cache: key "level|steps" -> Uint8Array RGB triples
 const paletteCache = new Map<string, Uint8Array>();
 
 function hslToRgbObj(h: number, s: number, l: number) {
@@ -238,8 +237,8 @@ function createBodies(isMobile: boolean) {
     const planetColliderDesc = rapier.ColliderDesc.ball(
       planetRadiusPixels / PIXELS_PER_METER,
     )
-      .setFriction(5)
-      .setRestitution(1);
+      .setFriction(2)
+      .setRestitution(0.5);
     planetCollider = world.createCollider(planetColliderDesc, planetBody);
   }
 
@@ -311,7 +310,7 @@ function createBodies(isMobile: boolean) {
           if (interleavedBuffer) {
             const baseByte = currentBodyIndex * BYTES_PER_VERTEX;
             const baseFloat = baseByte >> 2;
-            // positions will be filled later in first physics update; radius & color are static
+
             interleavedFloat32[baseFloat + 3] = finalRadiusPixels;
             interleavedUint8[baseByte + 16] = color & 0xff;
             interleavedUint8[baseByte + 17] = (color >> 8) & 0xff;
@@ -386,7 +385,6 @@ function createBodies(isMobile: boolean) {
   }
 
   if (gl && interleavedVbo) {
-    // Rebuild interleaved buffer for visible bodies
     for (let i = 0; i < bodyCount; i++) {
       const baseByte = i * BYTES_PER_VERTEX;
       const baseFloat = baseByte >> 2;
@@ -538,13 +536,11 @@ function update(currentTime: number) {
     slabs.positions[i * 2 + 1] = pos.y * PIXELS_PER_METER;
     slabs.angles[i] = rot;
 
-    // write directly into interleaved buffer
     const baseByte = i * BYTES_PER_VERTEX;
     const baseFloat = baseByte >> 2;
     interleavedFloat32[baseFloat] = slabs.positions[i * 2];
     interleavedFloat32[baseFloat + 1] = slabs.positions[i * 2 + 1];
     interleavedFloat32[baseFloat + 2] = rot;
-    // radius & color are static; not touched per-frame
   }
 
   if (gl && interleavedVbo) {
