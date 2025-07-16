@@ -1,7 +1,7 @@
 {
   "simulation": {
     "timeStep": 16.666,
-    "gravity": 0.1,
+    "gravity": 0.05,
     "damping": 2.5,
     "initialClockwiseVelocity": 0,
     "tangentialDamping": 0.15
@@ -9,7 +9,7 @@
   "bodies": {
     "count": 1024,
     "startPlacement": "grid",
-    "radius": 6,
+    "radius": 5,
     "radiusVariance": 0.01,
     "friction": 0.1,
     "restitution": 0.5,
@@ -31,8 +31,8 @@
       "radius": 0.4
     },
     "scroll": {
-      "forceMultiplier": -0.3,
-      "velocityDamping": 0.9
+      "forceMultiplier": -0.2,
+      "velocityDamping": 0.95
     }
   },
   "rendering": {
