@@ -67,21 +67,62 @@ export function PhysicsCanvas() {
     };
     workerRef.current.postMessage(initMessage, [offscreenCanvas]);
 
-    const handleClick = (event: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = canvas.clientHeight - (event.clientY - rect.top);
+    // --- Pointer-based shockwave line ---
+    let isDragging = false;
+    let lastShockX = 0;
+    let lastShockY = 0;
+    const SHOCK_DISTANCE = 20; // px between shockwave points
 
-      const shockMessage: Extract<MainToWorkerMessage, { type: "SHOCKWAVE" }> =
-        {
-          type: "SHOCKWAVE",
-          x,
-          y,
-        };
-      workerRef.current?.postMessage(shockMessage);
+    const MIN_SHOCK_INTERVAL = 100; // ms
+    let lastShockTime = 0;
+
+    const sendShockwave = (
+      clientX: number,
+      clientY: number,
+      strength = 1,
+      force = false,
+    ) => {
+      const now = performance.now();
+      if (!force && now - lastShockTime < MIN_SHOCK_INTERVAL) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = canvas.clientHeight - (clientY - rect.top);
+      const msg: Extract<MainToWorkerMessage, { type: "SHOCKWAVE" }> = {
+        type: "SHOCKWAVE",
+        x,
+        y,
+        strength,
+      };
+      workerRef.current?.postMessage(msg);
+      lastShockX = clientX;
+      lastShockY = clientY;
+      lastShockTime = now;
     };
 
-    canvas.addEventListener("click", handleClick);
+    const handlePointerDown = (e: PointerEvent) => {
+      isDragging = true;
+      // small pre-shock (force send)
+      sendShockwave(e.clientX, e.clientY, 0.25, true);
+    };
+
+    const handlePointerMove = (e: PointerEvent) => {
+      if (!isDragging) return;
+      const dx = e.clientX - lastShockX;
+      const dy = e.clientY - lastShockY;
+      if (dx * dx + dy * dy >= SHOCK_DISTANCE * SHOCK_DISTANCE) {
+        sendShockwave(e.clientX, e.clientY, 0.5);
+      }
+    };
+
+    const endDrag = () => {
+      isDragging = false;
+    };
+
+    canvas.addEventListener("pointerdown", handlePointerDown);
+    canvas.addEventListener("pointermove", handlePointerMove);
+    canvas.addEventListener("pointerup", endDrag);
+    canvas.addEventListener("pointerleave", endDrag);
+
     window.addEventListener("scroll", handleScroll);
     canvas.addEventListener("touchstart", handleTouchStart, { passive: true });
     canvas.addEventListener("touchmove", handleTouchMove, { passive: true });
@@ -111,7 +152,10 @@ export function PhysicsCanvas() {
 
     return () => {
       resizeObserver.disconnect();
-      canvas.removeEventListener("click", handleClick);
+      canvas.removeEventListener("pointerdown", handlePointerDown);
+      canvas.removeEventListener("pointermove", handlePointerMove);
+      canvas.removeEventListener("pointerup", endDrag);
+      canvas.removeEventListener("pointerleave", endDrag);
       window.removeEventListener("scroll", handleScroll);
       canvas.removeEventListener("touchstart", handleTouchStart);
       canvas.removeEventListener("touchmove", handleTouchMove);

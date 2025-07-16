@@ -4,7 +4,88 @@ import * as WebGL from "./gl";
 import { makeSlabs, PhysicsSlabs, MAX_BODIES } from "./struct";
 import config from "./physics.config.json";
 import type RAPIER_API from "@dimforge/rapier2d";
-import { interpolatedColorWheels } from "./palette-rgb";
+import { keyColorLevels } from "./palette";
+// Compact palette will be loaded at runtime from binary file
+const BYTES_PER_COLOR = 3;
+let activeSettings: PhysicsSettings;
+
+// Palette cache: key "level|steps" -> Uint8Array RGB triples
+const paletteCache = new Map<string, Uint8Array>();
+
+function parseHsla(hsla: string) {
+  const [h, s, l] = hsla.match(/(\d+(?:\.\d+)?)/g)!.map(Number);
+  return { h: h / 360, s: s / 100, l: l / 100 };
+}
+
+function hslToRgb(h: number, s: number, l: number) {
+  let r: number, g: number, b: number;
+  if (s === 0) r = g = b = l;
+  else {
+    const hue2rgb = (p: number, q: number, t: number) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    };
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r = hue2rgb(p, q, h + 1 / 3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1 / 3);
+  }
+  return {
+    r: Math.round(r * 255),
+    g: Math.round(g * 255),
+    b: Math.round(b * 255),
+  };
+}
+
+function lerpColor(c1: any, c2: any, f: number) {
+  return {
+    r: Math.round(c1.r + (c2.r - c1.r) * f),
+    g: Math.round(c1.g + (c2.g - c1.g) * f),
+    b: Math.round(c1.b + (c2.b - c1.b) * f),
+  } as const;
+}
+
+function buildPalette(level: number, steps: number): Uint8Array {
+  const cacheKey = `${level}|${steps}`;
+  const existing = paletteCache.get(cacheKey);
+  if (existing) return existing;
+
+  const keyHsla =
+    keyColorLevels[level as keyof typeof keyColorLevels] ?? keyColorLevels[4];
+  if (!keyHsla) throw new Error(`Missing palette level ${level}`);
+
+  const keyRgb = keyHsla.map((hsla) => {
+    const { h, s, l } = parseHsla(hsla);
+    return hslToRgb(h, s, l);
+  });
+
+  const lut = new Uint8Array(steps * BYTES_PER_COLOR);
+  for (let i = 0; i < steps; i++) {
+    const pos = i / steps;
+    const scaled = pos * keyRgb.length;
+    const from = Math.floor(scaled) % keyRgb.length;
+    const to = (from + 1) % keyRgb.length;
+    const f = scaled - Math.floor(scaled);
+    const { r, g, b } = lerpColor(keyRgb[from], keyRgb[to], f);
+    const base = i * BYTES_PER_COLOR;
+    lut[base] = r;
+    lut[base + 1] = g;
+    lut[base + 2] = b;
+  }
+  paletteCache.set(cacheKey, lut);
+  return lut;
+}
+
+function getPaletteColor(level: number, normPos: number, steps: number) {
+  const lut = buildPalette(level, steps);
+  const idx = Math.floor(normPos * steps) * BYTES_PER_COLOR;
+  return { r: lut[idx], g: lut[idx + 1], b: lut[idx + 2] } as const;
+}
 
 type DeepPartial<T> = T extends object
   ? { [P in keyof T]?: DeepPartial<T[P]> }
@@ -246,17 +327,25 @@ function createBodies(isMobile: boolean) {
 
           const colorLevel = settings.rendering.colorLevel;
           const normalizedPosition = (angle / (Math.PI * 2)) % 1;
-          const colorPalette =
-            interpolatedColorWheels[
-              String(colorLevel) as keyof typeof interpolatedColorWheels
-            ] || interpolatedColorWheels[4];
-          const colorIndex = Math.floor(
-            normalizedPosition * colorPalette.length,
+          const steps = (settings.rendering as any).colorSteps ?? 1024;
+          const { r, g, b } = getPaletteColor(
+            colorLevel,
+            normalizedPosition,
+            steps,
           );
-
-          const { r, g, b } = colorPalette[colorIndex];
           const color = (255 << 24) | (b << 16) | (g << 8) | r;
           slabs.colors[currentBodyIndex] = color;
+
+          if (interleavedBuffer) {
+            const baseByte = currentBodyIndex * BYTES_PER_VERTEX;
+            const baseFloat = baseByte >> 2;
+            // positions will be filled later in first physics update; radius & color are static
+            interleavedFloat32[baseFloat + 3] = finalRadiusPixels;
+            interleavedUint8[baseByte + 16] = color & 0xff;
+            interleavedUint8[baseByte + 17] = (color >> 8) & 0xff;
+            interleavedUint8[baseByte + 18] = (color >> 16) & 0xff;
+            interleavedUint8[baseByte + 19] = (color >> 24) & 0xff;
+          }
 
           currentBodyIndex++;
         }
@@ -302,16 +391,25 @@ function createBodies(isMobile: boolean) {
 
       const colorLevel = settings.rendering.colorLevel;
       const normalizedPosition = (angle / (Math.PI * 2)) % 1;
-      const colorPalette =
-        interpolatedColorWheels[
-          String(colorLevel) as keyof typeof interpolatedColorWheels
-        ] || interpolatedColorWheels[4];
-      const colorIndex = Math.floor(normalizedPosition * colorPalette.length);
-
-      const { r, g, b } = colorPalette[colorIndex];
+      const steps = (settings.rendering as any).colorSteps ?? 1024;
+      const { r, g, b } = getPaletteColor(
+        colorLevel,
+        normalizedPosition,
+        steps,
+      );
 
       const color = (255 << 24) | (b << 16) | (g << 8) | r;
       slabs.colors[i] = color;
+
+      if (interleavedBuffer) {
+        const baseByte = i * BYTES_PER_VERTEX;
+        const baseFloat = baseByte >> 2;
+        interleavedFloat32[baseFloat + 3] = finalRadiusPixels;
+        interleavedUint8[baseByte + 16] = color & 0xff;
+        interleavedUint8[baseByte + 17] = (color >> 8) & 0xff;
+        interleavedUint8[baseByte + 18] = (color >> 16) & 0xff;
+        interleavedUint8[baseByte + 19] = (color >> 24) & 0xff;
+      }
     }
   }
 
@@ -333,6 +431,17 @@ function createBodies(isMobile: boolean) {
       interleavedUint8[baseByte + 19] = (color >> 24) & 0xff;
     }
 
+    gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
+    gl.bufferSubData(
+      gl.ARRAY_BUFFER,
+      0,
+      interleavedUint8.subarray(0, bodyCount * BYTES_PER_VERTEX),
+    );
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+  }
+
+  // Upload static parts (radius & color) after bodies are created
+  if (gl && interleavedVbo) {
     gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
     gl.bufferSubData(
       gl.ARRAY_BUFFER,
@@ -363,7 +472,7 @@ function update(currentTime: number) {
 
   frameCount++;
 
-  const settings = getSettings(canvas.width < 768);
+  const settings = activeSettings;
   const centerXMeters = centerX / PIXELS_PER_METER;
   const centerYMeters = centerY / PIXELS_PER_METER;
 
@@ -463,26 +572,17 @@ function update(currentTime: number) {
     slabs.positions[i * 2] = pos.x * PIXELS_PER_METER;
     slabs.positions[i * 2 + 1] = pos.y * PIXELS_PER_METER;
     slabs.angles[i] = rot;
+
+    // write directly into interleaved buffer
+    const baseByte = i * BYTES_PER_VERTEX;
+    const baseFloat = baseByte >> 2;
+    interleavedFloat32[baseFloat] = slabs.positions[i * 2];
+    interleavedFloat32[baseFloat + 1] = slabs.positions[i * 2 + 1];
+    interleavedFloat32[baseFloat + 2] = rot;
+    // radius & color are static; not touched per-frame
   }
 
   if (gl && interleavedVbo) {
-    // Rebuild interleaved buffer for visible bodies
-    for (let i = 0; i < bodyCount; i++) {
-      const baseByte = i * BYTES_PER_VERTEX;
-      const baseFloat = baseByte >> 2;
-
-      interleavedFloat32[baseFloat] = slabs.positions[i * 2];
-      interleavedFloat32[baseFloat + 1] = slabs.positions[i * 2 + 1];
-      interleavedFloat32[baseFloat + 2] = slabs.angles[i];
-      interleavedFloat32[baseFloat + 3] = slabs.radii[i];
-
-      const color = slabs.colors[i];
-      interleavedUint8[baseByte + 16] = color & 0xff;
-      interleavedUint8[baseByte + 17] = (color >> 8) & 0xff;
-      interleavedUint8[baseByte + 18] = (color >> 16) & 0xff;
-      interleavedUint8[baseByte + 19] = (color >> 24) & 0xff;
-    }
-
     gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
     gl.bufferSubData(
       gl.ARRAY_BUFFER,
@@ -510,8 +610,9 @@ function handleShockwave(
 ) {
   if (!canvas) return;
 
-  const settingsSW = getSettings(canvas.width < 768);
+  const settingsSW = activeSettings;
   const shockConfig = settingsSW.interactions.shockwave;
+  const strengthMul = msg.strength ?? 1;
   const shockRadiusPixels =
     shockConfig.radius * Math.min(canvas.width, canvas.height);
   const shockRadiusMeters = shockRadiusPixels / PIXELS_PER_METER;
@@ -534,7 +635,7 @@ function handleShockwave(
       const dirY = dist < 1e-6 ? 0 : dy / dist;
 
       const falloff = 1 - dist / shockRadiusMeters;
-      const baseImpulse = shockConfig.force * falloff;
+      const baseImpulse = shockConfig.force * falloff * strengthMul;
       const impulse = baseImpulse * mass;
 
       body.applyImpulse({ x: dirX * impulse, y: dirY * impulse }, true);
@@ -554,6 +655,7 @@ async function handleInit(msg: Extract<MainToWorkerMessage, { type: "INIT" }>) {
     world = new rapier.World(gravity);
 
     const settingsInit = getSettings(msg.isMobile);
+    activeSettings = settingsInit;
     let dtCfg = settingsInit.simulation.timeStep ?? 60;
     if (dtCfg > 1) {
       dtCfg /= 1000;
@@ -590,7 +692,8 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
 
   gl.viewport(0, 0, canvasWidth, canvasHeight);
 
-  const settings = getSettings(msg.width < 768);
+  activeSettings = getSettings(msg.width < 768);
+  const settings = activeSettings;
   const centerXMeters = centerX / PIXELS_PER_METER;
   const centerYMeters = centerY / PIXELS_PER_METER;
 
@@ -638,9 +741,8 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
   }
   wallColliderHandles = [];
 
-  const wallThickness = 100.0;
-
-  const wallThicknessMeters = wallThickness / PIXELS_PER_METER;
+  const wallThicknessPx = (settings.world as any).wallThickness ?? 100.0;
+  const wallThicknessMeters = wallThicknessPx / PIXELS_PER_METER;
   const widthMeters = canvasWidth / PIXELS_PER_METER;
   const heightMeters = canvasHeight / PIXELS_PER_METER;
 

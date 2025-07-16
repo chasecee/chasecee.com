@@ -1,7 +1,7 @@
 {
   "simulation": {
     "timeStep": 16.666,
-    "gravity": 0.05,
+    "gravity": 0.1,
     "damping": 2.5,
     "initialClockwiseVelocity": 0,
     "tangentialDamping": 0.15
@@ -9,46 +9,47 @@
   "bodies": {
     "count": 1024,
     "startPlacement": "grid",
-    "radius": 5,
+    "radius": 6,
     "radiusVariance": 0.01,
     "friction": 0.1,
     "restitution": 0.5,
-    "startRadius": 0.35,
+    "startRadius": 0.4,
     "startSpread": 0.3
   },
   "world": {
     "centerCircleRadius": 0.3,
-    "wallOffset": -0.5,
+    "wallOffset": 0,
+    "wallThickness": 200,
     "walls": {
       "initiallyDisabled": true,
-      "enableDelaySeconds": 2
+      "enableDelaySeconds": 1
     }
   },
   "interactions": {
     "shockwave": {
-      "force": 20,
-      "radius": 0.5
+      "force": 50,
+      "radius": 0.4
     },
     "scroll": {
       "forceMultiplier": -0.3,
-      "velocityDamping": 0.99
+      "velocityDamping": 0.9
     }
   },
   "rendering": {
-    "colorLevel": 4
+    "colorLevel": 5
   },
 
   "mobileOverrides": {
     "simulation": {
       "gravity": 0.02,
-      "damping": 2,
+      "damping": 2.5,
       "initialClockwiseVelocity": 0.5,
       "tangentialDamping": 0.1
     },
     "bodies": {
       "count": 800,
       "startPlacement": "grid",
-      "radius": 4,
+      "radius": 5,
       "friction": 0.01,
       "restitution": 0.1,
       "startRadius": 0.4,
@@ -56,19 +57,15 @@
     },
     "world": {
       "centerCircleRadius": 0.4,
-      "wallOffset": -0.4,
-      "walls": {
-        "initiallyDisabled": true,
-        "enableDelaySeconds": 1
-      }
+      "wallOffset": 0
     },
     "interactions": {
       "shockwave": {
-        "force": 20,
+        "force": 50,
         "radius": 0.4
       },
       "scroll": {
-        "forceMultiplier": -0.3,
+        "forceMultiplier": -0.2,
         "velocityDamping": 0.97
       }
     }

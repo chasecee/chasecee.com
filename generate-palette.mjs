@@ -75,6 +75,7 @@ async function main() {
     console.log(`Reading config from: ${configPath}`);
     const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
     const palettes = config.rendering.palette;
+    const proceduralMode = !palettes;
     const colorOrder = [
       "red",
       "amber",
@@ -87,19 +88,31 @@ async function main() {
 
     const output = {};
 
+    const totalSteps = 1024; // resolution per level
+
     console.log("Processing color levels 0-9...");
     for (let level = 0; level < 10; level++) {
-      const keyColorsRgb = colorOrder.map((colorName) => {
-        const hslaStr = palettes[colorName][level];
-        if (!hslaStr) {
-          throw new Error(`Missing color for ${colorName} at level ${level}`);
-        }
-        const { h, s, l } = parseHsla(hslaStr);
-        return hslToRgb(h, s, l);
-      });
+      let keyColorsRgb;
+      if (proceduralMode) {
+        // fallback: evenly spaced hues around the wheel
+        keyColorsRgb = colorOrder.map((_, idx) => {
+          const hue = idx / colorOrder.length;
+          const sat = 0.85;
+          const light = 0.45 + (level - 4) * 0.03; // vary slight per level
+          return hslToRgb(hue, sat, Math.max(0, Math.min(1, light)));
+        });
+      } else {
+        keyColorsRgb = colorOrder.map((colorName) => {
+          const hslaStr = palettes[colorName][level];
+          if (!hslaStr) {
+            throw new Error(`Missing color for ${colorName} at level ${level}`);
+          }
+          const { h, s, l } = parseHsla(hslaStr);
+          return hslToRgb(h, s, l);
+        });
+      }
 
       const interpolatedColors = [];
-      const totalSteps = 1024; // High-resolution color wheel
 
       for (let i = 0; i < totalSteps; i++) {
         const position = i / totalSteps;
@@ -118,13 +131,40 @@ async function main() {
       output[level] = interpolatedColors;
     }
 
-    const fileContent =
+    // --- write legacy TypeScript (kept for reference / git history) ---
+    const tsContent =
       `// This file is auto-generated. Do not edit.\n` +
       `// Run 'node generate-palette.mjs' to regenerate.\n\n` +
       `export const interpolatedColorWheels = ${JSON.stringify(output, null, 2)};\n`;
 
-    fs.writeFileSync(outputPath, fileContent);
-    console.log(`✅ Interpolated palette written to ${outputPath}`);
+    fs.writeFileSync(outputPath.replace(/\.ts$/, ".legacy.ts"), tsContent);
+
+    // --- write compact binary ---
+    const LEVELS = 10;
+    const COLORS_PER_LEVEL = totalSteps;
+    const BYTES_PER_COLOR = 3;
+    const binBuffer = new Uint8Array(
+      LEVELS * COLORS_PER_LEVEL * BYTES_PER_COLOR,
+    );
+
+    for (let level = 0; level < LEVELS; level++) {
+      const levelColors = output[level];
+      for (let i = 0; i < COLORS_PER_LEVEL; i++) {
+        const { r, g, b } = levelColors[i];
+        const base = (level * COLORS_PER_LEVEL + i) * BYTES_PER_COLOR;
+        binBuffer[base] = r;
+        binBuffer[base + 1] = g;
+        binBuffer[base + 2] = b;
+      }
+    }
+
+    const binPath = path.resolve(
+      "./app/(site)/components/hero/HomeHero9/palette-rgb.bin",
+    );
+    fs.writeFileSync(binPath, binBuffer);
+    console.log(
+      `✅ Compact palette written to ${binPath} (${binBuffer.length} bytes)`,
+    );
   } catch (error) {
     console.error("❌ Failed to generate palette:", error);
     process.exit(1);
