@@ -13,14 +13,14 @@ const font = Inter({
   display: "swap",
 });
 const bodyClass =
-  " w-full min-h-screen bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-white";
+  " w-full min-h-screen bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-white tracking-wide";
 
 export const metadata: Metadata = {
   title: "Work - Chase Cee",
-  description: "Web Designer and Developer",
+  description: "Building excellent products front to back.",
   icons: {
     icon: "/icons/site/favicon.ico",
-    shortcut: "/icons/site/favicon-32x32.png",
+    shortcut: "/icons/site/favicon-96x96.png",
     apple: "/icons/site/apple-touch-icon.png",
   },
 };

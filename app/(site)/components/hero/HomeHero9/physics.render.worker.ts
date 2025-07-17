@@ -243,145 +243,84 @@ function createBodies(settings: PhysicsSettings) {
 
   rigidBodies.length = 0;
 
-  const placement = settings.bodies.startPlacement || "ring";
+  const startRadiusPixels =
+    settings.bodies.startRadius * Math.min(canvasWidth, canvasHeight);
 
-  if (placement === "grid") {
-    const startRadiusPixels =
-      settings.bodies.startRadius * Math.min(canvasWidth, canvasHeight);
+  const canvasArea = canvasWidth * canvasHeight;
+  const circleArea = Math.PI * Math.pow(startRadiusPixels, 2);
+  const usableArea = Math.max(0, canvasArea - circleArea);
 
-    const canvasArea = canvasWidth * canvasHeight;
-    const circleArea = Math.PI * Math.pow(startRadiusPixels, 2);
-    const usableArea = Math.max(0, canvasArea - circleArea);
+  const targetDensity = bodyCount / usableArea;
 
-    const targetDensity = bodyCount / usableArea;
+  const totalPointsInCanvas = Math.ceil(targetDensity * canvasArea);
+  const spacing = Math.sqrt(canvasArea / totalPointsInCanvas);
+  const cols = Math.floor(canvasWidth / spacing);
+  const rows = Math.floor(canvasHeight / spacing);
 
-    const totalPointsInCanvas = Math.ceil(targetDensity * canvasArea);
-    const spacing = Math.sqrt(canvasArea / totalPointsInCanvas);
-    const cols = Math.floor(canvasWidth / spacing);
-    const rows = Math.floor(canvasHeight / spacing);
+  let currentBodyIndex = 0;
 
-    let currentBodyIndex = 0;
-
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        if (currentBodyIndex >= bodyCount) break;
-
-        const x = (col + 0.5) * spacing;
-        const y = (row + 0.5) * spacing;
-
-        const dx = x - centerX;
-        const dy = y - centerY;
-        const distSq = dx * dx + dy * dy;
-
-        if (distSq > startRadiusPixels * startRadiusPixels) {
-          const angle = Math.atan2(dy, dx) + Math.PI;
-
-          const radiusMultiplier = 1.0 + (Math.random() - 0.5) * radiusVariance;
-          const finalRadiusPixels = baseRadius * radiusMultiplier;
-
-          const rigidBodyDesc = rapier.RigidBodyDesc.dynamic()
-            .setTranslation(x / PIXELS_PER_METER, y / PIXELS_PER_METER)
-            .setLinearDamping(settings.simulation.damping);
-
-          const rigidBody = world.createRigidBody(rigidBodyDesc);
-          const colliderDesc = rapier.ColliderDesc.ball(
-            finalRadiusPixels / PIXELS_PER_METER,
-          )
-            .setRestitution(settings.bodies.restitution)
-            .setFriction(settings.bodies.friction);
-
-          world.createCollider(colliderDesc, rigidBody);
-          rigidBodies.push(rigidBody);
-
-          slabs.radii[currentBodyIndex] = finalRadiusPixels;
-
-          const colorLevel = settings.rendering.colorLevel;
-          const normalizedPosition = (angle / (Math.PI * 2)) % 1;
-          const steps = (settings.rendering as any).colorSteps ?? 1024;
-          const { r, g, b } = getPaletteColor(
-            colorLevel,
-            normalizedPosition,
-            steps,
-          );
-          const color = (255 << 24) | (b << 16) | (g << 8) | r;
-          slabs.colors[currentBodyIndex] = color;
-
-          if (interleavedBuffer) {
-            const baseByte = currentBodyIndex * BYTES_PER_VERTEX;
-            const baseFloat = baseByte >> 2;
-
-            interleavedFloat32[baseFloat + 3] = finalRadiusPixels;
-            interleavedUint8[baseByte + 16] = color & 0xff;
-            interleavedUint8[baseByte + 17] = (color >> 8) & 0xff;
-            interleavedUint8[baseByte + 18] = (color >> 16) & 0xff;
-            interleavedUint8[baseByte + 19] = (color >> 24) & 0xff;
-          }
-
-          currentBodyIndex++;
-        }
-      }
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
       if (currentBodyIndex >= bodyCount) break;
-    }
-    bodyCount = rigidBodies.length;
-  } else {
-    for (let i = 0; i < bodyCount; i++) {
-      const angle = (i / bodyCount) * Math.PI * 2;
 
-      const spreadMultiplier =
-        1.0 + (Math.random() - 0.5) * settings.bodies.startSpread;
-      const actualRadius =
-        settings.bodies.startRadius *
-        spreadMultiplier *
-        Math.min(canvasWidth, canvasHeight);
+      const x = (col + 0.5) * spacing;
+      const y = (row + 0.5) * spacing;
 
-      const x = center.x + Math.cos(angle) * actualRadius;
-      const y = center.y + Math.sin(angle) * actualRadius;
+      const dx = x - centerX;
+      const dy = y - centerY;
+      const distSq = dx * dx + dy * dy;
 
-      const radiusMultiplier = 1.0 + (Math.random() - 0.5) * radiusVariance;
-      const finalRadiusPixels = baseRadius * radiusMultiplier;
+      if (distSq > startRadiusPixels * startRadiusPixels) {
+        const angle = Math.atan2(dy, dx) + Math.PI;
 
-      const rigidBodyDesc = rapier.RigidBodyDesc.dynamic()
-        .setTranslation(x / PIXELS_PER_METER, y / PIXELS_PER_METER)
-        .setLinearDamping(settings.simulation.damping);
+        const radiusMultiplier = 1.0 + (Math.random() - 0.5) * radiusVariance;
+        const finalRadiusPixels = baseRadius * radiusMultiplier;
 
-      const velocityX = -initialClockwiseVelocity * Math.sin(angle);
-      const velocityY = initialClockwiseVelocity * Math.cos(angle);
-      rigidBodyDesc.setLinvel(velocityX, velocityY);
+        const rigidBodyDesc = rapier.RigidBodyDesc.dynamic()
+          .setTranslation(x / PIXELS_PER_METER, y / PIXELS_PER_METER)
+          .setLinearDamping(settings.simulation.damping);
 
-      const rigidBody = world.createRigidBody(rigidBodyDesc);
-      const colliderDesc = rapier.ColliderDesc.ball(
-        finalRadiusPixels / PIXELS_PER_METER,
-      )
-        .setRestitution(settings.bodies.restitution)
-        .setFriction(settings.bodies.friction);
-      world.createCollider(colliderDesc, rigidBody);
-      rigidBodies.push(rigidBody);
+        const rigidBody = world.createRigidBody(rigidBodyDesc);
+        const colliderDesc = rapier.ColliderDesc.ball(
+          finalRadiusPixels / PIXELS_PER_METER,
+        )
+          .setRestitution(settings.bodies.restitution)
+          .setFriction(settings.bodies.friction);
 
-      slabs.radii[i] = finalRadiusPixels;
+        world.createCollider(colliderDesc, rigidBody);
+        rigidBodies.push(rigidBody);
 
-      const colorLevel = settings.rendering.colorLevel;
-      const normalizedPosition = (angle / (Math.PI * 2)) % 1;
-      const steps = (settings.rendering as any).colorSteps ?? 1024;
-      const { r, g, b } = getPaletteColor(
-        colorLevel,
-        normalizedPosition,
-        steps,
-      );
+        slabs.radii[currentBodyIndex] = finalRadiusPixels;
 
-      const color = (255 << 24) | (b << 16) | (g << 8) | r;
-      slabs.colors[i] = color;
+        const colorLevel = settings.rendering.colorLevel;
+        const normalizedPosition = (angle / (Math.PI * 2)) % 1;
+        const steps = (settings.rendering as any).colorSteps ?? 1024;
+        const { r, g, b } = getPaletteColor(
+          colorLevel,
+          normalizedPosition,
+          steps,
+        );
+        const color = (255 << 24) | (b << 16) | (g << 8) | r;
+        slabs.colors[currentBodyIndex] = color;
 
-      if (interleavedBuffer) {
-        const baseByte = i * BYTES_PER_VERTEX;
-        const baseFloat = baseByte >> 2;
-        interleavedFloat32[baseFloat + 3] = finalRadiusPixels;
-        interleavedUint8[baseByte + 16] = color & 0xff;
-        interleavedUint8[baseByte + 17] = (color >> 8) & 0xff;
-        interleavedUint8[baseByte + 18] = (color >> 16) & 0xff;
-        interleavedUint8[baseByte + 19] = (color >> 24) & 0xff;
+        if (interleavedBuffer) {
+          const baseByte = currentBodyIndex * BYTES_PER_VERTEX;
+          const baseFloat = baseByte >> 2;
+
+          interleavedFloat32[baseFloat + 3] = finalRadiusPixels;
+          interleavedUint8[baseByte + 16] = color & 0xff;
+          interleavedUint8[baseByte + 17] = (color >> 8) & 0xff;
+          interleavedUint8[baseByte + 18] = (color >> 16) & 0xff;
+          interleavedUint8[baseByte + 19] = (color >> 24) & 0xff;
+        }
+
+        currentBodyIndex++;
       }
     }
+    if (currentBodyIndex >= bodyCount) break;
   }
+
+  bodyCount = rigidBodies.length;
 
   if (gl && interleavedVbo) {
     for (let i = 0; i < bodyCount; i++) {
@@ -615,7 +554,6 @@ async function handleInit(msg: Extract<MainToWorkerMessage, { type: "INIT" }>) {
     world = new rapier.World(gravity);
 
     let settingsInit = getSettings(msg.isMobile);
-    // Apply override from main thread when provided to align with CSS variable.
     if (typeof msg.colorLevel === "number") {
       settingsInit = {
         ...settingsInit,
@@ -663,7 +601,6 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
   gl.viewport(0, 0, canvasWidth, canvasHeight);
 
   const nextSettings = getSettings(msg.width < 768);
-  // Preserve any colorLevel override that may have been applied during INIT.
   activeSettings = {
     ...nextSettings,
     rendering: {
