@@ -35,23 +35,29 @@ export function PhysicsCanvas() {
 
     let lastTouchY = 0;
 
+    let scrollRafId = 0;
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      const deltaY = currentScrollY - lastScrollY;
-      lastScrollY = currentScrollY;
-      scrollVelocity = deltaY;
+      if (scrollRafId) return;
+      scrollRafId = window.requestAnimationFrame(() => {
+        scrollRafId = 0;
+        const currentScrollY = window.scrollY;
+        const deltaY = currentScrollY - lastScrollY;
+        lastScrollY = currentScrollY;
+        scrollVelocity = deltaY;
 
-      const message: Extract<MainToWorkerMessage, { type: "SCROLL_FORCE" }> = {
-        type: "SCROLL_FORCE",
-        force: scrollVelocity * 5,
-      };
-      workerRef.current?.postMessage(message);
+        const message: Extract<MainToWorkerMessage, { type: "SCROLL_FORCE" }> =
+          {
+            type: "SCROLL_FORCE",
+            force: scrollVelocity * 5,
+          };
+        workerRef.current?.postMessage(message);
 
-      if (scrollForceTimeout) clearTimeout(scrollForceTimeout);
+        if (scrollForceTimeout) clearTimeout(scrollForceTimeout);
 
-      scrollForceTimeout = window.setTimeout(() => {
-        scrollVelocity = 0;
-      }, 100);
+        scrollForceTimeout = window.setTimeout(() => {
+          scrollVelocity = 0;
+        }, 100);
+      });
     };
 
     const handleTouchStart = (e: TouchEvent) => {
@@ -84,12 +90,14 @@ export function PhysicsCanvas() {
     offscreenRef.current = offscreenCanvas;
 
     const level = getColorLevel();
-    // eslint-disable-next-line no-console
-    console.log(
-      "PhysicsCanvas palette level",
-      level,
-      keyColorLevels[level as keyof typeof keyColorLevels],
-    );
+    if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.log(
+        "PhysicsCanvas palette level",
+        level,
+        keyColorLevels[level as keyof typeof keyColorLevels],
+      );
+    }
 
     const initMessage: Extract<MainToWorkerMessage, { type: "INIT" }> = {
       type: "INIT",
@@ -138,19 +146,25 @@ export function PhysicsCanvas() {
       sendShockwave(e.clientX, e.clientY, 0.25, true);
     };
 
-    let pendingPointer = false;
+    let moveClientX = 0;
+    let moveClientY = 0;
+    let moveRafId = 0;
+    const pointerMoveRAF = () => {
+      moveRafId = 0;
+      const dx = moveClientX - lastShockX;
+      const dy = moveClientY - lastShockY;
+      if (dx * dx + dy * dy >= SHOCK_DISTANCE * SHOCK_DISTANCE) {
+        sendShockwave(moveClientX, moveClientY, 0.5);
+      }
+    };
+
     const handlePointerMove = (e: PointerEvent) => {
       if (!isDragging) return;
-      if (pendingPointer) return;
-      pendingPointer = true;
-      requestAnimationFrame(() => {
-        pendingPointer = false;
-        const dx = e.clientX - lastShockX;
-        const dy = e.clientY - lastShockY;
-        if (dx * dx + dy * dy >= SHOCK_DISTANCE * SHOCK_DISTANCE) {
-          sendShockwave(e.clientX, e.clientY, 0.5);
-        }
-      });
+      moveClientX = e.clientX;
+      moveClientY = e.clientY;
+      if (!moveRafId) {
+        moveRafId = window.requestAnimationFrame(pointerMoveRAF);
+      }
     };
 
     const endDrag = () => {

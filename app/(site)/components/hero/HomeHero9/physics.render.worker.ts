@@ -64,6 +64,7 @@ type DeepPartial<T> = T extends object
   : T;
 
 const PIXELS_PER_METER = 50;
+const INV_PIXELS_PER_METER = 1 / PIXELS_PER_METER;
 
 type PhysicsSettings = typeof config;
 type MobileOverrides = DeepPartial<Omit<PhysicsSettings, "mobileOverrides">>;
@@ -90,6 +91,7 @@ let cornerVbo: WebGLBuffer | null = null;
 let interleavedBuffer: ArrayBuffer;
 let interleavedFloat32: Float32Array;
 let interleavedUint8: Uint8Array;
+let interleavedSlice: Uint8Array | null = null;
 
 let isRunning = false;
 let isPaused = false;
@@ -288,13 +290,26 @@ function createBodies(settings: PhysicsSettings) {
           .setFriction(settings.bodies.friction);
 
         world.createCollider(colliderDesc, rigidBody);
+
+        if (initialClockwiseVelocity !== 0) {
+          const distance = Math.sqrt(distSq);
+          if (distance > 0) {
+            const tangentialVelX = (dy / distance) * initialClockwiseVelocity;
+            const tangentialVelY = (-dx / distance) * initialClockwiseVelocity;
+            rigidBody.setLinvel({ x: tangentialVelX, y: tangentialVelY }, true);
+          }
+        }
+
         rigidBodies.push(rigidBody);
 
         slabs.radii[currentBodyIndex] = finalRadiusPixels;
+        slabs.positions[currentBodyIndex * 2] = x;
+        slabs.positions[currentBodyIndex * 2 + 1] = y;
+        slabs.angles[currentBodyIndex] = 0;
 
         const colorLevel = settings.rendering.colorLevel;
         const normalizedPosition = (angle / (Math.PI * 2)) % 1;
-        const steps = (settings.rendering as any).colorSteps ?? 1024;
+        const steps = settings.rendering.colorSteps ?? 1024;
         const { r, g, b } = getPaletteColor(
           colorLevel,
           normalizedPosition,
@@ -307,6 +322,9 @@ function createBodies(settings: PhysicsSettings) {
           const baseByte = currentBodyIndex * BYTES_PER_VERTEX;
           const baseFloat = baseByte >> 2;
 
+          interleavedFloat32[baseFloat] = x;
+          interleavedFloat32[baseFloat + 1] = y;
+          interleavedFloat32[baseFloat + 2] = 0;
           interleavedFloat32[baseFloat + 3] = finalRadiusPixels;
           interleavedUint8[baseByte + 16] = color & 0xff;
           interleavedUint8[baseByte + 17] = (color >> 8) & 0xff;
@@ -323,28 +341,19 @@ function createBodies(settings: PhysicsSettings) {
   bodyCount = rigidBodies.length;
 
   if (gl && interleavedVbo) {
-    for (let i = 0; i < bodyCount; i++) {
-      const baseByte = i * BYTES_PER_VERTEX;
-      const baseFloat = baseByte >> 2;
-
-      interleavedFloat32[baseFloat] = slabs.positions[i * 2];
-      interleavedFloat32[baseFloat + 1] = slabs.positions[i * 2 + 1];
-      interleavedFloat32[baseFloat + 2] = slabs.angles[i];
-      interleavedFloat32[baseFloat + 3] = slabs.radii[i];
-
-      const color = slabs.colors[i];
-      interleavedUint8[baseByte + 16] = color & 0xff;
-      interleavedUint8[baseByte + 17] = (color >> 8) & 0xff;
-      interleavedUint8[baseByte + 18] = (color >> 16) & 0xff;
-      interleavedUint8[baseByte + 19] = (color >> 24) & 0xff;
+    if (
+      !interleavedSlice ||
+      interleavedSlice.length !== bodyCount * BYTES_PER_VERTEX
+    ) {
+      interleavedSlice = new Uint8Array(
+        interleavedUint8.buffer,
+        0,
+        bodyCount * BYTES_PER_VERTEX,
+      );
     }
 
     gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
-    gl.bufferSubData(
-      gl.ARRAY_BUFFER,
-      0,
-      interleavedUint8.subarray(0, bodyCount * BYTES_PER_VERTEX),
-    );
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, interleavedSlice);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
   }
 }
@@ -374,8 +383,8 @@ function update(currentTime: number) {
   frameCount++;
 
   const settings = activeSettings;
-  const centerXMeters = centerX / PIXELS_PER_METER;
-  const centerYMeters = centerY / PIXELS_PER_METER;
+  const centerXMeters = centerX * INV_PIXELS_PER_METER;
+  const centerYMeters = centerY * INV_PIXELS_PER_METER;
 
   const normalizedScroll = Math.tanh(scrollForce * 0.005);
   const scrollInfluence =
@@ -412,13 +421,9 @@ function update(currentTime: number) {
 
     const planetRadiusPixels =
       settings.world.centerCircleRadius * Math.min(canvasWidth, canvasHeight);
-    const planetRadiusMeters = planetRadiusPixels / PIXELS_PER_METER;
+    const planetRadiusMeters = planetRadiusPixels * INV_PIXELS_PER_METER;
 
     const gravityCoeff = settings.simulation.gravity;
-
-    let maxForce = 0;
-    let avgDistance = 0;
-    let gravityApplications = 0;
 
     for (const body of rigidBodies) {
       const mass = body.mass();
@@ -435,7 +440,6 @@ function update(currentTime: number) {
       const dist = 1 / invDist;
 
       if (dist > planetRadiusMeters) {
-        gravityApplications++;
         const F_gravity = gravityCoeff * mass;
 
         const coeff = invDist * F_gravity;
@@ -453,12 +457,7 @@ function update(currentTime: number) {
         const tangDragX = -tangentialDamping * tangVelX * mass;
         const tangDragY = -tangentialDamping * tangVelY * mass;
         body.addForce({ x: tangDragX, y: tangDragY }, true);
-
-        const magSq =
-          scratchForce.x * scratchForce.x + scratchForce.y * scratchForce.y;
-        maxForce = Math.max(maxForce, Math.sqrt(magSq));
       }
-      avgDistance += dist;
     }
     world.step();
     accumulator -= dt;
@@ -482,12 +481,19 @@ function update(currentTime: number) {
   }
 
   if (gl && interleavedVbo) {
+    if (
+      !interleavedSlice ||
+      interleavedSlice.length !== bodyCount * BYTES_PER_VERTEX
+    ) {
+      interleavedSlice = new Uint8Array(
+        interleavedUint8.buffer,
+        0,
+        bodyCount * BYTES_PER_VERTEX,
+      );
+    }
+
     gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
-    gl.bufferSubData(
-      gl.ARRAY_BUFFER,
-      0,
-      interleavedUint8.subarray(0, bodyCount * BYTES_PER_VERTEX),
-    );
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, interleavedSlice);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
   }
 
@@ -514,10 +520,10 @@ function handleShockwave(
   const strengthMul = msg.strength ?? 1;
   const shockRadiusPixels =
     shockConfig.radius * Math.min(canvas.width, canvas.height);
-  const shockRadiusMeters = shockRadiusPixels / PIXELS_PER_METER;
+  const shockRadiusMeters = shockRadiusPixels * INV_PIXELS_PER_METER;
 
-  const msgXMeters = msg.x / PIXELS_PER_METER;
-  const msgYMeters = msg.y / PIXELS_PER_METER;
+  const msgXMeters = msg.x * INV_PIXELS_PER_METER;
+  const msgYMeters = msg.y * INV_PIXELS_PER_METER;
 
   for (const body of rigidBodies) {
     const mass = body.mass();
@@ -611,13 +617,13 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
     },
   } as PhysicsSettings;
   const settings = activeSettings;
-  const centerXMeters = centerX / PIXELS_PER_METER;
-  const centerYMeters = centerY / PIXELS_PER_METER;
+  const centerXMeters = centerX * INV_PIXELS_PER_METER;
+  const centerYMeters = centerY * INV_PIXELS_PER_METER;
 
   if (planetBody && planetCollider) {
     const planetRadiusPixels =
       settings.world.centerCircleRadius * Math.min(canvasWidth, canvasHeight);
-    const planetRadiusMeters = planetRadiusPixels / PIXELS_PER_METER;
+    const planetRadiusMeters = planetRadiusPixels * INV_PIXELS_PER_METER;
 
     planetBody.setTranslation({ x: centerXMeters, y: centerYMeters }, true);
     planetCollider.setRadius(planetRadiusMeters);
@@ -659,9 +665,9 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
   wallColliderHandles = [];
 
   const wallThicknessPx = (settings.world as any).wallThickness ?? 100.0;
-  const wallThicknessMeters = wallThicknessPx / PIXELS_PER_METER;
-  const widthMeters = canvasWidth / PIXELS_PER_METER;
-  const heightMeters = canvasHeight / PIXELS_PER_METER;
+  const wallThicknessMeters = wallThicknessPx * INV_PIXELS_PER_METER;
+  const widthMeters = canvasWidth * INV_PIXELS_PER_METER;
+  const heightMeters = canvasHeight * INV_PIXELS_PER_METER;
 
   const wallOffset = (settings.world as any).wallOffset ?? 0;
   const offsetXMeters = widthMeters * wallOffset;
