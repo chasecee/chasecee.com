@@ -242,7 +242,7 @@ function createBodies(settings: PhysicsSettings) {
     const planetColliderDesc = rapier.ColliderDesc.ball(
       planetRadiusPixels / PIXELS_PER_METER,
     )
-      .setFriction(2)
+      .setFriction(1)
       .setRestitution(0);
     planetCollider = world.createCollider(planetColliderDesc, planetBody);
   }
@@ -285,6 +285,10 @@ function createBodies(settings: PhysicsSettings) {
         const rigidBodyDesc = rapier.RigidBodyDesc.dynamic()
           .setTranslation(x / PIXELS_PER_METER, y / PIXELS_PER_METER)
           .setLinearDamping(settings.simulation.damping)
+          .setAngularDamping(
+            (settings.simulation as any).angularDamping ??
+              settings.simulation.damping,
+          )
           .setCanSleep(true);
 
         const rigidBody = world.createRigidBody(rigidBodyDesc);
@@ -470,6 +474,12 @@ function update(currentTime: number) {
         const tangDragX = -tangentialDamping * tangVelX * mass;
         const tangDragY = -tangentialDamping * tangVelY * mass;
         body.addForce({ x: tangDragX, y: tangDragY }, true);
+
+        const radialDamping = settings.simulation.radialDamping ?? 0.06;
+        const radialDrag = -radialDamping * radialVel * mass;
+        const radialDragX = radialDrag * scratchDir.x * invDist;
+        const radialDragY = radialDrag * scratchDir.y * invDist;
+        body.addForce({ x: radialDragX, y: radialDragY }, true);
       }
     }
     world.step();

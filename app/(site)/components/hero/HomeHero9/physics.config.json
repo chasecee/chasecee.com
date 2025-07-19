@@ -1,18 +1,20 @@
 {
   "simulation": {
-    "timeStep": 16.666,
+    "timeStep": 20,
     "gravity": 0.05,
-    "damping": 4,
+    "damping": 3,
     "initialClockwiseVelocity": 0,
-    "tangentialDamping": 0.03
+    "tangentialDamping": 0.025,
+    "radialDamping": 0.025,
+    "angularDamping": 0.25
   },
   "bodies": {
     "count": 2048,
-    "radius": 4.5,
+    "radius": 5,
     "radiusVariance": 0.05,
-    "friction": 0.25,
-    "restitution": 0,
-    "startRadius": 0.4
+    "friction": 0.01,
+    "restitution": 0.0001,
+    "startRadius": 0.35
   },
   "world": {
     "centerCircleRadius": 0.33,
@@ -37,20 +39,22 @@
 
   "mobileOverrides": {
     "simulation": {
-      "gravity": 0.02,
-      "damping": 2,
+      "gravity": 0.05,
+      "damping": 3,
       "initialClockwiseVelocity": 0,
-      "tangentialDamping": 0.1
+      "tangentialDamping": 0.03,
+      "radialDamping": 0.025,
+      "angularDamping": 0.25
     },
     "bodies": {
       "count": 1024,
-      "radius": 3.5,
+      "radius": 4,
       "friction": 0.001,
-      "restitution": 0.16,
-      "startRadius": 0.425
+      "restitution": 0.0001,
+      "startRadius": 0.45
     },
     "world": {
-      "centerCircleRadius": 0.4,
+      "centerCircleRadius": 0.45,
       "wallOffset": 0
     },
     "interactions": {
