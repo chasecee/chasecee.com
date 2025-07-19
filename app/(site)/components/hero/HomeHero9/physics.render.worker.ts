@@ -636,7 +636,7 @@ async function handleInit(msg: Extract<MainToWorkerMessage, { type: "INIT" }>) {
     world.integrationParameters.dt = dt;
     const ip = world.integrationParameters as any;
     ip.allowedLinearError = 0.1;
-    ip.maxPenetrationCorrection = 0.1;
+    ip.maxPenetrationCorrection = 0.001;
     ip.maxPositionIterations = 4;
     ip.maxVelocityIterations = 4;
 
