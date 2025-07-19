@@ -13,7 +13,7 @@
     "count": 2048,
     "radius": 4,
     "radiusVariance": 0.1,
-    "friction": 0.25,
+    "friction": 0.05,
     "restitution": 0.1,
     "startRadius": 0.4
   },
