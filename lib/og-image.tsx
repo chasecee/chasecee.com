@@ -1,7 +1,6 @@
 import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import Image from "next/image";
 
 export const size = {
   width: 1200,
@@ -192,7 +191,7 @@ export async function generateOGImage(options: OGImageOptions = {}) {
           background: "#000000",
         }}
       >
-        <Image
+        <img
           alt=""
           src={backgroundImage as any}
           style={{
