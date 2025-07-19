@@ -242,8 +242,8 @@ function createBodies(settings: PhysicsSettings) {
     const planetColliderDesc = rapier.ColliderDesc.ball(
       planetRadiusPixels / PIXELS_PER_METER,
     )
-      .setFriction(0.1)
-      .setRestitution(0.1);
+      .setFriction(0.5)
+      .setRestitution(0.01);
     planetCollider = world.createCollider(planetColliderDesc, planetBody);
   }
 
@@ -455,9 +455,15 @@ function update(currentTime: number) {
 
       const invDist = 1 / Math.sqrt(distSq);
       const dist = 1 / invDist;
-
-      if (dist > planetRadiusMeters) {
-        const F_gravity = gravityCoeff * mass;
+      // Scale gravity so it is zero at the planet surface, eliminating infinite
+      // potential-energy build-up when bodies are resting against the planet.
+      const radialDist = dist - planetRadiusMeters;
+      if (radialDist > 0) {
+        const pullScale = Math.min(radialDist / planetRadiusMeters, 1);
+        const easeExp = (settings.simulation as any).gravityEase ?? 1;
+        const scaledPull =
+          easeExp === 1 ? pullScale : Math.pow(pullScale, easeExp);
+        const F_gravity = gravityCoeff * mass * scaledPull;
 
         const coeff = invDist * F_gravity;
         scratchForce.x = scratchDir.x * coeff;
@@ -635,10 +641,10 @@ async function handleInit(msg: Extract<MainToWorkerMessage, { type: "INIT" }>) {
 
     world.integrationParameters.dt = dt;
     const ip = world.integrationParameters as any;
-    ip.allowedLinearError = 0.1;
-    ip.maxPenetrationCorrection = 0.001;
-    ip.maxPositionIterations = 4;
-    ip.maxVelocityIterations = 4;
+    ip.allowedLinearError = 0.05;
+    ip.maxPenetrationCorrection = 0.05;
+    ip.maxPositionIterations = 8;
+    ip.maxVelocityIterations = 8;
 
     setupWebgl();
 
