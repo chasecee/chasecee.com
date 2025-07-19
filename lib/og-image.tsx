@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import Image from "next/image";
 
 export const size = {
   width: 1200,
@@ -65,7 +66,7 @@ function HomeTemplate() {
           fontFamily: "Inter Bold",
         }}
       >
-        Let's build.
+        Let&apos;s build.
       </h1>
     </div>
   );
@@ -191,7 +192,8 @@ export async function generateOGImage(options: OGImageOptions = {}) {
           background: "#000000",
         }}
       >
-        <img
+        <Image
+          alt=""
           src={backgroundImage as any}
           style={{
             position: "absolute",

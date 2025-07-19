@@ -11,12 +11,8 @@ export function PhysicsCanvas() {
   const offscreenRef = useRef<OffscreenCanvas | null>(null);
   const gradient =
     "linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 10%)";
-  // Generate a stable unique key for this component instance so React always
-  // creates a fresh <canvas> element on remount.
   const instanceKeyRef = useRef(Math.random().toString(36).slice(2));
 
-  // Utility: resolve numeric palette level from the global CSS variable.
-  // Falls back to 4 (dark) if value is absent/invalid.
   const getColorLevel = () => {
     if (typeof window === "undefined") return 4;
     const cssValue = getComputedStyle(document.documentElement)
@@ -79,10 +75,8 @@ export function PhysicsCanvas() {
 
     workerRef.current = new Worker(
       new URL("./physics.render.worker.ts", import.meta.url),
+      { type: "module" },
     );
-
-    // Forward worker metric events to a browser CustomEvent so the StatsOverlay
-    // can listen without tight coupling.
     workerRef.current.onmessage = (e) => {
       const data: any = e.data;
       if (data && data.type === "METRICS") {
@@ -91,25 +85,12 @@ export function PhysicsCanvas() {
         );
       }
     };
-
-    // Always create a *fresh* OffscreenCanvas for the new worker. Re-using a
-    // previously-transferred instance trips `DataCloneError` in dev/HMR because
-    // an OffscreenCanvas can be transferred only once. Creating a new instance
-    // avoids the detached-canvas issue entirely.
     const offscreenCanvas = canvas.transferControlToOffscreen();
     const transferList: Transferable[] = [offscreenCanvas];
 
     offscreenRef.current = offscreenCanvas;
 
     const level = getColorLevel();
-    if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
-      console.log(
-        "PhysicsCanvas palette level",
-        level,
-        keyColorLevels[level as keyof typeof keyColorLevels],
-      );
-    }
 
     const initMessage: Extract<MainToWorkerMessage, { type: "INIT" }> = {
       type: "INIT",

@@ -2,11 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const isProd = process.env.NODE_ENV === "production";
-
 export default function StatsOverlay() {
-  if (isProd) return null;
-
   const [fps, setFps] = useState(0);
   const [sim, setSim] = useState(0);
   const [render, setRender] = useState(0);

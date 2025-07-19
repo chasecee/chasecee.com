@@ -242,8 +242,8 @@ function createBodies(settings: PhysicsSettings) {
     const planetColliderDesc = rapier.ColliderDesc.ball(
       planetRadiusPixels / PIXELS_PER_METER,
     )
-      .setFriction(1)
-      .setRestitution(0);
+      .setFriction(0.1)
+      .setRestitution(0.25);
     planetCollider = world.createCollider(planetColliderDesc, planetBody);
   }
 
@@ -483,6 +483,19 @@ function update(currentTime: number) {
       }
     }
     world.step();
+    // Clamp linear speed to prevent excessive energy build-up.
+    const maxSpeedCfg = (activeSettings?.simulation as any).maxSpeed;
+    if (typeof maxSpeedCfg === "number" && maxSpeedCfg > 0) {
+      const maxSpeedSq = maxSpeedCfg * maxSpeedCfg;
+      for (const body of rigidBodies) {
+        const v = body.linvel();
+        const speedSq = v.x * v.x + v.y * v.y;
+        if (speedSq > maxSpeedSq) {
+          const scale = maxSpeedCfg / Math.sqrt(speedSq);
+          body.setLinvel({ x: v.x * scale, y: v.y * scale }, true);
+        }
+      }
+    }
     accumulator -= dt;
     stepCount++;
   }
@@ -622,7 +635,9 @@ async function handleInit(msg: Extract<MainToWorkerMessage, { type: "INIT" }>) {
 
     world.integrationParameters.dt = dt;
     const ip = world.integrationParameters as any;
-    ip.maxPositionIterations = 4;
+    ip.allowedLinearError = 0.0005;
+    ip.maxPenetrationCorrection = 0.00001;
+    ip.maxPositionIterations = 2;
     ip.maxVelocityIterations = 2;
 
     setupWebgl();
