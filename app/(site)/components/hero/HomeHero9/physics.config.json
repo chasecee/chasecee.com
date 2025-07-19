@@ -2,10 +2,10 @@
   "simulation": {
     "timeStep": 16.666,
     "gravity": 0.05,
-    "gravityEase": 0.75,
-    "damping": 1,
+    "gravityEase": 0.55,
+    "damping": 1.5,
     "initialClockwiseVelocity": 0,
-    "tangentialDamping": 0.02,
+    "tangentialDamping": 0.01,
     "radialDamping": 0.01,
     "angularDamping": 0.25,
     "maxSpeed": 20
@@ -13,15 +13,15 @@
   "bodies": {
     "count": 2048,
     "radius": 3.75,
-    "radiusVariance": 0,
+    "radiusVariance": 0.1,
     "friction": 0.05,
     "restitution": 0.1,
-    "startRadius": 0.366
+    "startRadius": 0.35
   },
   "world": {
-    "centerCircleRadius": 0.33,
+    "centerCircleRadius": 0.3,
     "wallOffset": 0,
-    "wallThickness": 100
+    "wallThickness": 10
   },
   "interactions": {
     "shockwave": {
