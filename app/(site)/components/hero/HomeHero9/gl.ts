@@ -1,3 +1,6 @@
+// Allow switching precision for all GLSL shaders from a single place
+export const GLSL_FLOAT_PRECISION = "lowp";
+
 export function createContext(
   canvas: OffscreenCanvas,
 ): WebGL2RenderingContext | null {
@@ -55,7 +58,7 @@ export function createVbo(
 }
 
 export const VERTEX_SHADER_SOURCE = `#version 300 es
-precision highp float;
+precision ${GLSL_FLOAT_PRECISION} float;
 
 in vec2 a_position;
 in float a_angle;
@@ -76,7 +79,7 @@ void main() {
 `;
 
 export const FRAGMENT_SHADER_SOURCE = `#version 300 es
-precision highp float;
+precision ${GLSL_FLOAT_PRECISION} float;
 
 in vec4 v_color;
 in float v_radius;
@@ -99,7 +102,7 @@ void main() {
 `;
 
 export const QUAD_VERTEX_SHADER_SOURCE = `#version 300 es
-precision highp float;
+precision ${GLSL_FLOAT_PRECISION} float;
 
 in vec2 a_corner;
 in vec2 a_position;
@@ -124,17 +127,36 @@ void main() {
 }`;
 
 export const QUAD_FRAGMENT_SHADER_SOURCE = `#version 300 es
-precision highp float;
+precision ${GLSL_FLOAT_PRECISION} float;
 
 in vec2 v_corner;
 in vec4 v_color;
 
+uniform int u_sides; // 0 = circle, 3-8 = regular polygon sides
+
 out vec4 out_color;
 
 void main() {
-  float dist = length(v_corner);
+  // Normalized distance from center; for polygons we compute adjusted distance
+  float dist;
+  if (u_sides <= 0) {
+    // Circle
+    dist = length(v_corner);
+  } else {
+    // Regular polygon distance approximation
+    const float PI = 3.141592653589793;
+    const float TAU = 6.283185307179586;
+    float sides = float(u_sides);
+    vec2 p = v_corner;
+    float angle = atan(p.y, p.x) + PI; // 0..2pi
+    float r = length(p);
+    float sector = TAU / sides;
+    float d = cos(sector * 0.5) / cos(mod(angle, sector) - sector * 0.5);
+    dist = r / d;
+  }
+
   float smooth_width = fwidth(dist);
   float alpha = 1.0 - smoothstep(1.0 - smooth_width, 1.0, dist);
   if (alpha < 0.01) discard;
-  out_color = vec4(v_color.rgb, v_color.a * alpha);
+  out_color = vec4(v_color.rgb, alpha);
 }`;

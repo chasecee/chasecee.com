@@ -83,6 +83,7 @@ let scrollForce = 0;
 
 let program: WebGLProgram | null = null;
 let projectionMatrix: WebGLUniformLocation | null = null;
+let shapeSidesUniform: WebGLUniformLocation | null = null;
 
 let wallColliderHandles: number[] = [];
 let vao: WebGLVertexArrayObject | null = null;
@@ -110,8 +111,6 @@ const tmpLinvel = { x: 0, y: 0 };
 let lastTime = 0;
 let dt = 1 / 60;
 let accumulator = 0;
-let simulationTime = 0;
-let wallsEnabled = false;
 
 function getSettings(isMobile: boolean): PhysicsSettings {
   if (!isMobile) {
@@ -169,6 +168,11 @@ function setupWebgl() {
 
   gl.useProgram(program);
   projectionMatrix = gl.getUniformLocation(program, "u_projection");
+  shapeSidesUniform = gl.getUniformLocation(program, "u_sides");
+  if (shapeSidesUniform) {
+    const sidesVal = activeSettings?.rendering?.shapeSides ?? 0;
+    gl.uniform1i(shapeSidesUniform, sidesVal);
+  }
 
   slabs = makeSlabs();
 
@@ -239,7 +243,7 @@ function createBodies(settings: PhysicsSettings) {
       planetRadiusPixels / PIXELS_PER_METER,
     )
       .setFriction(2)
-      .setRestitution(0.5);
+      .setRestitution(0);
     planetCollider = world.createCollider(planetColliderDesc, planetBody);
   }
 
@@ -280,12 +284,32 @@ function createBodies(settings: PhysicsSettings) {
 
         const rigidBodyDesc = rapier.RigidBodyDesc.dynamic()
           .setTranslation(x / PIXELS_PER_METER, y / PIXELS_PER_METER)
-          .setLinearDamping(settings.simulation.damping);
+          .setLinearDamping(settings.simulation.damping)
+          .setCanSleep(true);
 
         const rigidBody = world.createRigidBody(rigidBodyDesc);
-        const colliderDesc = rapier.ColliderDesc.ball(
-          finalRadiusPixels / PIXELS_PER_METER,
-        )
+        // Build collider shape: circle (0) or regular polygon (3-8 sides)
+        const shapeSides = settings.rendering.shapeSides ?? 0;
+        let colliderDesc: import("@dimforge/rapier2d").ColliderDesc;
+        const radiusMeters = finalRadiusPixels / PIXELS_PER_METER;
+
+        if (shapeSides >= 3) {
+          // Generate regular polygon vertices around the origin in local space.
+          const verts = new Float32Array(shapeSides * 2);
+          for (let s = 0; s < shapeSides; s++) {
+            const ang = (s * Math.PI * 2) / shapeSides;
+            verts[s * 2] = Math.cos(ang) * radiusMeters;
+            verts[s * 2 + 1] = Math.sin(ang) * radiusMeters;
+          }
+          // Attempt to create convex hull collider; fallback to circle if it fails.
+          const maybeHull = rapier.ColliderDesc.convexHull(verts);
+          colliderDesc = maybeHull ?? rapier.ColliderDesc.ball(radiusMeters);
+        } else {
+          // Default: circle collider.
+          colliderDesc = rapier.ColliderDesc.ball(radiusMeters);
+        }
+
+        colliderDesc = colliderDesc
           .setRestitution(settings.bodies.restitution)
           .setFriction(settings.bodies.friction);
 
@@ -359,6 +383,9 @@ function createBodies(settings: PhysicsSettings) {
 }
 
 function update(currentTime: number) {
+  const frameStart = performance.now();
+  let simEnd = frameStart; // will update later
+
   if (!isRunning || !canvas) return;
 
   if (isPaused) {
@@ -403,22 +430,8 @@ function update(currentTime: number) {
   scrollForce *= settings.interactions.scroll.velocityDamping ?? 0.98;
 
   let stepCount = 0;
+  const simStart = performance.now();
   while (accumulator >= dt && stepCount < 5) {
-    simulationTime += dt;
-    if (
-      !wallsEnabled &&
-      (settings.world.walls?.initiallyDisabled ?? false) &&
-      simulationTime >= (settings.world.walls?.enableDelaySeconds ?? 0)
-    ) {
-      for (const handle of wallColliderHandles) {
-        const collider = world.getCollider(handle);
-        if (collider) {
-          collider.setSensor(false);
-        }
-      }
-      wallsEnabled = true;
-    }
-
     const planetRadiusPixels =
       settings.world.centerCircleRadius * Math.min(canvasWidth, canvasHeight);
     const planetRadiusMeters = planetRadiusPixels * INV_PIXELS_PER_METER;
@@ -463,6 +476,7 @@ function update(currentTime: number) {
     accumulator -= dt;
     stepCount++;
   }
+  simEnd = performance.now();
 
   for (let i = 0; i < bodyCount; i++) {
     const body = rigidBodies[i];
@@ -478,6 +492,8 @@ function update(currentTime: number) {
     interleavedFloat32[baseFloat] = slabs.positions[i * 2];
     interleavedFloat32[baseFloat + 1] = slabs.positions[i * 2 + 1];
     interleavedFloat32[baseFloat + 2] = rot;
+
+    interleavedUint8[baseByte + 19] = 255;
   }
 
   if (gl && interleavedVbo) {
@@ -497,6 +513,7 @@ function update(currentTime: number) {
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
   }
 
+  const drawStart = performance.now();
   if (gl && program && vao) {
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.useProgram(program);
@@ -506,6 +523,23 @@ function update(currentTime: number) {
 
     gl.bindVertexArray(null);
   }
+
+  const drawEnd = performance.now();
+
+  const simulationTime = simEnd - simStart; // ms
+  const renderTime = drawEnd - drawStart; // ms
+  const totalTime = drawEnd - frameStart; // ms
+  const fpsCalc = frameTime > 0 ? 1 / frameTime : 0;
+  const calcsPerSec = frameTime > 0 ? (bodyCount * stepCount) / frameTime : 0;
+
+  self.postMessage({
+    type: "METRICS",
+    simulationTime,
+    renderTime,
+    totalTime,
+    fps: fpsCalc,
+    calcsPerSec,
+  });
 
   requestAnimationFrame(update);
 }
@@ -577,7 +611,9 @@ async function handleInit(msg: Extract<MainToWorkerMessage, { type: "INIT" }>) {
     dt = Math.min(Math.max(dtCfg, 0.001), 0.1);
 
     world.integrationParameters.dt = dt;
-    (world.integrationParameters as any).maxPositionIterations = 8;
+    const ip = world.integrationParameters as any;
+    ip.maxPositionIterations = 4;
+    ip.maxVelocityIterations = 2;
 
     setupWebgl();
 
@@ -681,33 +717,31 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
   const halfSpanX = (rightX - leftX) / 2 + wallThicknessMeters;
   const halfSpanY = (topY - bottomY) / 2 + wallThicknessMeters;
 
-  const initiallyDisabled = settings.world.walls?.initiallyDisabled ?? false;
-
   let wallDesc = rapier.ColliderDesc.cuboid(halfSpanX, wallThicknessMeters / 2)
     .setTranslation((leftX + rightX) / 2, topY + wallThicknessMeters / 2)
     .setFriction(0.1)
-    .setSensor(initiallyDisabled)
+    .setSensor(false)
     .setRestitution(0.0);
   wallColliderHandles.push(world.createCollider(wallDesc).handle);
 
   wallDesc = rapier.ColliderDesc.cuboid(halfSpanX, wallThicknessMeters / 2)
     .setTranslation((leftX + rightX) / 2, bottomY - wallThicknessMeters / 2)
     .setFriction(0.1)
-    .setSensor(initiallyDisabled)
+    .setSensor(false)
     .setRestitution(0.0);
   wallColliderHandles.push(world.createCollider(wallDesc).handle);
 
   wallDesc = rapier.ColliderDesc.cuboid(wallThicknessMeters / 2, halfSpanY)
     .setTranslation(leftX - wallThicknessMeters / 2, (bottomY + topY) / 2)
     .setFriction(0.1)
-    .setSensor(initiallyDisabled)
+    .setSensor(false)
     .setRestitution(0.0);
   wallColliderHandles.push(world.createCollider(wallDesc).handle);
 
   wallDesc = rapier.ColliderDesc.cuboid(wallThicknessMeters / 2, halfSpanY)
     .setTranslation(rightX + wallThicknessMeters / 2, (bottomY + topY) / 2)
     .setFriction(0.1)
-    .setSensor(initiallyDisabled)
+    .setSensor(false)
     .setRestitution(0.0);
   wallColliderHandles.push(world.createCollider(wallDesc).handle);
 
@@ -740,6 +774,9 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
   ];
   gl.useProgram(program);
   gl.uniformMatrix4fv(projectionMatrix, false, projection);
+  if (shapeSidesUniform) {
+    gl.uniform1i(shapeSidesUniform, settings.rendering.shapeSides ?? 0);
+  }
 }
 
 function handleTerminate() {

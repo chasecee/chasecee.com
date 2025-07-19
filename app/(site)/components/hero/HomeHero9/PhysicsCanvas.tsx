@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect } from "react";
+import StatsOverlay from "./StatsOverlay";
 import { keyColorLevels } from "./palette";
 import type { MainToWorkerMessage } from "./messages";
 
@@ -79,6 +80,17 @@ export function PhysicsCanvas() {
     workerRef.current = new Worker(
       new URL("./physics.render.worker.ts", import.meta.url),
     );
+
+    // Forward worker metric events to a browser CustomEvent so the StatsOverlay
+    // can listen without tight coupling.
+    workerRef.current.onmessage = (e) => {
+      const data: any = e.data;
+      if (data && data.type === "METRICS") {
+        window.dispatchEvent(
+          new CustomEvent("physicsMetrics", { detail: data }),
+        );
+      }
+    };
 
     // Always create a *fresh* OffscreenCanvas for the new worker. Re-using a
     // previously-transferred instance trips `DataCloneError` in dev/HMR because
@@ -235,16 +247,19 @@ export function PhysicsCanvas() {
   }, []);
 
   return (
-    <canvas
-      key={instanceKeyRef.current}
-      ref={canvasRef}
-      className="h-full w-full"
-      style={{
-        WebkitMaskImage: gradient,
-        maskImage: gradient,
-        WebkitMaskRepeat: "no-repeat",
-        maskRepeat: "no-repeat",
-      }}
-    />
+    <>
+      <canvas
+        key={instanceKeyRef.current}
+        ref={canvasRef}
+        className="h-full w-full"
+        style={{
+          WebkitMaskImage: gradient,
+          maskImage: gradient,
+          WebkitMaskRepeat: "no-repeat",
+          maskRepeat: "no-repeat",
+        }}
+      />
+      {process.env.NODE_ENV !== "production" && <StatsOverlay />}
+    </>
   );
 }
