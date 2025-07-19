@@ -42,19 +42,19 @@
       "gravity": 0.05,
       "damping": 3,
       "initialClockwiseVelocity": 0,
-      "tangentialDamping": 0.03,
+      "tangentialDamping": 0.05,
       "radialDamping": 0.025,
       "angularDamping": 0.25
     },
     "bodies": {
       "count": 1024,
-      "radius": 4,
+      "radius": 3,
       "friction": 0.001,
       "restitution": 0.0001,
       "startRadius": 0.45
     },
     "world": {
-      "centerCircleRadius": 0.45,
+      "centerCircleRadius": 0.4,
       "wallOffset": 0
     },
     "interactions": {
