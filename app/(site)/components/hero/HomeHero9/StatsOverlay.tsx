@@ -1,33 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 
 export default function StatsOverlay() {
-  const [fps, setFps] = useState(0);
-  const [sim, setSim] = useState(0);
-  const [render, setRender] = useState(0);
-  const [total, setTotal] = useState(0);
-  const [calcs, setCalcs] = useState(0);
+  const overlayRef = useRef<HTMLPreElement>(null);
 
   useEffect(() => {
-    function handleMetrics(e: Event) {
+    const handler = (e: Event) => {
       const { simulationTime, renderTime, totalTime, fps, calcsPerSec } =
         (e as CustomEvent).detail || {};
-      setFps(fps);
-      setSim(simulationTime);
-      setRender(renderTime);
-      setTotal(totalTime);
-      setCalcs(calcsPerSec);
-    }
-
-    window.addEventListener("physicsMetrics", handleMetrics);
-    return () => {
-      window.removeEventListener("physicsMetrics", handleMetrics);
+      if (!overlayRef.current) return;
+      overlayRef.current.textContent =
+        `FPS: ${fps.toFixed(1)}\n` +
+        `sim: ${simulationTime.toFixed(2)} ms\n` +
+        `draw: ${renderTime.toFixed(2)} ms\n` +
+        `tot: ${totalTime.toFixed(2)} ms\n` +
+        `calc/s: ${calcsPerSec.toFixed(0)}`;
     };
+
+    window.addEventListener("physicsMetrics", handler);
+    return () => window.removeEventListener("physicsMetrics", handler);
   }, []);
 
   return (
-    <div
+    <pre
+      ref={overlayRef}
       style={{
         position: "fixed",
         top: 78,
@@ -42,17 +39,8 @@ export default function StatsOverlay() {
         borderRadius: 4,
         pointerEvents: "none",
         width: "150px",
+        whiteSpace: "pre-line",
       }}
-    >
-      FPS: {fps.toFixed(1)}
-      <br />
-      sim: {sim.toFixed(2)} ms
-      <br />
-      draw: {render.toFixed(2)} ms
-      <br />
-      tot: {total.toFixed(2)} ms
-      <br />
-      calc/s: {calcs.toFixed(0)}
-    </div>
+    />
   );
 }

@@ -169,7 +169,7 @@ export function PhysicsCanvas() {
     canvas.addEventListener("pointerup", endDrag);
     canvas.addEventListener("pointerleave", endDrag);
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     canvas.addEventListener("touchstart", handleTouchStart, { passive: true });
     canvas.addEventListener("touchmove", handleTouchMove, { passive: true });
 

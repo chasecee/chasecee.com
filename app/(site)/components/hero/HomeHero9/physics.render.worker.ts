@@ -243,7 +243,7 @@ function createBodies(settings: PhysicsSettings) {
       planetRadiusPixels / PIXELS_PER_METER,
     )
       .setFriction(0.1)
-      .setRestitution(0.25);
+      .setRestitution(0.1);
     planetCollider = world.createCollider(planetColliderDesc, planetBody);
   }
 
@@ -635,10 +635,10 @@ async function handleInit(msg: Extract<MainToWorkerMessage, { type: "INIT" }>) {
 
     world.integrationParameters.dt = dt;
     const ip = world.integrationParameters as any;
-    ip.allowedLinearError = 0.0005;
-    ip.maxPenetrationCorrection = 0.00001;
-    ip.maxPositionIterations = 2;
-    ip.maxVelocityIterations = 2;
+    ip.allowedLinearError = 0.1;
+    ip.maxPenetrationCorrection = 0.1;
+    ip.maxPositionIterations = 4;
+    ip.maxVelocityIterations = 4;
 
     setupWebgl();
 
