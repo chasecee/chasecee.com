@@ -1,55 +1,47 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { db } from "@/firebase";
-import {
-  collection,
-  getDocs,
-  setDoc,
-  doc,
-  updateDoc,
-  deleteDoc,
-} from "firebase/firestore";
 import Draggable from "react-draggable";
 import { CloseCircleIcon } from "@sanity/icons";
 
 const FirestoreComponent = () => {
   const [data, setData] = useState({});
-  const appName = "cee-app-data";
+  const storageKey = "cee-app-blobs";
 
   useEffect(() => {
-    const fetchData = async () => {
-      const docData = await getDocs(collection(db, appName));
-      docData.forEach((doc) => {
-        setData((prevState) => ({ ...prevState, [doc.id]: doc.data() }));
-      });
-    };
-
-    fetchData();
+    const savedData = localStorage.getItem(storageKey);
+    if (savedData) {
+      setData(JSON.parse(savedData));
+    }
   }, []);
 
-  const handleStop = async (id, _, data) => {
-    const { lastX: x, lastY: y } = data;
-    const relativeX = x / 722; // replace with dynamic width if needed
-    const relativeY = y / 722; // replace with dynamic height if needed
-
-    await updateDoc(doc(db, appName, id), { x: relativeX, y: relativeY });
+  const saveToStorage = (newData) => {
+    localStorage.setItem(storageKey, JSON.stringify(newData));
   };
 
-  const handleDelete = async (id) => {
-    await deleteDoc(doc(db, appName, id));
-    setData((prevState) => {
-      const newState = { ...prevState };
-      delete newState[id];
-      return newState;
-    });
+  const handleStop = (id, _, dragData) => {
+    const { lastX: x, lastY: y } = dragData;
+    const relativeX = x / 722;
+    const relativeY = y / 722;
+
+    const updatedData = {
+      ...data,
+      [id]: { ...data[id], x: relativeX, y: relativeY },
+    };
+
+    setData(updatedData);
+    saveToStorage(updatedData);
   };
 
-  const handleClearAll = async () => {
-    const promises = Object.keys(data).map((id) =>
-      deleteDoc(doc(db, appName, id)),
-    );
-    await Promise.all(promises);
+  const handleDelete = (id) => {
+    const newData = { ...data };
+    delete newData[id];
+    setData(newData);
+    saveToStorage(newData);
+  };
+
+  const handleClearAll = () => {
     setData({});
+    localStorage.removeItem(storageKey);
   };
 
   return (
@@ -70,7 +62,7 @@ const FirestoreComponent = () => {
             <Draggable
               key={key}
               bounds="parent"
-              onStop={(e, data) => handleStop(key, e, data)}
+              onStop={(e, dragData) => handleStop(key, e, dragData)}
             >
               <div
                 data-id={key}
@@ -94,17 +86,17 @@ const FirestoreComponent = () => {
       <div className="flex justify-between">
         <button
           className="btn mt-2 rounded-xl bg-green-500/50 px-2 py-1"
-          onClick={async () => {
+          onClick={() => {
             const id = `blob${Object.keys(data).length + 1}`;
-            const newData = { id, x: 0, y: 0 };
-            await setDoc(doc(db, appName, id), newData);
-            setData((prevState) => ({ ...prevState, [id]: newData }));
+            const newData = { ...data, [id]: { id, x: 0, y: 0 } };
+            setData(newData);
+            saveToStorage(newData);
           }}
         >
           Add blob
         </button>
         <button
-          className="btn mt-2 rounded-xl bg-red-500/50 px-2  py-1"
+          className="btn mt-2 rounded-xl bg-red-500/50 px-2 py-1"
           onClick={handleClearAll}
         >
           Clear All Blobs

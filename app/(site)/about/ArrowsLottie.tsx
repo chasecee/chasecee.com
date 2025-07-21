@@ -12,7 +12,7 @@ function App() {
       ref={animation}
       src="arrows.lottie"
       autoplay
-      className="h-[4.5rem] w-[4.5rem] overflow-hidden rounded-xl"
+      className="pointer-events-none absolute bottom-[-10%] size-[4rem] rotate-60 overflow-hidden rounded-xl lg:-right-[31%] lg:bottom-2 lg:size-[8rem] lg:-rotate-30"
     />
   );
 }

@@ -31,9 +31,7 @@
     "app/(site)/components/Skills.jsx",
     "app/(site)/[slug]/page.tsx",
     "app/(site)/components/svg/doxyme.jsx",
-    "firebase.js",
     "app/(site)/components/FireComponent.jsx",
-    "app/(site)/components/DraggableDiv.jsx",
     "app/(site)/components/HueMove.jsx",
     "app/(site)/components/HueAnimation.jsx",
     "app/(site)/about/ProfilePic.jsx"

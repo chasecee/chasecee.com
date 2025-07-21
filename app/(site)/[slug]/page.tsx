@@ -4,7 +4,6 @@ import { PortableText } from "@portabletext/react";
 import Skills from "../components/Skills";
 import Image from "next/image";
 import urlFor from "@/sanity/sanity.image";
-import Draggable from "react-draggable";
 import NotFound from "./not-found";
 import { Metadata, ResolvingMetadata } from "next";
 import type { Page } from "@/types/Page";

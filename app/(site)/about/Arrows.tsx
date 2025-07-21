@@ -1,15 +1,17 @@
 "use client";
 import React, { useEffect, useRef } from "react";
 
-const DrawArrow = () => {
-  const div1Ref = useRef(null);
-  const div2Ref = useRef(null);
-  const svgRef = useRef(null);
+const DrawArrow = (): JSX.Element => {
+  const div1Ref = useRef<HTMLDivElement>(null);
+  const div2Ref = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     const div1 = div1Ref.current;
     const div2 = div2Ref.current;
     const svg = svgRef.current;
+
+    if (!div1 || !div2 || !svg) return;
 
     const rect1 = div1.getBoundingClientRect();
     const rect2 = div2.getBoundingClientRect();
@@ -20,12 +22,12 @@ const DrawArrow = () => {
     const y2 = rect2.y + rect2.height / 2;
 
     const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    line.setAttribute("x1", x1);
-    line.setAttribute("y1", y1);
-    line.setAttribute("x2", x2);
-    line.setAttribute("y2", y2);
+    line.setAttribute("x1", x1.toString());
+    line.setAttribute("y1", y1.toString());
+    line.setAttribute("x2", x2.toString());
+    line.setAttribute("y2", y2.toString());
     line.setAttribute("stroke", "black");
-    line.setAttribute("stroke-width", 2);
+    line.setAttribute("stroke-width", "2");
     line.setAttribute("marker-end", "url(#arrowhead)");
     svg.appendChild(line);
 
@@ -44,8 +46,8 @@ const DrawArrow = () => {
     marker.appendChild(path);
     svg.appendChild(marker);
 
-    svg.setAttribute("width", window.innerWidth);
-    svg.setAttribute("height", window.innerHeight);
+    svg.setAttribute("width", window.innerWidth.toString());
+    svg.setAttribute("height", window.innerHeight.toString());
   }, []);
 
   return (

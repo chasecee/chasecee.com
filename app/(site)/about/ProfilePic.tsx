@@ -5,7 +5,7 @@ import profilePic from "@/public/me.jpeg";
 
 const alt = "alt text";
 
-export default function ProfilePic() {
+export default function ProfilePic(): JSX.Element {
   return (
     <>
       <Tilt

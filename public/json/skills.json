@@ -1,113 +1,152 @@
 {
- "name": "Skills",
- "children": [
-  {
-   "name": "Code",
-   "children": [
+  "name": "Skills",
+  "children": [
     {
-     "name": "Javascript",
-     "children": [
-      {"name": "Vanilla", "value": 12},
-      {"name": "jQuery", "value": 9},
-      {"name": "React", "value": 5},
-      {"name": "NextJS", "value": 3},
-      {"name": "Typescript", "value": 3},
-      {"name": "API", "value": 3}
-     ]
-    },
-    {
-      "name": "Build Tools", 
+      "name": "Code",
       "children": [
-        {"name": "Node.js", "value": 3},
-        {"name": "Grunt", "value": 2},
-        {"name": "Gulp", "value": 2},
-        {"name": "Webpack", "value": 5}
-       ]
+        {
+          "name": "JavaScript & TS",
+          "children": [
+            { "name": "Vanilla JS", "value": 10 },
+            { "name": "React", "value": 9 },
+            { "name": "NextJS", "value": 9 },
+            { "name": "TypeScript", "value": 9 },
+            { "name": "Astro", "value": 5 },
+            { "name": "APIs/REST", "value": 7 },
+            { "name": "GraphQL", "value": 8 },
+            { "name": "Web Workers", "value": 4 }
+          ]
+        },
+        {
+          "name": "Build & Tooling",
+          "children": [
+            { "name": "CI/CD Pipelines", "value": 9 },
+            { "name": "Bitbucket Pipelines", "value": 7 },
+            { "name": "Node.js", "value": 8 },
+            { "name": "Vite", "value": 6 },
+            { "name": "Webpack", "value": 5 },
+            { "name": "Grunt/Gulp", "value": 4 }
+          ]
+        },
+        {
+          "name": "WordPress / CMS",
+          "children": [
+            { "name": "Custom Themes", "value": 10 },
+            { "name": "Custom Plugins", "value": 9 },
+            { "name": "Headless WP + GraphQL", "value": 8 },
+            { "name": "Woocommerce", "value": 6 },
+            { "name": "Yoast SEO", "value": 5 },
+            { "name": "Sanity.io", "value": 3 },
+            { "name": "Directus", "value": 3 },
+            { "name": "HubSpot", "value": 3 },
+            { "name": "Squarespace", "value": 2 }
+          ]
+        },
+        {
+          "name": "CSS",
+          "children": [
+            { "name": "Tailwind", "value": 10 },
+            { "name": "SASS", "value": 8 },
+            { "name": "Motion/Framer", "value": 6 },
+            { "name": "Bootstrap", "value": 8 },
+            { "name": "Centering a div", "value": 10 },
+            { "name": "Shadcn/UI", "value": 8 }
+          ]
+        },
+        {
+          "name": "Sysadmin / DevOps",
+          "children": [
+            { "name": "AWS", "value": 8 },
+            { "name": "Cloudflare", "value": 8 },
+            { "name": "Netlify", "value": 7 },
+            { "name": "Vercel", "value": 6 },
+            { "name": "Server Management", "value": 6 },
+            { "name": "Nginx", "value": 6 },
+            { "name": "Apache", "value": 4 }
+          ]
+        },
+        {
+          "name": "Backend & Scripting",
+          "children": [
+            { "name": "PHP", "value": 10 },
+            { "name": "FastAPI", "value": 7 },
+            { "name": "Python", "value": 6 },
+            { "name": "C", "value": 3 }
+          ]
+        },
+        {
+          "name": "Hardware & Embedded",
+          "children": [
+            { "name": "Raspberry Pi", "value": 8 },
+            { "name": "ESP32", "value": 6 },
+            { "name": "RP2040", "value": 5 },
+            { "name": "SPI Displays", "value": 7 },
+            { "name": "3D‑Printed Fixtures", "value": 6 }
+          ]
+        },
+        {
+          "name": "Web Performance",
+          "children": [
+            { "name": "SEO", "value": 8 },
+            { "name": "Pagespeed", "value": 10 }
+          ]
+        },
+        {
+          "name": "Graphics & Gaming",
+          "children": [{ "name": "WebGL / Rapier Physics", "value": 6 }]
+        },
+        {
+          "name": "Database",
+          "children": [
+            { "name": "Supabase", "value": 5 },
+            { "name": "SQL", "value": 6 }
+          ]
+        }
+      ]
     },
     {
-     "name": "Wordpress",
-     "children": [
-      {"name": "Wordpress Custom Themes", "value": 10},
-      {"name": "Wordpress Custom Plugins", "value": 9},
-      {"name": "Woocommerce", "value": 5},
-      {"name": "Yoast SEO", "value": 4}
-     ]
+      "name": "Design",
+      "children": [
+        { "name": "Photoshop", "value": 10 },
+        { "name": "Illustrator", "value": 9 },
+        { "name": "Figma", "value": 6 },
+        { "name": "Drawing", "value": 5 },
+        { "name": "Logo Design", "value": 6 },
+        { "name": "3D Modelling", "value": 9 },
+        { "name": "Blender", "value": 8 }
+      ]
     },
     {
-     "name": "CSS",
-     "children": [
-      {"name": "Tailwind", "value": 10},
-      {"name": "SASS", "value": 7},
-      {"name": "Build Tools", "value": 7},
-      {"name": "Bootstrap", "value": 5},
-      {"name": "Centering a div", "value": 10}
-     ]
+      "name": "Audio/Music",
+      "children": [
+        { "name": "Logic Pro X", "value": 10 },
+        { "name": "Producing", "value": 10 },
+        { "name": "Recording", "value": 6 },
+        { "name": "MIDI & Routing", "value": 6 },
+        { "name": "Ableton", "value": 3 },
+        { "name": "Live Sound", "value": 4 },
+        { "name": "Scoring & Sound Design", "value": 4 }
+      ]
     },
     {
-    "name": "CMS",
-    "children": [
-        {"name": "Wordpress", "value": 10},
-        {"name": "Sanity.io", "value": 2},
-        {"name": "Squarespace", "value": 2},
-        {"name": "Hubspot", "value": 2}
-    ]
+      "name": "Video",
+      "children": [
+        { "name": "Premiere Pro", "value": 9 },
+        { "name": "After Effects", "value": 6 },
+        { "name": "Web Video Encoding", "value": 8 },
+        { "name": "Final Cut", "value": 2 }
+      ]
     },
     {
-    "name": "Sysadmin",
-    "children": [
-        {"name": "AWS", "value": 8},
-        {"name": "Cloudflare", "value": 7},
-        {"name": "Server Management", "value": 5},
-        {"name": "Nginx", "value": 5},
-        {"name": "Apache", "value": 4},
-        {"name": "Netlify", "value": 7},
-        {"name": "Vercel", "value": 1}
-    ]
-    },
-    {"name": "PHP", "value": 12},
-    {"name": "SEO", "value": 10},
-    {"name": "Pagespeed", "value": 8}
-   ]
-  },
-  {
-    "name": "Design",
-    "children": [
-      {"name": "Photoshop", "value": 10},
-      {"name": "Illustrator", "value": 9},
-      {"name": "Figma", "value": 4},
-      {"name": "Drawing", "value": 5},
-      {"name": "Logo Design", "value": 5}
-     ]
-  },
-  {
-    "name": "Audio/Music",
-    "children": [
-      {"name": "Logic Pro X", "value": 12},
-      {"name": "Recording", "value": 5},
-      {"name": "Writing", "value": 4},
-      {"name": "Producing", "value": 10},
-      {"name": "Ableton", "value": 2},
-      {"name": "Live Sound", "value": 3},
-      {"name": "MIDI & Routing", "value": 5}
-     ]
-  },
-  {
-    "name": "Video",
-    "children": [
-        {"name": "Premiere Pro", "value": 9},
-        {"name": "Final Cut", "value": 1},
-        {"name": "After Effects", "value": 4},
-        {"name": "Web Video", "value": 8}
-    ]
-  },
-  {
-    "name": "Hobbies",
-    "children": [
-        {"name": "3D Printing", "value": 10},
-        {"name": "Ping Pong", "value": 6},
-        {"name": "Summer Grilling", "value": 4},
-        {"name": "Crock Pot Cookin'", "value": 4}
-    ]
-  }
- ]
+      "name": "Hobbies",
+      "children": [
+        { "name": "3D Printing", "value": 10 },
+        { "name": "Electronics Hacking", "value": 7 },
+        { "name": "Ping Pong", "value": 6 },
+        { "name": "Skiing", "value": 6 },
+        { "name": "Summer Grilling", "value": 5 },
+        { "name": "Crock Pot Cookin'", "value": 5 }
+      ]
+    }
+  ]
 }

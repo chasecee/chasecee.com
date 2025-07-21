@@ -1,6 +1,6 @@
 import Container from "@/app/(site)/components/Container";
 import { Metadata } from "next";
-import Skills from "../components/Skills";
+import SkillsSearch from "./SkillsSearch";
 import ArrowsLottie from "./ArrowsLottie";
 import ProfilePic from "./ProfilePic";
 
@@ -12,11 +12,11 @@ export const metadata: Metadata = {
 export default function Contact() {
   return (
     <Container>
-      <div className="size-full overflow-hidden">
-        <div className="prose dark:prose-invert mx-auto mt-10">
+      <div className="">
+        <div className="prose dark:prose-invert prose-p:text-pretty mx-auto mt-10">
           <div className="relative mb-10 flex w-full flex-col justify-between sm:flex-row sm:items-center">
-            <ProfilePic />
-            <div className="hidden">
+            <div className="relative mb-10 md:mb-0">
+              <ProfilePic />
               <ArrowsLottie />
             </div>
 
@@ -41,22 +41,24 @@ export default function Contact() {
             front-end fanatic with a love for blending design and code into a
             platform that helps clients achieve their goals.
           </p>
-          <h2>My Skillset</h2>
+          <h2>Curiousity is the key</h2>
           <p>
-            Working freelance as a designer and developer for several years
+            Working freelance as a designer and developer for over a decade
             taught me to adapt and learn based off the client mandate. Over the
             years I&apos;ve done just about everything, and learned a lot along
-            the way.
+            the way. I am obsessed with learning new things.
           </p>
-          <Skills />
+          <div className="mb-10">
+            <SkillsSearch />
+          </div>
           <p>
             I&apos;m constantly researching and evolving, whether it be for code
             best practices or keeping at the cutting edge of design trends.
           </p>
           <p>
-            Overall, I just love to build things. I love learning and tackling
-            new challenges. I&apos;m always open to talk about new
-            opportunities! Let&apos;s get started on your next big idea.
+            Overall, I just love to build things and tackle new challenges.
+            I&apos;m always open to talk about new opportunities! Let&apos;s get
+            started on your next big idea.
           </p>
         </div>
       </div>
