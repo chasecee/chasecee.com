@@ -113,7 +113,7 @@ const BubbleView = () => {
           return "inline";
         });
     },
-    [width, height],
+    [width, height, renderTextSpans],
   );
 
   const zoomTo = useCallback(

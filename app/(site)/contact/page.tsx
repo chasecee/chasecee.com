@@ -1,6 +1,4 @@
 import Container from "@/app/(site)/components/Container";
-import { Form } from "../components/Form";
-import Link from "next/link";
 import { Metadata } from "next";
 import { FaFilePdf, FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa";
 import WavyLine from "../components/WavyLine";
