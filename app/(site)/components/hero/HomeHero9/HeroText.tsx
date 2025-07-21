@@ -18,8 +18,8 @@ const HeroText = () => {
           <br className="hidden sm:block" />
           &nbsp;crafting excellent experiences.
         </p>
-        <div className="pointer-events-auto flex flex-col flex-wrap items-center justify-center gap-3 md:flex-row">
-          <Button className="group" href="/about">
+        <div className="inline-block">
+          <Button className="group pointer-events-auto" href="/about">
             About Me
             <FaChevronRight
               className="transition-transform duration-200 group-hover:translate-x-1 group-active:translate-x-1"
