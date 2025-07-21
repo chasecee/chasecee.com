@@ -1,7 +1,7 @@
 import { getPage } from "@/sanity/sanity-utils";
 import Container from "../components/Container";
 import { PortableText } from "@portabletext/react";
-import Skills from "../about/Skills";
+import ViewSwitcher from "../about/skills/ViewSwitcher";
 import Image from "next/image";
 import urlFor from "@/sanity/sanity.image";
 import NotFound from "./not-found";
@@ -60,7 +60,7 @@ export default async function DynamicPage({ params }: Props) {
             {page.content.map((block, index) => {
               switch (block._type) {
                 case "skills":
-                  return <Skills key={index} />;
+                  return <ViewSwitcher key={index} />;
                 case "block":
                   return (
                     <PortableText key={index} value={[block]} components={{}} />
