@@ -1,8 +1,6 @@
 import { FaArrowRight, FaChevronRight, FaGithub } from "react-icons/fa";
 import Button from "../../Button";
 
-const buttonBase =
-  "flex-grow rounded px-6 py-2.5 text-center text-sm max-w-[200px] font-medium shadow-sm transition-all duration-200 hover:shadow-md active:scale-95";
 const containerBase =
   "relative mx-auto flex mt-[10svh] select-none flex-col items-center justify-center gap-5 py-10 text-center lg:max-w-2xl";
 

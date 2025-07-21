@@ -13,9 +13,6 @@ import { keyColorLevels } from "./palette";
 import { parseHsla, hslToRgb, lerpColor } from "../../../utils/color";
 
 const BYTES_PER_COLOR = 3;
-const COLOR_FRICTION_MULTIPLIER = 0;
-const COLOR_CLUSTER_FORCE = 0.015;
-const ANGULAR_CLUSTER_FORCE = 0.01;
 let activeSettings: PhysicsSettings;
 
 const paletteCache = new Map<string, Uint8Array>();
@@ -114,13 +111,6 @@ const tmpLinvel = { x: 0, y: 0 };
 let lastTime = 0;
 let dt = 1 / 60;
 let accumulator = 0;
-
-let colorGroups: Uint16Array = new Uint16Array(MAX_BODIES);
-
-let sumSin: Float32Array | null = null;
-let sumCos: Float32Array | null = null;
-let groupCounts: Uint32Array | null = null;
-let meanAngles: Float32Array | null = null;
 
 function getSettings(isMobile: boolean): PhysicsSettings {
   if (!isMobile) {
@@ -288,12 +278,7 @@ function createBodies(settings: PhysicsSettings) {
 
       if (distSq > startRadiusPixels * startRadiusPixels) {
         const angle = Math.atan2(dy, dx) + Math.PI;
-
         const normalizedPosition = (angle / (Math.PI * 2)) % 1;
-        const hueSimilarity = 1 - Math.abs(normalizedPosition - 0.5) * 2;
-        const frictionCoeff =
-          settings.bodies.friction *
-          (1 + hueSimilarity * COLOR_FRICTION_MULTIPLIER);
 
         const radiusMultiplier = 1.0 + (Math.random() - 0.5) * radiusVariance;
         const finalRadiusPixels = baseRadius * radiusMultiplier;
@@ -327,7 +312,7 @@ function createBodies(settings: PhysicsSettings) {
 
         colliderDesc = colliderDesc
           .setRestitution(settings.bodies.restitution)
-          .setFriction(frictionCoeff);
+          .setFriction(settings.bodies.friction);
 
         world.createCollider(colliderDesc, rigidBody);
 
@@ -354,8 +339,6 @@ function createBodies(settings: PhysicsSettings) {
           normalizedPosition,
           steps,
         );
-        const groupIdx = Math.floor(normalizedPosition * steps) % steps;
-        colorGroups[currentBodyIndex] = groupIdx;
 
         const color = (255 << 24) | (b << 16) | (g << 8) | r;
         slabs.colors[currentBodyIndex] = color;
@@ -450,46 +433,6 @@ function update(currentTime: number) {
   let stepCount = 0;
   const simStart = performance.now();
   while (accumulator >= dt && stepCount < 5) {
-    const steps = settings.rendering.colorSteps ?? 1024;
-    if (
-      !sumSin ||
-      sumSin.length !== steps ||
-      !sumCos ||
-      !groupCounts ||
-      groupCounts.length !== steps
-    ) {
-      sumSin = new Float32Array(steps);
-      sumCos = new Float32Array(steps);
-      groupCounts = new Uint32Array(steps);
-    }
-
-    sumSin.fill(0);
-    sumCos.fill(0);
-    groupCounts.fill(0);
-
-    for (let i = 0; i < bodyCount; i++) {
-      const body = rigidBodies[i];
-      if (!body) continue;
-      const pos = body.translation();
-      const dx = pos.x - centerXMeters;
-      const dy = pos.y - centerYMeters;
-      const angle = Math.atan2(dy, dx);
-      const gIdx = colorGroups[i];
-      sumSin[gIdx] += Math.sin(angle);
-      sumCos[gIdx] += Math.cos(angle);
-      groupCounts[gIdx] += 1;
-    }
-
-    if (ANGULAR_CLUSTER_FORCE > 0) {
-      if (!meanAngles || meanAngles.length !== steps) {
-        meanAngles = new Float32Array(steps);
-      }
-      for (let g = 0; g < steps; g++) {
-        const cnt = groupCounts[g];
-        meanAngles[g] = cnt > 0 ? Math.atan2(sumSin[g], sumCos[g]) : 0;
-      }
-    }
-
     const planetRadiusPixels =
       settings.world.centerCircleRadius * Math.min(canvasWidth, canvasHeight);
     const planetRadiusMeters = planetRadiusPixels * INV_PIXELS_PER_METER;
@@ -499,33 +442,6 @@ function update(currentTime: number) {
     for (let i = 0; i < bodyCount; i++) {
       const body = rigidBodies[i];
       if (!body) continue;
-
-      if (ANGULAR_CLUSTER_FORCE > 0) {
-        const gIdx = colorGroups[i];
-        const cnt = groupCounts[gIdx];
-        if (cnt > 1) {
-          const meanAng = meanAngles![gIdx];
-          const pos = body.translation();
-          const dx = pos.x - centerXMeters;
-          const dy = pos.y - centerYMeters;
-          let ang = Math.atan2(dy, dx);
-
-          let diffAng = meanAng - ang;
-          if (diffAng > Math.PI) diffAng -= Math.PI * 2;
-          if (diffAng < -Math.PI) diffAng += Math.PI * 2;
-
-          const radius = Math.hypot(dx, dy);
-          if (radius >= 1e-3) {
-            const tanX = -dy / radius;
-            const tanY = dx / radius;
-            const mass = body.mass();
-            const F = diffAng * ANGULAR_CLUSTER_FORCE * mass * 0.5;
-            scratchForce.x = tanX * F;
-            scratchForce.y = tanY * F;
-            body.addForce(scratchForce, true);
-          }
-        }
-      }
 
       const mass = body.mass();
       if (mass !== 0) {
