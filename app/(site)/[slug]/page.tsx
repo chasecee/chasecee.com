@@ -1,7 +1,7 @@
 import { getPage } from "@/sanity/sanity-utils";
 import Container from "../components/Container";
 import { PortableText } from "@portabletext/react";
-import Skills from "../components/Skills";
+import Skills from "../about/Skills";
 import Image from "next/image";
 import urlFor from "@/sanity/sanity.image";
 import NotFound from "./not-found";

@@ -1,12 +1,9 @@
 "use client";
-import React, {
-  useEffect,
-  useRef,
-  useMemo,
-  useState,
-  useCallback,
-} from "react";
+import React, { useRef, useMemo, useCallback, useEffect } from "react";
 import * as d3 from "d3";
+import { useSkillsData } from "../../hooks/useSkillsData";
+import { wrapText } from "./utils";
+import { ErrorDisplay } from "./ErrorDisplay";
 
 const CONFIG = {
   baseSize: 736,
@@ -14,96 +11,24 @@ const CONFIG = {
   transitionDuration: 750,
   strokeWidth: 2,
   dragSensitivity: 1,
-  aspectRatio: {
-    desktop: { width: 16, height: 9 },
-    mobile: { width: 9, height: 16 },
-  },
 };
 
 const STYLES = {
   svg: "cursor-pointer block h-auto w-full",
   svgDragging: "cursor-grabbing block h-auto w-full",
   container: "prose dark:prose-invert max-w-none relative mx-auto rounded-3xl",
-  breadcrumb:
-    "breadcrumb flex justify-center rounded-3xl bg-white px-4 py-2 text-neutral-900 dark:bg-neutral-900 dark:text-white",
-  svgContainer:
-    "overflow-hidden rounded-3xl bg-neutral-800 aspect-[9/16] md:aspect-video",
+  svgContainer: "overflow-hidden rounded-3xl bg-neutral-800 aspect-square",
 };
 
-const dataCache = new Map();
-
-const useSkillsData = () => {
-  const [data, setData] = useState(null);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const cacheKey = "/json/skills.json";
-
-    if (dataCache.has(cacheKey)) {
-      setData(dataCache.get(cacheKey));
-      return;
-    }
-
-    fetch(cacheKey)
-      .then((res) =>
-        res.ok ? res.json() : Promise.reject(`HTTP ${res.status}`),
-      )
-      .then((result) => {
-        dataCache.set(cacheKey, result);
-        setData(result);
-      })
-      .catch((err) => setError(err));
-  }, []);
-
-  return { data, error };
-};
-
-const useResponsiveDimensions = () => {
-  const [dimensions, setDimensions] = useState({
-    width: CONFIG.baseSize,
-    height:
-      (CONFIG.baseSize * CONFIG.aspectRatio.desktop.height) /
-      CONFIG.aspectRatio.desktop.width,
-  });
-
-  useEffect(() => {
-    const updateDimensions = () => {
-      const isMobile = window.innerWidth < 768;
-      const ratio = isMobile
-        ? CONFIG.aspectRatio.mobile
-        : CONFIG.aspectRatio.desktop;
-
-      if (isMobile) {
-        setDimensions({
-          width: (CONFIG.baseSize * ratio.width) / ratio.height,
-          height: CONFIG.baseSize,
-        });
-      } else {
-        setDimensions({
-          width: CONFIG.baseSize,
-          height: (CONFIG.baseSize * ratio.height) / ratio.width,
-        });
-      }
-    };
-
-    updateDimensions();
-    window.addEventListener("resize", updateDimensions);
-    return () => window.removeEventListener("resize", updateDimensions);
-  }, []);
-
-  return dimensions;
-};
-
-const Skills = () => {
+const BubbleView = () => {
   const svgRef = useRef(null);
-  const breadcrumbRef = useRef(null);
   const focusRef = useRef(null);
   const viewRef = useRef(null);
   const elementsRef = useRef({});
   const isDraggingRef = useRef(false);
 
   const { data, error } = useSkillsData();
-  const { width, height } = useResponsiveDimensions();
+  const { width, height } = { width: CONFIG.baseSize, height: CONFIG.baseSize };
 
   const colorScale = useMemo(
     () =>
@@ -121,6 +46,24 @@ const Skills = () => {
     [width, height],
   );
 
+  const renderTextSpans = useCallback((element, text, radius, scaledRadius) => {
+    const fontSize = Math.min(scaledRadius / 3, 24);
+    const lines = wrapText(text, scaledRadius);
+    const lineHeight = fontSize * 1.1;
+    const totalHeight = (lines.length - 1) * lineHeight;
+
+    d3.select(element).selectAll("tspan").remove();
+
+    lines.forEach((line, i) => {
+      d3.select(element)
+        .append("tspan")
+        .attr("x", 0)
+        .attr("dy", i === 0 ? -totalHeight / 2 + "px" : lineHeight + "px")
+        .style("font-size", fontSize + "px")
+        .text(line);
+    });
+  }, []);
+
   const updateTransforms = useCallback(
     (view) => {
       if (!elementsRef.current.nodes || !elementsRef.current.labels) return;
@@ -132,30 +75,40 @@ const Skills = () => {
       elementsRef.current.nodes
         .attr("transform", transform)
         .attr("r", (d) => d.r * k);
-      elementsRef.current.labels.attr("transform", transform);
+
+      elementsRef.current.labels
+        .attr("transform", transform)
+        .each(function (d) {
+          const scaledRadius = d.r * k;
+          renderTextSpans(this, d.data.name, d.r, scaledRadius);
+        });
 
       elementsRef.current.labels
         .style("fill-opacity", (d) => {
           const scaledRadius = d.r * k;
-          if (scaledRadius < 20) return 0;
+          const fontSize = Math.min((d.r * k) / 3, 24);
+          if (scaledRadius < 15 || fontSize < 8) return 0;
 
-          if (d.children) {
-            const hasVisibleChildren = d.children.some(
-              (child) => child.r * k > 20,
-            );
-            return hasVisibleChildren ? 0 : 1;
+          if (focusRef.current) {
+            if (focusRef.current.data.name === "Skills") {
+              return d.parent && d.parent.data.name === "Skills" ? 1 : 0;
+            }
+            return d.parent === focusRef.current ? 1 : 0;
           }
           return 1;
         })
         .style("display", (d) => {
           const scaledRadius = d.r * k;
-          if (scaledRadius < 20) return "none";
+          const fontSize = Math.min((d.r * k) / 3, 24);
+          if (scaledRadius < 15 || fontSize < 8) return "none";
 
-          if (d.children) {
-            const hasVisibleChildren = d.children.some(
-              (child) => child.r * k > 20,
-            );
-            return hasVisibleChildren ? "none" : "inline";
+          if (focusRef.current) {
+            if (focusRef.current.data.name === "Skills") {
+              return d.parent && d.parent.data.name === "Skills"
+                ? "inline"
+                : "none";
+            }
+            return d.parent === focusRef.current ? "inline" : "none";
           }
           return "inline";
         });
@@ -170,31 +123,6 @@ const Skills = () => {
     },
     [updateTransforms],
   );
-
-  const updateBreadcrumb = useCallback((node, root) => {
-    if (!breadcrumbRef.current || !node) return;
-
-    const path = [];
-    let current = node;
-    while (current) {
-      path.unshift(current.data.name);
-      current = current.parent;
-    }
-
-    breadcrumbRef.current.innerHTML = path
-      .map(
-        (name) =>
-          `<span class="breadcrumb-node cursor-pointer" data-name="${name}">${name}</span>`,
-      )
-      .join('<span class="separator"> > </span>');
-
-    breadcrumbRef.current.querySelectorAll(".breadcrumb-node").forEach((el) => {
-      el.onclick = () => {
-        const targetNode = findNode(root, el.dataset.name);
-        if (targetNode) zoom(null, targetNode, root);
-      };
-    });
-  }, []);
 
   const findNode = useCallback((node, name) => {
     if (node.data.name === name) return node;
@@ -212,7 +140,6 @@ const Skills = () => {
       if (!targetNode || !svgRef.current) return;
 
       focusRef.current = targetNode;
-      updateBreadcrumb(targetNode, root);
 
       const svg = d3.select(svgRef.current);
       const transition = svg
@@ -241,7 +168,7 @@ const Skills = () => {
           if (d.parent !== targetNode) groups[i].style.display = "none";
         });
     },
-    [updateBreadcrumb, zoomTo],
+    [zoomTo],
   );
 
   useEffect(() => {
@@ -253,7 +180,6 @@ const Skills = () => {
         .sum((d) => d.value)
         .sort((a, b) => (b.value || 0) - (a.value || 0)),
     );
-
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
 
@@ -285,16 +211,20 @@ const Skills = () => {
 
     const labels = svg
       .append("g")
-      .attr("class", "font-sans text-[2rem] sm:text-[1.5rem] md:text-base")
+      .attr("class", "font-sans")
       .attr("pointer-events", "none")
       .attr("text-anchor", "middle")
       .selectAll("text")
       .data(root.descendants())
       .join("text")
+      .attr("transform", (d) => `translate(${d.x},${d.y})`)
+      .style("fill", "black")
+      .style("font-size", (d) => `${Math.min(d.r / 3, 24)}px`)
       .style("fill-opacity", (d) => (d.parent === root ? 1 : 0))
       .style("display", (d) => (d.parent === root ? "inline" : "none"))
-      .text((d) => d.data.name)
-      .attr("dy", "0.3em");
+      .each(function (d) {
+        renderTextSpans(this, d.data.name, d.r, d.r);
+      });
 
     const dragBehavior = d3
       .drag()
@@ -305,13 +235,11 @@ const Skills = () => {
       })
       .on("drag", (event) => {
         if (focusRef.current === root || !viewRef.current) return;
-
         const [x, y, r] = viewRef.current;
-        const sensitivity = CONFIG.dragSensitivity;
         const scale = Math.min(width, height);
         const newView = [
-          x - (event.dx * r) / (scale * sensitivity),
-          y - (event.dy * r) / (scale * sensitivity),
+          x - (event.dx * r) / (scale * CONFIG.dragSensitivity),
+          y - (event.dy * r) / (scale * CONFIG.dragSensitivity),
           r,
         ];
         zoomTo(newView);
@@ -333,11 +261,9 @@ const Skills = () => {
     const initialView = [root.x, root.y, root.r * 2];
     viewRef.current = initialView;
     zoomTo(initialView);
-    updateBreadcrumb(root, root);
 
     return () => {
       svg.selectAll("*").remove();
-      if (breadcrumbRef.current) breadcrumbRef.current.innerHTML = "";
     };
   }, [
     data,
@@ -345,28 +271,15 @@ const Skills = () => {
     colorScale,
     zoom,
     zoomTo,
-    updateBreadcrumb,
+    renderTextSpans,
     width,
     height,
   ]);
 
-  if (error) {
-    return (
-      <div className={STYLES.container}>
-        <div className="text-center text-red-500">
-          Failed to load skills: {error}
-        </div>
-      </div>
-    );
-  }
+  if (error) return <ErrorDisplay error={error} />;
 
   return (
     <div className={STYLES.container}>
-      <div className="text-center">
-        <div className={STYLES.breadcrumb} ref={breadcrumbRef}>
-          {!data && "Loading..."}
-        </div>
-      </div>
       <div className={STYLES.svgContainer}>
         <svg ref={svgRef} />
       </div>
@@ -374,4 +287,4 @@ const Skills = () => {
   );
 };
 
-export default Skills;
+export default BubbleView;

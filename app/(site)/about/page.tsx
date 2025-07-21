@@ -1,6 +1,6 @@
 import Container from "@/app/(site)/components/Container";
 import { Metadata } from "next";
-import SkillsSearch from "./SkillsSearch";
+import ViewSwitcher from "./skills/ViewSwitcher";
 import ArrowsLottie from "./ArrowsLottie";
 import ProfilePic from "./ProfilePic";
 
@@ -48,9 +48,11 @@ export default function Contact() {
             years I&apos;ve done just about everything, and learned a lot along
             the way. I am obsessed with learning new things.
           </p>
+
           <div className="mb-10">
-            <SkillsSearch />
+            <ViewSwitcher />
           </div>
+
           <p>
             I&apos;m constantly researching and evolving, whether it be for code
             best practices or keeping at the cutting edge of design trends.
