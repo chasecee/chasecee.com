@@ -203,22 +203,23 @@ export function PhysicsCanvas() {
 
     resizeObserver.observe(canvas);
 
-    // Track intersection state for focus handling
-    let isCanvasVisible = true; // assume visible on mount
+    let isCanvasVisible = true;
+    const sendPause = (paused: boolean) => {
+      const pauseMsg: Extract<MainToWorkerMessage, { type: "SET_PAUSED" }> = {
+        type: "SET_PAUSED",
+        paused,
+      } as const;
+      workerRef.current?.postMessage(pauseMsg);
+      window.dispatchEvent(
+        new CustomEvent("physicsPaused", { detail: paused }),
+      );
+    };
 
-    // Updated intersection observer callback to keep visibility state
     const intersectionObserver = new IntersectionObserver(
       (entries) => {
         if (!entries || entries.length === 0) return;
         isCanvasVisible = entries[0].isIntersecting;
-        const pauseMessage: Extract<
-          MainToWorkerMessage,
-          { type: "SET_PAUSED" }
-        > = {
-          type: "SET_PAUSED",
-          paused: !isCanvasVisible || document.hidden || !windowFocused,
-        } as const;
-        workerRef.current?.postMessage(pauseMessage);
+        sendPause(!isCanvasVisible || document.hidden || !windowFocused);
       },
       {
         root: null,
@@ -228,29 +229,16 @@ export function PhysicsCanvas() {
 
     intersectionObserver.observe(canvas);
 
-    // Window focus/blur handling
     let windowFocused = true;
     const handleWindowBlur = () => {
       windowFocused = false;
-      const pauseMessage: Extract<MainToWorkerMessage, { type: "SET_PAUSED" }> =
-        {
-          type: "SET_PAUSED",
-          paused: true,
-        } as const;
-      workerRef.current?.postMessage(pauseMessage);
+      sendPause(true);
     };
 
     const handleWindowFocus = () => {
       windowFocused = true;
       if (isCanvasVisible && !document.hidden) {
-        const pauseMessage: Extract<
-          MainToWorkerMessage,
-          { type: "SET_PAUSED" }
-        > = {
-          type: "SET_PAUSED",
-          paused: false,
-        } as const;
-        workerRef.current?.postMessage(pauseMessage);
+        sendPause(false);
       }
     };
 

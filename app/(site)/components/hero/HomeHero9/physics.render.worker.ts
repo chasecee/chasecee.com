@@ -13,12 +13,8 @@ import { keyColorLevels } from "./palette";
 import { parseHsla, hslToRgb, lerpColor } from "../../../utils/color";
 
 const BYTES_PER_COLOR = 3;
-// Hue-dependent friction scaling factor (0 disables the effect)
 const COLOR_FRICTION_MULTIPLIER = 0;
-// Attractive force pulling bodies toward their hue group's centroid.
-// Tune from 0 (disabled) to ~0.05 for noticeable effect without instability.
 const COLOR_CLUSTER_FORCE = 0.015;
-// Angular force coefficient to align bodies of same hue along circumference.
 const ANGULAR_CLUSTER_FORCE = 0.01;
 let activeSettings: PhysicsSettings;
 
@@ -119,14 +115,11 @@ let lastTime = 0;
 let dt = 1 / 60;
 let accumulator = 0;
 
-// Per-body hue group id (0..steps-1) – length mirrors rigidBodies.
 let colorGroups: Uint16Array = new Uint16Array(MAX_BODIES);
 
-// Group aggregates for angular clustering.
 let sumSin: Float32Array | null = null;
 let sumCos: Float32Array | null = null;
 let groupCounts: Uint32Array | null = null;
-// Newly cached mean angles per hue group
 let meanAngles: Float32Array | null = null;
 
 function getSettings(isMobile: boolean): PhysicsSettings {
@@ -315,24 +308,20 @@ function createBodies(settings: PhysicsSettings) {
           .setCanSleep(true);
 
         const rigidBody = world.createRigidBody(rigidBodyDesc);
-        // Build collider shape: circle (0) or regular polygon (3-8 sides)
         const shapeSides = settings.rendering.shapeSides ?? 0;
         let colliderDesc: import("@dimforge/rapier2d").ColliderDesc;
         const radiusMeters = finalRadiusPixels / PIXELS_PER_METER;
 
         if (shapeSides >= 3) {
-          // Generate regular polygon vertices around the origin in local space.
           const verts = new Float32Array(shapeSides * 2);
           for (let s = 0; s < shapeSides; s++) {
             const ang = (s * Math.PI * 2) / shapeSides;
             verts[s * 2] = Math.cos(ang) * radiusMeters;
             verts[s * 2 + 1] = Math.sin(ang) * radiusMeters;
           }
-          // Attempt to create convex hull collider; fallback to circle if it fails.
           const maybeHull = rapier.ColliderDesc.convexHull(verts);
           colliderDesc = maybeHull ?? rapier.ColliderDesc.ball(radiusMeters);
         } else {
-          // Default: circle collider.
           colliderDesc = rapier.ColliderDesc.ball(radiusMeters);
         }
 
@@ -413,7 +402,7 @@ function createBodies(settings: PhysicsSettings) {
 
 function update(currentTime: number) {
   const frameStart = performance.now();
-  let simEnd = frameStart; // will update later
+  let simEnd = frameStart;
 
   if (!isRunning || !canvas) return;
 
@@ -461,9 +450,6 @@ function update(currentTime: number) {
   let stepCount = 0;
   const simStart = performance.now();
   while (accumulator >= dt && stepCount < 5) {
-    // --------------------------------------------------------------------
-    // COLOR-BASED GROUPING FORCE (single pass O(N))
-    // --------------------------------------------------------------------
     const steps = settings.rendering.colorSteps ?? 1024;
     if (
       !sumSin ||
@@ -481,7 +467,6 @@ function update(currentTime: number) {
     sumCos.fill(0);
     groupCounts.fill(0);
 
-    // Aggregate angle sines and cosines.
     for (let i = 0; i < bodyCount; i++) {
       const body = rigidBodies[i];
       if (!body) continue;
@@ -495,7 +480,6 @@ function update(currentTime: number) {
       groupCounts[gIdx] += 1;
     }
 
-    // Pre-compute mean angle per group once per step (saves atan2 in body loop)
     if (ANGULAR_CLUSTER_FORCE > 0) {
       if (!meanAngles || meanAngles.length !== steps) {
         meanAngles = new Float32Array(steps);
@@ -512,14 +496,10 @@ function update(currentTime: number) {
 
     const gravityCoeff = settings.simulation.gravity;
 
-    // ---------------------------------------------------------------
-    // Single pass over bodies applying angular clustering + gravity
-    // ---------------------------------------------------------------
     for (let i = 0; i < bodyCount; i++) {
       const body = rigidBodies[i];
       if (!body) continue;
 
-      // ------- angular clustering (tangential) -------
       if (ANGULAR_CLUSTER_FORCE > 0) {
         const gIdx = colorGroups[i];
         const cnt = groupCounts[gIdx];
@@ -547,7 +527,6 @@ function update(currentTime: number) {
         }
       }
 
-      // ------------- gravity + damping -------------
       const mass = body.mass();
       if (mass !== 0) {
         const pos = body.translation();
@@ -593,7 +572,6 @@ function update(currentTime: number) {
       }
     }
     world.step();
-    // Clamp linear speed to prevent excessive energy build-up.
     const maxSpeedCfg = (activeSettings?.simulation as any).maxSpeed;
     if (typeof maxSpeedCfg === "number" && maxSpeedCfg > 0) {
       const maxSpeedSq = maxSpeedCfg * maxSpeedCfg;
@@ -654,9 +632,9 @@ function update(currentTime: number) {
 
   const drawEnd = performance.now();
 
-  const simulationTime = simEnd - simStart; // ms
-  const renderTime = drawEnd - drawStart; // ms
-  const totalTime = drawEnd - frameStart; // ms
+  const simulationTime = simEnd - simStart;
+  const renderTime = drawEnd - drawStart;
+  const totalTime = drawEnd - frameStart;
   const fpsCalc = frameTime > 0 ? 1 / frameTime : 0;
   const calcsPerSec = frameTime > 0 ? (bodyCount * stepCount) / frameTime : 0;
 
@@ -903,7 +881,6 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
     1,
   ];
   gl.useProgram(program);
-  // Ensure VAO is bound so per-frame render can skip rebinding.
   if (vao) {
     gl.bindVertexArray(vao);
   }

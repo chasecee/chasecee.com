@@ -19,6 +19,13 @@ export default function StatsOverlay() {
     };
 
     window.addEventListener("physicsMetrics", handler);
+
+    const pausedHandler = (e: Event) => {
+      const paused = (e as CustomEvent<boolean>).detail;
+      if (!overlayRef.current) return;
+      overlayRef.current.style.opacity = paused ? "0.5" : "1";
+    };
+    window.addEventListener("physicsPaused", pausedHandler);
     return () => window.removeEventListener("physicsMetrics", handler);
   }, []);
 
