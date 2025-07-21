@@ -126,6 +126,8 @@ let colorGroups: Uint16Array = new Uint16Array(MAX_BODIES);
 let sumSin: Float32Array | null = null;
 let sumCos: Float32Array | null = null;
 let groupCounts: Uint32Array | null = null;
+// Newly cached mean angles per hue group
+let meanAngles: Float32Array | null = null;
 
 function getSettings(isMobile: boolean): PhysicsSettings {
   if (!isMobile) {
@@ -493,41 +495,14 @@ function update(currentTime: number) {
       groupCounts[gIdx] += 1;
     }
 
-    // Compute mean angle per group.
+    // Pre-compute mean angle per group once per step (saves atan2 in body loop)
     if (ANGULAR_CLUSTER_FORCE > 0) {
-      for (let i = 0; i < bodyCount; i++) {
-        const body = rigidBodies[i];
-        if (!body) continue;
-        const gIdx = colorGroups[i];
-        const cnt = groupCounts[gIdx];
-        if (cnt <= 1) continue;
-
-        // Mean angle of group.
-        const meanAng = Math.atan2(sumSin[gIdx], sumCos[gIdx]);
-
-        const pos = body.translation();
-        const dx = pos.x - centerXMeters;
-        const dy = pos.y - centerYMeters;
-        let ang = Math.atan2(dy, dx);
-
-        // Smallest angle difference in [-π, π].
-        let diffAng = meanAng - ang;
-        if (diffAng > Math.PI) diffAng -= Math.PI * 2;
-        if (diffAng < -Math.PI) diffAng += Math.PI * 2;
-
-        const radius = Math.sqrt(dx * dx + dy * dy);
-        if (radius < 1e-3) continue;
-
-        // Tangential direction (perpendicular to radial).
-        const tanX = -dy / radius;
-        const tanY = dx / radius;
-
-        // Force magnitude scales with angular difference and radius.
-        const mass = body.mass();
-        const F = diffAng * ANGULAR_CLUSTER_FORCE * mass * 0.5;
-        scratchForce.x = tanX * F;
-        scratchForce.y = tanY * F;
-        body.addForce(scratchForce, true);
+      if (!meanAngles || meanAngles.length !== steps) {
+        meanAngles = new Float32Array(steps);
+      }
+      for (let g = 0; g < steps; g++) {
+        const cnt = groupCounts[g];
+        meanAngles[g] = cnt > 0 ? Math.atan2(sumSin[g], sumCos[g]) : 0;
       }
     }
 
@@ -537,50 +512,84 @@ function update(currentTime: number) {
 
     const gravityCoeff = settings.simulation.gravity;
 
-    for (const body of rigidBodies) {
+    // ---------------------------------------------------------------
+    // Single pass over bodies applying angular clustering + gravity
+    // ---------------------------------------------------------------
+    for (let i = 0; i < bodyCount; i++) {
+      const body = rigidBodies[i];
+      if (!body) continue;
+
+      // ------- angular clustering (tangential) -------
+      if (ANGULAR_CLUSTER_FORCE > 0) {
+        const gIdx = colorGroups[i];
+        const cnt = groupCounts[gIdx];
+        if (cnt > 1) {
+          const meanAng = meanAngles![gIdx];
+          const pos = body.translation();
+          const dx = pos.x - centerXMeters;
+          const dy = pos.y - centerYMeters;
+          let ang = Math.atan2(dy, dx);
+
+          let diffAng = meanAng - ang;
+          if (diffAng > Math.PI) diffAng -= Math.PI * 2;
+          if (diffAng < -Math.PI) diffAng += Math.PI * 2;
+
+          const radius = Math.hypot(dx, dy);
+          if (radius >= 1e-3) {
+            const tanX = -dy / radius;
+            const tanY = dx / radius;
+            const mass = body.mass();
+            const F = diffAng * ANGULAR_CLUSTER_FORCE * mass * 0.5;
+            scratchForce.x = tanX * F;
+            scratchForce.y = tanY * F;
+            body.addForce(scratchForce, true);
+          }
+        }
+      }
+
+      // ------------- gravity + damping -------------
       const mass = body.mass();
-      if (mass === 0) continue;
+      if (mass !== 0) {
+        const pos = body.translation();
+        scratchDir.x = centerXMeters - pos.x;
+        scratchDir.y = centerYMeters - pos.y;
+        const distSq =
+          scratchDir.x * scratchDir.x + scratchDir.y * scratchDir.y;
+        if (distSq >= 1e-6) {
+          const invDist = 1 / Math.sqrt(distSq);
+          const dist = 1 / invDist;
+          const radialDist = dist - planetRadiusMeters;
+          if (radialDist > 0) {
+            const pullScale = Math.min(radialDist / planetRadiusMeters, 1);
+            const easeExp = (settings.simulation as any).gravityEase ?? 1;
+            const scaledPull =
+              easeExp === 1 ? pullScale : Math.pow(pullScale, easeExp);
+            const F_gravity = gravityCoeff * mass * scaledPull;
 
-      const pos = body.translation();
-      scratchDir.x = centerXMeters - pos.x;
-      scratchDir.y = centerYMeters - pos.y;
-      const distSq = scratchDir.x * scratchDir.x + scratchDir.y * scratchDir.y;
+            const coeff = invDist * F_gravity;
+            scratchForce.x = scratchDir.x * coeff;
+            scratchForce.y = scratchDir.y * coeff;
+            body.addForce(scratchForce, true);
 
-      if (distSq < 1e-6) continue;
+            const vel = body.linvel();
+            const radialVel =
+              (vel.x * scratchDir.x + vel.y * scratchDir.y) * invDist;
+            const tangVelX = vel.x - radialVel * scratchDir.x * invDist;
+            const tangVelY = vel.y - radialVel * scratchDir.y * invDist;
 
-      const invDist = 1 / Math.sqrt(distSq);
-      const dist = 1 / invDist;
-      // Scale gravity so it is zero at the planet surface, eliminating infinite
-      // potential-energy build-up when bodies are resting against the planet.
-      const radialDist = dist - planetRadiusMeters;
-      if (radialDist > 0) {
-        const pullScale = Math.min(radialDist / planetRadiusMeters, 1);
-        const easeExp = (settings.simulation as any).gravityEase ?? 1;
-        const scaledPull =
-          easeExp === 1 ? pullScale : Math.pow(pullScale, easeExp);
-        const F_gravity = gravityCoeff * mass * scaledPull;
+            const tangentialDamping =
+              settings.simulation.tangentialDamping ?? 1.0;
+            const tangDragX = -tangentialDamping * tangVelX * mass;
+            const tangDragY = -tangentialDamping * tangVelY * mass;
+            body.addForce({ x: tangDragX, y: tangDragY }, true);
 
-        const coeff = invDist * F_gravity;
-        scratchForce.x = scratchDir.x * coeff;
-        scratchForce.y = scratchDir.y * coeff;
-
-        body.addForce(scratchForce, true);
-
-        const vel = body.linvel();
-        const radialVel =
-          (vel.x * scratchDir.x + vel.y * scratchDir.y) * invDist;
-        const tangVelX = vel.x - radialVel * scratchDir.x * invDist;
-        const tangVelY = vel.y - radialVel * scratchDir.y * invDist;
-        const tangentialDamping = settings.simulation.tangentialDamping ?? 1.0;
-        const tangDragX = -tangentialDamping * tangVelX * mass;
-        const tangDragY = -tangentialDamping * tangVelY * mass;
-        body.addForce({ x: tangDragX, y: tangDragY }, true);
-
-        const radialDamping = settings.simulation.radialDamping ?? 0.06;
-        const radialDrag = -radialDamping * radialVel * mass;
-        const radialDragX = radialDrag * scratchDir.x * invDist;
-        const radialDragY = radialDrag * scratchDir.y * invDist;
-        body.addForce({ x: radialDragX, y: radialDragY }, true);
+            const radialDamping = settings.simulation.radialDamping ?? 0.06;
+            const radialDrag = -radialDamping * radialVel * mass;
+            const radialDragX = radialDrag * scratchDir.x * invDist;
+            const radialDragY = radialDrag * scratchDir.y * invDist;
+            body.addForce({ x: radialDragX, y: radialDragY }, true);
+          }
+        }
       }
     }
     world.step();
@@ -640,12 +649,7 @@ function update(currentTime: number) {
   const drawStart = performance.now();
   if (gl && program && vao) {
     gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.useProgram(program);
-    gl.bindVertexArray(vao);
-
     gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, bodyCount);
-
-    gl.bindVertexArray(null);
   }
 
   const drawEnd = performance.now();
@@ -899,6 +903,10 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
     1,
   ];
   gl.useProgram(program);
+  // Ensure VAO is bound so per-frame render can skip rebinding.
+  if (vao) {
+    gl.bindVertexArray(vao);
+  }
   gl.uniformMatrix4fv(projectionMatrix, false, projection);
   if (shapeSidesUniform) {
     gl.uniform1i(shapeSidesUniform, settings.rendering.shapeSides ?? 0);

@@ -203,8 +203,65 @@ export function PhysicsCanvas() {
 
     resizeObserver.observe(canvas);
 
+    // Track intersection state for focus handling
+    let isCanvasVisible = true; // assume visible on mount
+
+    // Updated intersection observer callback to keep visibility state
+    const intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        if (!entries || entries.length === 0) return;
+        isCanvasVisible = entries[0].isIntersecting;
+        const pauseMessage: Extract<
+          MainToWorkerMessage,
+          { type: "SET_PAUSED" }
+        > = {
+          type: "SET_PAUSED",
+          paused: !isCanvasVisible || document.hidden || !windowFocused,
+        } as const;
+        workerRef.current?.postMessage(pauseMessage);
+      },
+      {
+        root: null,
+        threshold: 0.01,
+      },
+    );
+
+    intersectionObserver.observe(canvas);
+
+    // Window focus/blur handling
+    let windowFocused = true;
+    const handleWindowBlur = () => {
+      windowFocused = false;
+      const pauseMessage: Extract<MainToWorkerMessage, { type: "SET_PAUSED" }> =
+        {
+          type: "SET_PAUSED",
+          paused: true,
+        } as const;
+      workerRef.current?.postMessage(pauseMessage);
+    };
+
+    const handleWindowFocus = () => {
+      windowFocused = true;
+      if (isCanvasVisible && !document.hidden) {
+        const pauseMessage: Extract<
+          MainToWorkerMessage,
+          { type: "SET_PAUSED" }
+        > = {
+          type: "SET_PAUSED",
+          paused: false,
+        } as const;
+        workerRef.current?.postMessage(pauseMessage);
+      }
+    };
+
+    window.addEventListener("blur", handleWindowBlur);
+    window.addEventListener("focus", handleWindowFocus);
+
     return () => {
       resizeObserver.disconnect();
+      intersectionObserver.disconnect();
+      window.removeEventListener("blur", handleWindowBlur);
+      window.removeEventListener("focus", handleWindowFocus);
       canvas.removeEventListener("pointerdown", handlePointerDown);
       canvas.removeEventListener("pointermove", handlePointerMove);
       canvas.removeEventListener("pointerup", endDrag);
