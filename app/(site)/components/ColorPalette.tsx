@@ -22,7 +22,6 @@ export function ColorPalette({ colorPalette, project }: ColorPaletteProps) {
     colorPalette.lightest,
   ];
 
-  // If no project is provided, return simple palette
   if (!project) {
     return (
       <div className="color-palette flex space-x-1">

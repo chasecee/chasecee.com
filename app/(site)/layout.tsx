@@ -2,11 +2,6 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { DM_Sans, Inter } from "next/font/google";
 
-// const font = DM_Sans({
-//   weight: ["400", "700"],
-//   style: ["normal", "italic"],
-//   subsets: ["latin"],
-// });
 const font = Inter({
   subsets: ["latin"],
   style: ["normal"],

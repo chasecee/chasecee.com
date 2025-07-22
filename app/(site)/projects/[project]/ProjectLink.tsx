@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import urlFor from "@/sanity/sanity.image";
-import { ChevronLeftIcon, ChevronRightIcon } from "@sanity/icons"; // Import these if needed
+import { ChevronLeftIcon, ChevronRightIcon } from "@sanity/icons";
 import { Project } from "@/types/Project";
 
 type ProjectLinkProps = {
@@ -11,12 +11,12 @@ type ProjectLinkProps = {
 
 const ProjectLink = ({ project, direction }: ProjectLinkProps) => {
   return (
-    <div className={`${direction}-post grow `}>
+    <div className={`${direction}-post grow`}>
       <Link
         href={`/projects/${project.slug}`}
         className={`${
           direction === "prev" ? "flex-row" : "flex-row-reverse"
-        } not-prose group relative flex items-center justify-between gap-4 overflow-hidden rounded-xl bg-gray-500/30 no-underline  transition-colors hover:bg-gray-500/10 `}
+        } not-prose group relative flex items-center justify-between gap-4 overflow-hidden rounded-xl bg-gray-500/30 no-underline transition-colors hover:bg-gray-500/10`}
       >
         {project.image && (
           <div className="flex-none">
@@ -37,9 +37,6 @@ const ProjectLink = ({ project, direction }: ProjectLinkProps) => {
             <span className="text-2xl">{project.name}</span>
           </div>
         </div>
-        {/* <div className="justify-self-end text-[4rem]">
-          {direction === "prev" ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-        </div> */}
       </Link>
     </div>
   );

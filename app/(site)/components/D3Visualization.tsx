@@ -11,7 +11,7 @@ import {
 import { scaleOrdinal } from "d3-scale";
 import { select } from "d3-selection";
 import { drag as d3Drag } from "d3-drag";
-import { forceCluster } from "d3-force-cluster"; // Import forceCluster
+import { forceCluster } from "d3-force-cluster";
 
 interface Skill extends SimulationNodeDatum {
   name: string;
@@ -58,7 +58,7 @@ const ForceGraph: React.FC = () => {
 
     const nodes: Skill[] = skills.map((skill, i) => {
       const calculatedRadius = Math.max(skill.years * 5, 30);
-      const minimumRadius = 15; // Set the minimum radius here
+      const minimumRadius = 15;
       const radius = Math.max(calculatedRadius, minimumRadius);
       return {
         ...skill,
@@ -71,10 +71,9 @@ const ForceGraph: React.FC = () => {
       [key: number]: { x: number; y: number; radius: number };
     } = {};
 
-    // Find the largest node in each cluster and set its position as the cluster center
     nodes.forEach((node) => {
       const clusterId = node.cluster;
-      const center = clusterCenters[clusterId] || { x: 0, y: 0, radius: 0 }; // Initialize center if not set
+      const center = clusterCenters[clusterId] || { x: 0, y: 0, radius: 0 };
       if (!clusterCenters[clusterId] || node.radius! > center.radius) {
         clusterCenters[clusterId] = {
           x: node.x || 0,
@@ -92,25 +91,25 @@ const ForceGraph: React.FC = () => {
           .strength(1),
       )
       .force("charge", forceManyBody().strength(-300))
-      .force("center", forceCenter(width / 2, height / 2)) // Center force for all nodes
+      .force("center", forceCenter(width / 2, height / 2))
       .force(
         "cluster",
-        forceCluster<Skill>() // Add the forceCluster here
+        forceCluster<Skill>()
           .centers(Object.values(clusterCenters))
-          .strength(2.85), // Increase the strength to keep nodes in their clusters
+          .strength(2.85),
       )
       .force(
         "x",
         forceX<Skill>()
           .strength(0.1)
           .x((d: Skill) => clusterCenters[d.cluster].x),
-      ) // Horizontal force based on cluster center
+      )
       .force(
         "y",
         forceY<Skill>()
           .strength(0.5)
           .y((d: Skill) => clusterCenters[d.cluster].y),
-      ) // Vertical force based on cluster center
+      )
       .on("tick", ticked);
 
     const svg = select("#d3viz")
@@ -123,10 +122,10 @@ const ForceGraph: React.FC = () => {
       .selectAll("circle")
       .data(nodes)
       .join("circle")
-      .attr("r", (d: Skill) => d.radius || 0) // Add default value
+      .attr("r", (d: Skill) => d.radius || 0)
       .attr("fill", (d: Skill) => color(d.cluster.toString()))
-      .attr("cx", (d: Skill) => d.x || 0) // Add default value
-      .attr("cy", (d: Skill) => d.y || 0) // Add default value
+      .attr("cx", (d: Skill) => d.x || 0)
+      .attr("cy", (d: Skill) => d.y || 0)
       .call(drag(simulation) as any);
 
     const labels = svg
@@ -144,10 +143,10 @@ const ForceGraph: React.FC = () => {
     function ticked() {
       circles
         .attr("cx", (d: Skill) => d.x || 0)
-        .attr("cy", (d: Skill) => d.y || 0); // Add default values
+        .attr("cy", (d: Skill) => d.y || 0);
       labels
         .attr("x", (d: Skill) => d.x || 0)
-        .attr("y", (d: Skill) => (d.y || 0) + 5); // Add default values
+        .attr("y", (d: Skill) => (d.y || 0) + 5);
     }
 
     function drag(simulation: any) {

@@ -20,7 +20,7 @@ const IntersectionObserverComponent: React.FC<Props> = ({
   const [inView, setInView] = useState(false);
 
   useEffect(() => {
-    const currentRef = ref.current; // Copy ref.current to a variable
+    const currentRef = ref.current;
     const observer = new IntersectionObserver(
       ([entry]) => {
         setInView(entry.isIntersecting);
@@ -38,15 +38,15 @@ const IntersectionObserverComponent: React.FC<Props> = ({
 
     return () => {
       if (currentRef) {
-        observer.unobserve(currentRef); // Use the variable in the cleanup function
+        observer.unobserve(currentRef);
       }
     };
-  }, [threshold]); // Include threshold in the dependency array
+  }, [threshold]);
 
   return (
     <div
       ref={ref}
-      className={`${className}  ${inView ? inViewClass : notInViewClass}`}
+      className={`${className} ${inView ? inViewClass : notInViewClass}`}
     >
       {children}
     </div>

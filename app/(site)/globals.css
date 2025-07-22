@@ -24,14 +24,6 @@
   }
 }
 
-/*
-  The default border color has changed to `currentColor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
 @layer base {
   *,
   ::after,
@@ -117,7 +109,6 @@
   }
 }
 @utility view-actor {
-  /* SCROLL VIEW */
   @apply transition-transform duration-500;
 }
 @utility in-view {
@@ -141,7 +132,6 @@
   }
 }
 @utility fade-in {
-  /* ANIMATIONS */
   animation: fadein 2s;
   animation-delay: 0.25s;
   animation-fill-mode: both;
@@ -178,8 +168,6 @@
 
 @layer base {
   .prose a:not(.not-prose) {
-    /* @apply text-opacity-70 text-black dark:text-white; */
-    /* @apply  text-[#3767c2] dark:text-[#4077dd] underline underline-offset-2; */
     @apply text-indigo-600 underline underline-offset-2 dark:text-indigo-500;
     @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600;
   }
@@ -302,7 +290,6 @@
   width: 100%;
   height: 100%;
 }
-/* HEADER MENU */
 .header_menu .header_item {
   .header_item_bar {
     @apply relative;
@@ -316,8 +303,6 @@
     @apply opacity-50;
   }
 }
-
-/* FORM */
 .form-row {
   @apply flex flex-col;
   input,

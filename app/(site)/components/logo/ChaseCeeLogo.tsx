@@ -4,7 +4,7 @@ interface ChaseCeeLogoProps {
   className?: string;
   width?: number | string;
   height?: number | string;
-  [key: string]: any; // For spreading additional props
+  [key: string]: any;
 }
 
 const ChaseCeeLogo: React.FC<ChaseCeeLogoProps> = ({

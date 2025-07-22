@@ -1,5 +1,3 @@
-// Color utility functions for generating color palettes
-
 interface ColorPalette {
   darkest: string;
   darker: string;
@@ -9,10 +7,8 @@ interface ColorPalette {
 }
 
 function hexToHsl(hex: string): [number, number, number] {
-  // Remove the hash if it exists
   hex = hex.replace("#", "");
 
-  // Parse r, g, b values
   const r = parseInt(hex.substr(0, 2), 16) / 255;
   const g = parseInt(hex.substr(2, 2), 16) / 255;
   const b = parseInt(hex.substr(4, 2), 16) / 255;
@@ -24,7 +20,7 @@ function hexToHsl(hex: string): [number, number, number] {
   l = (max + min) / 2;
 
   if (max === min) {
-    h = s = 0; // achromatic
+    h = s = 0;
   } else {
     const d = max - min;
     s = l > 0.5 ? d / (2 - max - min) : d / (max + min);

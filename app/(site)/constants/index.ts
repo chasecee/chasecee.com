@@ -1,19 +1,14 @@
-// App-wide constants to replace magic numbers
-
-// === LAYOUT & SPACING ===
 export const LAYOUT = {
   BLOB_CONTAINER_SIZE: 722,
-  CONTAINER_ASPECT_RATIO: 1, // square aspect ratio
+  CONTAINER_ASPECT_RATIO: 1,
 } as const;
 
-// === BREAKPOINTS ===
 export const BREAKPOINTS = {
   MOBILE: 768,
   TABLET: 1024,
   DESKTOP: 1280,
 } as const;
 
-// === ANIMATION TIMINGS ===
 export const ANIMATION = {
   DELAYS: {
     FAST: 50,
@@ -30,11 +25,10 @@ export const ANIMATION = {
   },
   THROTTLE: {
     MOUSE_MOVE: 10,
-    SCROLL: 16, // ~60fps
+    SCROLL: 16,
   },
 } as const;
 
-// === D3 VISUALIZATION ===
 export const D3_VISUALIZATION = {
   WIDTH: 1280,
   HEIGHT: 500,
@@ -59,7 +53,6 @@ export const D3_VISUALIZATION = {
   },
 } as const;
 
-// === PHYSICS SIMULATION ===
 export const PHYSICS = {
   PIXELS_PER_METER: 50,
   MAX_BODIES: 4096,
@@ -80,22 +73,19 @@ export const PHYSICS = {
   },
 } as const;
 
-// === COLOR SYSTEM ===
 export const COLORS = {
-  LEVELS: 10, // 0-9 color levels
+  LEVELS: 10,
   STEPS_PER_LEVEL: 1024,
   HUE_MULTIPLIER: 270,
   DEPTH_DOMAIN: [0, 5],
 } as const;
 
-// === SANITY CMS ===
 export const SANITY = {
   PROJECT_ID: "lgevplo8",
   DATASET: "production",
   API_VERSION: "2023-07-12",
 } as const;
 
-// === UI CONSTANTS ===
 export const UI = {
   GRID_COLUMNS: {
     MIN: 1,
@@ -111,13 +101,11 @@ export const UI = {
   },
 } as const;
 
-// === FILE VALIDATION ===
 export const FILE_TYPES = {
   IMAGES: ["jpg", "jpeg", "png", "webp", "svg"],
   VIDEOS: ["mp4", "webm"],
 } as const;
 
-// === CACHE KEYS ===
 export const CACHE_KEYS = {
   SKILLS_DATA: "/json/skills.json",
   BLOB_STORAGE: "cee-app-blobs",

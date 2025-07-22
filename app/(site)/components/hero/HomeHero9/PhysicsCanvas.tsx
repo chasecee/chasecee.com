@@ -26,8 +26,6 @@ export function PhysicsCanvas() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Check if canvas control has already been transferred
-    // This prevents the "Cannot transfer control from a canvas for more than one time" error
     if (offscreenRef.current) {
       console.log("Canvas control already transferred, skipping...");
       return;
@@ -113,7 +111,6 @@ export function PhysicsCanvas() {
       workerRef.current.postMessage(initMessage, transferList);
     } catch (error) {
       console.error("Failed to transfer canvas control:", error);
-      // Reset offscreen reference if transfer fails
       offscreenRef.current = null;
       return;
     }
@@ -285,7 +282,6 @@ export function PhysicsCanvas() {
       workerRef.current?.terminate();
       workerRef.current = null;
 
-      // Reset offscreen reference on cleanup
       offscreenRef.current = null;
     };
   }, []);

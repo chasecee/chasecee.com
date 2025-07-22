@@ -23,7 +23,6 @@ interface ExternalLinkValue extends TypedObject {
   href: string;
 }
 
-// Helper function to check if children contain anchor tags
 const hasAnchorTag = (children: React.ReactNode): boolean => {
   if (typeof children === "string") return false;
   if (React.isValidElement(children) && children.type === "a") return true;
@@ -38,7 +37,6 @@ const InternalLink: React.FC<
 > = ({ value, children }) => {
   if (!value) return <>{children}</>;
 
-  // Prevent nested anchor tags
   if (hasAnchorTag(children)) {
     return <span className="internal-link-nested">{children}</span>;
   }
@@ -63,7 +61,6 @@ const ExternalLink: React.FC<
 > = ({ value, children }) => {
   if (!value) return <>{children}</>;
 
-  // Prevent nested anchor tags
   if (hasAnchorTag(children)) {
     return <span className="external-link-nested">{children}</span>;
   }
