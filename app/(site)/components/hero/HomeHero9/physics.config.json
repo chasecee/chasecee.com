@@ -19,7 +19,7 @@
     "startRadius": 0.4
   },
   "world": {
-    "centerCircleRadius": 0.31,
+    "centerCircleRadius": 0.3,
     "wallOffset": 0,
     "wallThickness": 10
   },
