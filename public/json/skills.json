@@ -18,7 +18,7 @@
           ]
         },
         {
-          "name": "Build & Tooling",
+          "name": "Build / Tooling",
           "children": [
             { "name": "CI/CD Pipelines", "value": 9 },
             { "name": "Bitbucket Pipelines", "value": 7 },
@@ -66,7 +66,7 @@
           ]
         },
         {
-          "name": "Backend & Scripting",
+          "name": "Backend / Scripting",
           "children": [
             { "name": "PHP", "value": 10 },
             { "name": "FastAPI", "value": 7 },
@@ -75,7 +75,7 @@
           ]
         },
         {
-          "name": "Hardware & Embedded",
+          "name": "Hardware / Embedded",
           "children": [
             { "name": "Raspberry Pi", "value": 8 },
             { "name": "ESP32", "value": 6 },
@@ -95,7 +95,7 @@
           ]
         },
         {
-          "name": "Graphics & Gaming",
+          "name": "Graphics / Gaming",
           "children": [{ "name": "WebGL / Rapier Physics", "value": 6 }]
         },
         {
@@ -125,10 +125,10 @@
         { "name": "Logic Pro X", "value": 10 },
         { "name": "Producing", "value": 10 },
         { "name": "Recording", "value": 6 },
-        { "name": "MIDI & Routing", "value": 6 },
+        { "name": "MIDI / Routing", "value": 6 },
         { "name": "Ableton", "value": 3 },
         { "name": "Live Sound", "value": 4 },
-        { "name": "Scoring & Sound Design", "value": 4 }
+        { "name": "Scoring / Sound Design", "value": 4 }
       ]
     },
     {
