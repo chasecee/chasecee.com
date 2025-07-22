@@ -91,7 +91,7 @@
             { "name": "Pagespeed", "value": 10 },
             { "name": "Web Vitals", "value": 8 },
             { "name": "Lighthouse", "value": 9 },
-            { "name": "Internationalization", "value": 5 }
+            { "name": "i18n", "value": 5 }
           ]
         },
         {
