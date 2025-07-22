@@ -4,14 +4,15 @@ export type InitMainMessage = {
   width: number;
   height: number;
   isMobile: boolean;
-  /** Palette color level to use for rendering (e.g., 4 | 8). Optional for backwards compatibility. */
   colorLevel?: number;
+  devicePixelRatio: number;
 };
 
 export type ResizeMainMessage = {
   type: "RESIZE";
   width: number;
   height: number;
+  devicePixelRatio: number;
 };
 
 export type PointerMainMessage = {

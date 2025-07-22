@@ -3,7 +3,7 @@ import Image from "next/image";
 import urlFor from "@/sanity/sanity.image";
 import generateColorPalette from "../utils/colorUtils";
 import { Project } from "@/types/Project";
-import { ColorPalette } from "./ColorPalette";
+import ColorPalette from "./ColorPalette";
 import dynamic from "next/dynamic";
 
 const LoopPlayerCard = dynamic(() => import("./project-cards/LoopPlayerCard"));
@@ -11,7 +11,7 @@ const CustomDashboardCard = dynamic(
   () => import("./project-cards/CustomDashboardCard"),
 );
 
-const getColumnClass = (columns: number) => {
+const getColumnClass = (columns: number): string => {
   switch (columns) {
     case 1:
       return "w-full";
@@ -30,12 +30,12 @@ const getColumnClass = (columns: number) => {
   }
 };
 
-type ProjectsListProps = {
+interface ProjectsListProps {
   projects: Project[];
   title?: string;
   columns?: number;
   forceLoading?: boolean;
-};
+}
 
 function ProjectsListContent({
   projects,
@@ -89,7 +89,6 @@ function ProjectsListContent({
                     {displayType === "popup" && project.color?.hex && (
                       <ColorPalette
                         colorPalette={generateColorPalette(project.color.hex)}
-                        project={project}
                       />
                     )}
 

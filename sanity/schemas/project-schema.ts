@@ -27,6 +27,7 @@ const project = {
         ],
         layout: "radio",
       },
+      // Sanity's validation Rule type is complex and varies by version
       validation: (Rule: any) => Rule.required(),
     },
     {
@@ -52,7 +53,7 @@ const project = {
       name: "svgcode",
       title: "SVG Code for Logo",
       options: {
-        language: "xml", // SVG is XML-based
+        language: "xml",
       },
     },
     {
@@ -134,6 +135,46 @@ const project = {
             ],
           },
         },
+        {
+          type: "image",
+          options: {
+            hotspot: true,
+          },
+          fields: [
+            {
+              name: "alt",
+              type: "string",
+              title: "Alt Text",
+            },
+          ],
+        },
+        {
+          name: "videoFile",
+          type: "file",
+          title: "Video file",
+          accept: ".mp4,.webm",
+          fields: [
+            {
+              name: "alt",
+              type: "string",
+              title: "Alt text",
+              description: "Alternative text for accessibility.",
+            },
+          ],
+        },
+        {
+          name: "media",
+          type: "object",
+          title: "Media",
+          fields: [
+            {
+              name: "media",
+              type: "file",
+              title: "Media file",
+              // Sanity's file type structure varies by version
+            } as { name: string; type: string; title: string; media: any },
+          ],
+        },
       ],
     },
   ],
@@ -169,4 +210,5 @@ const project = {
     },
   },
 };
+
 export default project;

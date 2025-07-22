@@ -1,10 +1,15 @@
 "use client";
 import React, { useState, useEffect } from "react";
 
-const CursorOverlay = () => {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+interface Position {
+  x: number;
+  y: number;
+}
 
-  const handleMouseMove = (e) => {
+const CursorOverlay: React.FC = () => {
+  const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
+
+  const handleMouseMove = (e: MouseEvent): void => {
     requestAnimationFrame(() => {
       setPosition({ x: e.clientX, y: e.clientY });
     });
@@ -21,7 +26,7 @@ const CursorOverlay = () => {
     <div
       className="cursor"
       style={{ left: `${position.x}px`, top: `${position.y}px` }}
-    ></div>
+    />
   );
 };
 

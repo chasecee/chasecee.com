@@ -1,25 +1,26 @@
-import Footer from "./Footer";
+import React from "react";
 import Header from "./Header";
-import CTA from "./CTA";
+import CTASection from "./CTASection";
+import Footer from "./Footer";
 
-type ContainerProps = {
+interface ContainerHomeProps {
   children: React.ReactNode;
   className?: string;
   showCTA?: boolean;
-};
+}
 
-export default function Container({
+const ContainerHome: React.FC<ContainerHomeProps> = ({
   children,
-  className,
-  showCTA,
-}: ContainerProps) {
+  className = "",
+  showCTA = false,
+}) => {
   return (
     <div className={`root min-h-screen w-full ${className} px-0 md:mt-0`}>
       <div className="relative z-0 container">
         <Header />
         <main>{children}</main>
         {showCTA && (
-          <CTA
+          <CTASection
             title="Let's get started"
             subtitle="I build powerful and beautiful applications for businesses of all sizes. I'm available for work, let's get started!"
             primaryLink="/contact"
@@ -31,4 +32,6 @@ export default function Container({
       </div>
     </div>
   );
-}
+};
+
+export default ContainerHome;

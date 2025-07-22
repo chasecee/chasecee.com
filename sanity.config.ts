@@ -10,9 +10,12 @@ import {
 } from "@sanity/orderable-document-list";
 import { ImagesIcon, DocumentsIcon } from "@sanity/icons";
 
-let schemasAny = schemas as any;
-let projectSchema = schemasAny.find((schema: any) => schema.name === "project");
-let pageSchema = schemasAny.find((schema: any) => schema.name === "page");
+// Type assertion for schema arrays - Sanity's internal types are complex
+const schemasAny = schemas as any;
+const projectSchema = schemasAny.find(
+  (schema: any) => schema.name === "project",
+);
+const pageSchema = schemasAny.find((schema: any) => schema.name === "page");
 
 if (projectSchema) {
   projectSchema.fields.push(orderRankField({ type: "project" }));
@@ -35,8 +38,6 @@ export const config = defineConfig({
         return S.list()
           .title("Content")
           .items([
-            // Include all list items except 'project'
-            //...S.documentTypeListItems().filter(listItem => listItem.getId() !== 'project'),
             orderableDocumentListDeskItem({
               type: "project",
               title: "Projects",
@@ -50,7 +51,7 @@ export const config = defineConfig({
               icon: DocumentsIcon,
               S,
               context,
-            }), // This becomes the new 'Projects' list
+            }),
           ]);
       },
     }),
@@ -60,3 +61,5 @@ export const config = defineConfig({
   schema: { types: schemas },
   useCdn: true,
 });
+
+export default config;

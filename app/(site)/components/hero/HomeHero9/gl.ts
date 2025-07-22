@@ -1,4 +1,3 @@
-// Allow switching precision for all GLSL shaders from a single place
 export const GLSL_FLOAT_PRECISION = "lowp";
 
 export function createContext(
@@ -132,23 +131,20 @@ precision ${GLSL_FLOAT_PRECISION} float;
 in vec2 v_corner;
 in vec4 v_color;
 
-uniform int u_sides; // 0 = circle, 3-8 = regular polygon sides
+uniform int u_sides;
 
 out vec4 out_color;
 
 void main() {
-  // Normalized distance from center; for polygons we compute adjusted distance
   float dist;
   if (u_sides <= 0) {
-    // Circle
     dist = length(v_corner);
   } else {
-    // Regular polygon distance approximation
     const float PI = 3.141592653589793;
     const float TAU = 6.283185307179586;
     float sides = float(u_sides);
     vec2 p = v_corner;
-    float angle = atan(p.y, p.x) + PI; // 0..2pi
+    float angle = atan(p.y, p.x) + PI;
     float r = length(p);
     float sector = TAU / sides;
     float d = cos(sector * 0.5) / cos(mod(angle, sector) - sector * 0.5);

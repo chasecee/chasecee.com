@@ -1,26 +1,35 @@
 import { FaArrowRight } from "react-icons/fa";
 import Button from "./Button";
+import { UI } from "../constants";
 
-export default function Example({
-  outerClass,
+interface CTASectionProps {
+  outerClass?: string;
+  title: string;
+  subtitle: string;
+  primaryLink: string;
+  secondaryLink: string;
+}
+
+const CTASection: React.FC<CTASectionProps> = ({
+  outerClass = "",
   title,
   subtitle,
   primaryLink,
   secondaryLink,
-}) {
+}) => {
   return (
     <div
-      className={`relative my-20 overflow-hidden rounded-xl bg-gradient-radial from-neutral-100 to-neutral-200 dark:from-neutral-700 dark:to-neutral-800 ${outerClass}`}
+      className={`bg-gradient-radial relative my-20 overflow-hidden rounded-xl from-neutral-100 to-neutral-200 dark:from-neutral-700 dark:to-neutral-800 ${outerClass}`}
     >
       <div
         className="absolute inset-0 rounded-xl bg-fixed bg-repeat opacity-20"
         style={{
           backgroundImage: `url('/noise1.webp')`,
-          backgroundSize: "200px",
+          backgroundSize: `${UI.NOISE_SIZE}px`,
         }}
-      ></div>
+      />
       <div className="relative px-4 py-16">
-        <div className="prose mx-auto text-center dark:prose-invert">
+        <div className="prose dark:prose-invert mx-auto text-center">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
             {title}
           </h2>
@@ -47,4 +56,6 @@ export default function Example({
       </div>
     </div>
   );
-}
+};
+
+export default CTASection;

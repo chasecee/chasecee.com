@@ -102,6 +102,7 @@ let canvasWidth = 0;
 let canvasHeight = 0;
 let centerX = 0;
 let centerY = 0;
+let devicePixelRatio = 1;
 
 let frameCount = 0;
 const scratchDir = { x: 0, y: 0 };
@@ -575,7 +576,7 @@ function handleShockwave(
   const shockConfig = settingsSW.interactions.shockwave;
   const strengthMul = msg.strength ?? 1;
   const shockRadiusPixels =
-    shockConfig.radius * Math.min(canvas.width, canvas.height);
+    shockConfig.radius * Math.min(canvasWidth, canvasHeight);
   const shockRadiusMeters = shockRadiusPixels * INV_PIXELS_PER_METER;
 
   const msgXMeters = msg.x * INV_PIXELS_PER_METER;
@@ -641,7 +642,12 @@ async function handleInit(msg: Extract<MainToWorkerMessage, { type: "INIT" }>) {
 
     setupWebgl();
 
-    handleResize({ type: "RESIZE", width: msg.width, height: msg.height });
+    handleResize({
+      type: "RESIZE",
+      width: msg.width,
+      height: msg.height,
+      devicePixelRatio: msg.devicePixelRatio,
+    });
 
     createBodies(settingsInit);
 
@@ -660,11 +666,15 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
   canvasHeight = msg.height;
   centerX = canvasWidth / 2;
   centerY = canvasHeight / 2;
+  devicePixelRatio = msg.devicePixelRatio;
 
-  canvas.width = canvasWidth;
-  canvas.height = canvasHeight;
+  const bufferWidth = Math.floor(canvasWidth * devicePixelRatio);
+  const bufferHeight = Math.floor(canvasHeight * devicePixelRatio);
 
-  gl.viewport(0, 0, canvasWidth, canvasHeight);
+  canvas.width = bufferWidth;
+  canvas.height = bufferHeight;
+
+  gl.viewport(0, 0, bufferWidth, bufferHeight);
 
   const nextSettings = getSettings(msg.width < 768);
   activeSettings = {

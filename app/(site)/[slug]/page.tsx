@@ -1,97 +1,60 @@
-import { getPage } from "@/sanity/sanity-utils";
-import Container from "../components/Container";
+import { getPage, getPages } from "@/sanity/sanity-utils";
 import { PortableText } from "@portabletext/react";
-import ViewSwitcher from "../about/skills/ViewSwitcher";
-import Image from "next/image";
-import urlFor from "@/sanity/sanity.image";
-import NotFound from "./not-found";
-import { Metadata, ResolvingMetadata } from "next";
-import type { Page } from "@/types/Page";
-
-type SkillBlock = { _type: string };
-
-type TextBlock = { _type: string };
-
-type ImageBlock = { _type: string; imageUrl: string; alt: string };
-
-type PageProps = Page & { content: (SkillBlock | TextBlock | ImageBlock)[] };
+import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import Container from "../components/Container";
+import { Body } from "../components/Body";
 
 type Props = {
   params: Promise<{ slug: string }>;
-  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-export async function generateMetadata(
-  { params }: Props,
-  parent: ResolvingMetadata,
-): Promise<Metadata> {
+export async function generateStaticParams() {
+  const pages = await getPages();
+  return pages.map((page) => ({
+    slug: page.slug,
+  }));
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const page: Page = await getPage(slug);
+  const page = await getPage(slug);
 
   if (!page) {
     return {
-      title: "Page Not Found - Chase Cee",
-      description: "The requested page could not be found.",
+      title: "Page Not Found",
     };
   }
 
   return {
     title: `${page.title} - Chase Cee`,
-    description: page.subtitle,
+    description: page.subtitle || `Learn more about ${page.title}`,
+    openGraph: {
+      title: `${page.title} - Chase Cee`,
+      description: page.subtitle || `Learn more about ${page.title}`,
+      type: "website",
+    },
   };
 }
 
-export default async function DynamicPage({ params }: Props) {
-  try {
-    const { slug } = await params;
-    const page = await getPage(slug);
+export default async function Page({ params }: Props) {
+  const { slug } = await params;
+  const page = await getPage(slug);
 
-    if (!page) {
-      return <NotFound />;
-    }
-
-    return (
-      <Container className="pt-24" showCTA={true}>
-        <div className="prose dark:prose-invert mx-auto">
-          <header>
-            <h1>{page.subtitle ?? page.title}</h1>
-          </header>
-          <div>
-            {page.content.map((block, index) => {
-              switch (block._type) {
-                case "skills":
-                  return <ViewSwitcher key={index} />;
-                case "block":
-                  return (
-                    <PortableText key={index} value={[block]} components={{}} />
-                  );
-                case "image":
-                  const imageBlock = block as ImageBlock;
-                  return (
-                    <div key={index} className="rounded-xl">
-                      <Image
-                        src={urlFor(imageBlock.imageUrl)
-                          .width(711)
-                          .height(711)
-                          .dpr(2)
-                          .url()}
-                        alt={imageBlock.alt}
-                        width={711}
-                        height={711}
-                        className="rounded-xl"
-                      />
-                    </div>
-                  );
-                default:
-                  return null;
-              }
-            })}
-          </div>
-        </div>
-      </Container>
-    );
-  } catch (error) {
-    console.error("Page error:", error);
-    return <NotFound />;
+  if (!page) {
+    notFound();
   }
+
+  return (
+    <Container className="pt-24" showCTA={true}>
+      <div className="prose dark:prose-invert mx-auto">
+        <header>
+          <h1>{page.subtitle ?? page.title}</h1>
+        </header>
+        <div className="content">
+          <Body value={page.content} />
+        </div>
+      </div>
+    </Container>
+  );
 }

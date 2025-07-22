@@ -26,6 +26,13 @@ export function PhysicsCanvas() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    // Check if canvas control has already been transferred
+    // This prevents the "Cannot transfer control from a canvas for more than one time" error
+    if (offscreenRef.current) {
+      console.log("Canvas control already transferred, skipping...");
+      return;
+    }
+
     let lastScrollY = window.scrollY;
     let scrollVelocity = 0;
     let scrollForceTimeout: number | undefined;
@@ -85,22 +92,31 @@ export function PhysicsCanvas() {
         );
       }
     };
-    const offscreenCanvas = canvas.transferControlToOffscreen();
-    const transferList: Transferable[] = [offscreenCanvas];
 
-    offscreenRef.current = offscreenCanvas;
+    try {
+      const offscreenCanvas = canvas.transferControlToOffscreen();
+      const transferList: Transferable[] = [offscreenCanvas];
 
-    const level = getColorLevel();
+      offscreenRef.current = offscreenCanvas;
 
-    const initMessage: Extract<MainToWorkerMessage, { type: "INIT" }> = {
-      type: "INIT",
-      canvas: offscreenCanvas,
-      width: canvas.clientWidth,
-      height: canvas.clientHeight,
-      isMobile: window.innerWidth < 768,
-      colorLevel: level,
-    };
-    workerRef.current.postMessage(initMessage, transferList);
+      const level = getColorLevel();
+
+      const initMessage: Extract<MainToWorkerMessage, { type: "INIT" }> = {
+        type: "INIT",
+        canvas: offscreenCanvas,
+        width: canvas.clientWidth,
+        height: canvas.clientHeight,
+        isMobile: window.innerWidth < 768,
+        colorLevel: level,
+        devicePixelRatio: window.devicePixelRatio || 1,
+      };
+      workerRef.current.postMessage(initMessage, transferList);
+    } catch (error) {
+      console.error("Failed to transfer canvas control:", error);
+      // Reset offscreen reference if transfer fails
+      offscreenRef.current = null;
+      return;
+    }
 
     let isDragging = false;
     let lastShockX = 0;
@@ -196,6 +212,7 @@ export function PhysicsCanvas() {
             type: "RESIZE",
             width,
             height,
+            devicePixelRatio: window.devicePixelRatio || 1,
           };
         workerRef.current?.postMessage(resizeMessage);
       }, 100);
@@ -258,6 +275,7 @@ export function PhysicsCanvas() {
       canvas.removeEventListener("touchstart", handleTouchStart);
       canvas.removeEventListener("touchmove", handleTouchMove);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+
       const terminateMessage: Extract<
         MainToWorkerMessage,
         { type: "TERMINATE" }
@@ -265,10 +283,10 @@ export function PhysicsCanvas() {
       workerRef.current?.postMessage(terminateMessage);
 
       workerRef.current?.terminate();
+      workerRef.current = null;
 
-      if (offscreenRef.current) {
-        offscreenRef.current.width = 0;
-      }
+      // Reset offscreen reference on cleanup
+      offscreenRef.current = null;
     };
   }, []);
 
