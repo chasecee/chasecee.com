@@ -5,7 +5,7 @@
       "name": "Code",
       "children": [
         {
-          "name": "JavaScript & TS",
+          "name": "JS/TS",
           "children": [
             { "name": "Vanilla JS", "value": 10 },
             { "name": "React", "value": 9 },
@@ -87,8 +87,11 @@
         {
           "name": "Web Performance",
           "children": [
-            { "name": "SEO", "value": 8 },
-            { "name": "Pagespeed", "value": 10 }
+            { "name": "SEO", "value": 7 },
+            { "name": "Pagespeed", "value": 10 },
+            { "name": "Web Vitals", "value": 8 },
+            { "name": "Lighthouse", "value": 9 },
+            { "name": "Internationalization", "value": 5 }
           ]
         },
         {

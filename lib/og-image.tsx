@@ -37,7 +37,7 @@ async function loadAssets() {
         weight: 800 as const,
       },
     ],
-    backgroundImage: Uint8Array.from(backgroundImageBuffer).buffer,
+    backgroundImage: `data:image/png;base64,${backgroundImageBuffer.toString("base64")}`,
   };
 }
 
@@ -194,7 +194,7 @@ export async function generateOGImage(options: OGImageOptions = {}) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           alt=""
-          src={backgroundImage as any}
+          src={backgroundImage}
           style={{
             position: "absolute",
             top: 0,

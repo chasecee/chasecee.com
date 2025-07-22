@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import ViewSwitcher from "./skills/ViewSwitcher";
 import ArrowsLottie from "./ArrowsLottie";
 import ProfilePic from "./ProfilePic";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "About - Chase Cee",
@@ -59,8 +60,11 @@ export default function Contact() {
           </p>
           <p>
             Overall, I just love to build things and tackle new challenges.
-            I&apos;m always open to talk about new opportunities! Let&apos;s get
-            started on your next big idea.
+            I&apos;m always open to talk about new opportunities!{" "}
+            <Link href="/contact" className="underline">
+              Let&apos;s get started
+            </Link>{" "}
+            on your next big idea.
           </p>
         </div>
       </div>

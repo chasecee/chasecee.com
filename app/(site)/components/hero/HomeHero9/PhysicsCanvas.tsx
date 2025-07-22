@@ -83,7 +83,7 @@ export function PhysicsCanvas() {
       { type: "module" },
     );
     workerRef.current.onmessage = (e) => {
-      const data: any = e.data;
+      const data = e.data as { type: string; [key: string]: unknown };
       if (data && data.type === "METRICS") {
         window.dispatchEvent(
           new CustomEvent("physicsMetrics", { detail: data }),

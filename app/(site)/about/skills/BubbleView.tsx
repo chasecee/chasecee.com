@@ -17,7 +17,7 @@ const CONFIG = {
 const STYLES = {
   svg: "cursor-pointer block h-auto w-full",
   svgDragging: "cursor-grabbing block h-auto w-full",
-  container: "prose dark:prose-invert max-w-none relative mx-auto rounded-3xl",
+  container: "max-w-none relative mx-auto rounded-3xl",
   svgContainer: "overflow-hidden rounded-3xl bg-neutral-800 aspect-square",
 };
 
@@ -53,6 +53,8 @@ const BubbleView: React.FC = () => {
         scaledRadius / D3_VISUALIZATION.BUBBLE_CONFIG.FONT_SIZE_DIVISOR,
         D3_VISUALIZATION.BUBBLE_CONFIG.MAX_FONT_SIZE,
       );
+
+      const strokeWidth = Math.max(fontSize * 0.15, 1); // keep outline proportional
       const lines = wrapText(text, scaledRadius);
       const lineHeight =
         fontSize * D3_VISUALIZATION.BUBBLE_CONFIG.LINE_HEIGHT_MULTIPLIER;
@@ -66,6 +68,8 @@ const BubbleView: React.FC = () => {
           .attr("x", 0)
           .attr("dy", i === 0 ? -totalHeight / 2 + "px" : lineHeight + "px")
           .style("font-size", fontSize + "px")
+          .style("fill", "black")
+          // Removed text outlines; keep black text only
           .text(line);
       });
     },
@@ -80,6 +84,8 @@ const BubbleView: React.FC = () => {
 
       if (!elementsRef.current.labels || !elementsRef.current.nodes) return;
 
+      const MIN_VISIBLE_RADIUS = D3_VISUALIZATION.BUBBLE_CONFIG.MIN_RADIUS;
+
       elementsRef.current.labels
         .attr(
           "transform",
@@ -89,6 +95,23 @@ const BubbleView: React.FC = () => {
           "font-size",
           (d: any) => `${Math.min(((d.r || 0) * k) / 3, 24)}px`,
         )
+        // Show labels for:
+        //   1) children of current focus (drilled-in level)
+        //   2) nodes at the same depth as the focus (its siblings)
+        // They must also be large enough on-screen.
+        .style("fill-opacity", (d: any) => {
+          const focusDepth = focusRef.current?.depth ?? 0;
+          const isFocus = d === focusRef.current;
+          const isChildOfCurrentLevel = d.depth === focusDepth + 1;
+          const bigEnough = (d.r || 0) * k > MIN_VISIBLE_RADIUS;
+          return isFocus || (isChildOfCurrentLevel && bigEnough) ? 1 : 0;
+        })
+        .style("display", (d: any) => {
+          const focusDepth = focusRef.current?.depth ?? 0;
+          const isFocus = d === focusRef.current;
+          const isChildOfCurrentLevel = d.depth === focusDepth + 1;
+          return isFocus || isChildOfCurrentLevel ? "inline" : "none";
+        })
         .each(function (this: any, d: any) {
           const scaledRadius = (d.r || 0) * k;
           renderTextSpans(this, d.data.name, d.r || 0, scaledRadius);
@@ -126,7 +149,12 @@ const BubbleView: React.FC = () => {
 
       elementsRef.current.labels
         .filter(function (this: any, d: any) {
-          return d.parent === focus0 || this.style.display === "inline";
+          // Keep labels of the previous focus, labels already visible, *and* labels that belong to the new focus so they appear after zoom
+          return (
+            d.parent === focus0 ||
+            d.parent === focusRef.current ||
+            (this as HTMLElement).style.display === "inline"
+          );
         })
         .transition(transition)
         .style("fill-opacity", (d: any) =>
@@ -194,6 +222,7 @@ const BubbleView: React.FC = () => {
       .style("font-size", (d: any) => `${Math.min((d.r || 0) / 3, 24)}px`)
       .style("fill-opacity", (d: any) => (d.parent === root ? 1 : 0))
       .style("display", (d: any) => (d.parent === root ? "inline" : "none"))
+      // Removed text outlines; keep black text only
       .each(function (this: any, d: any) {
         renderTextSpans(this, d.data.name, d.r || 0, d.r || 0);
       });
@@ -204,6 +233,10 @@ const BubbleView: React.FC = () => {
         if (focusRef.current === root) return;
         isDraggingRef.current = true;
         svg.attr("class", STYLES.svgDragging);
+        // Ensure all labels are display:inline so opacity rule can reveal them during drag
+        if (elementsRef.current.labels) {
+          elementsRef.current.labels.style("display", "inline");
+        }
       })
       .on("drag", (event: any) => {
         if (focusRef.current === root || !viewRef.current) return;
