@@ -244,7 +244,7 @@ function createBodies(settings: PhysicsSettings) {
       planetRadiusPixels / PIXELS_PER_METER,
     )
       .setFriction(0.05)
-      .setRestitution(0.01);
+      .setRestitution(0.1);
     planetCollider = world.createCollider(planetColliderDesc, planetBody);
   }
 
