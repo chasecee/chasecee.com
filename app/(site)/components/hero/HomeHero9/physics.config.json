@@ -56,8 +56,7 @@
       "startRadius": 0.4
     },
     "world": {
-      "centerCircleRadius": 0.4,
-      "wallOffset": 0
+      "centerCircleRadius": 0.4
     },
     "interactions": {
       "shockwave": {
