@@ -5,12 +5,12 @@ import StatsOverlay from "./StatsOverlay";
 import { keyColorLevels } from "./palette";
 import type { MainToWorkerMessage } from "./messages";
 
+const IS_DEV = process.env.NODE_ENV !== "production";
+
 export function PhysicsCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const workerRef = useRef<Worker | null>(null);
   const offscreenRef = useRef<OffscreenCanvas | null>(null);
-  const gradient =
-    "linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 10%)";
   const instanceKeyRef = useRef(Math.random().toString(36).slice(2));
 
   const getColorLevel = () => {
@@ -27,7 +27,9 @@ export function PhysicsCanvas() {
     if (!canvas) return;
 
     if (offscreenRef.current) {
-      console.log("Canvas control already transferred, skipping...");
+      if (IS_DEV) {
+        console.log("Canvas control already transferred, skipping...");
+      }
       return;
     }
 
@@ -66,28 +68,47 @@ export function PhysicsCanvas() {
       lastTouchY = e.touches[0].clientY;
     };
 
+    let touchMoveRafId = 0;
+    let touchAccumDelta = 0;
+    const flushTouchDelta = () => {
+      touchMoveRafId = 0;
+      if (touchAccumDelta !== 0) {
+        const message: Extract<MainToWorkerMessage, { type: "SCROLL_FORCE" }> =
+          {
+            type: "SCROLL_FORCE",
+            force: touchAccumDelta * 25,
+          };
+        workerRef.current?.postMessage(message);
+        touchAccumDelta = 0;
+      }
+    };
+
     const handleTouchMove = (e: TouchEvent) => {
       const currentTouchY = e.touches[0].clientY;
       const deltaY = lastTouchY - currentTouchY;
       lastTouchY = currentTouchY;
-
-      const message: Extract<MainToWorkerMessage, { type: "SCROLL_FORCE" }> = {
-        type: "SCROLL_FORCE",
-        force: deltaY * 25,
-      };
-      workerRef.current?.postMessage(message);
+      touchAccumDelta += deltaY;
+      if (!touchMoveRafId) {
+        touchMoveRafId = window.requestAnimationFrame(flushTouchDelta);
+      }
     };
 
     workerRef.current = new Worker(
       new URL("./physics.render.worker.ts", import.meta.url),
       { type: "module" },
     );
+    let lastMetricsTime = 0;
     workerRef.current.onmessage = (e) => {
+      if (!IS_DEV) return;
       const data = e.data as { type: string; [key: string]: unknown };
       if (data && data.type === "METRICS") {
-        window.dispatchEvent(
-          new CustomEvent("physicsMetrics", { detail: data }),
-        );
+        const now = performance.now();
+        if (now - lastMetricsTime > 250) {
+          lastMetricsTime = now;
+          window.dispatchEvent(
+            new CustomEvent("physicsMetrics", { detail: data }),
+          );
+        }
       }
     };
 
@@ -287,19 +308,14 @@ export function PhysicsCanvas() {
   }, []);
 
   return (
-    <>
+    <div className="relative h-full w-full">
       <canvas
         key={instanceKeyRef.current}
         ref={canvasRef}
         className="h-full w-full"
-        style={{
-          WebkitMaskImage: gradient,
-          maskImage: gradient,
-          WebkitMaskRepeat: "no-repeat",
-          maskRepeat: "no-repeat",
-        }}
       />
-      {process.env.NODE_ENV !== "production" && <StatsOverlay />}
-    </>
+      <div className="pointer-events-none absolute inset-x-0 top-[90%] bottom-0 bg-gradient-to-t from-neutral-100 to-transparent dark:from-neutral-900" />
+      {IS_DEV && <StatsOverlay />}
+    </div>
   );
 }

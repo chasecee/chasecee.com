@@ -1,18 +1,17 @@
 import { initRapier } from "./rapier-init";
 import { MainToWorkerMessage } from "./messages";
 import * as WebGL from "./gl";
-import {
-  makeSlabs,
-  PhysicsSlabs,
-  MAX_BODIES,
-  BYTES_PER_VERTEX,
-} from "./struct";
+import { makeSlabs, PhysicsSlabs, MAX_BODIES } from "./struct";
 import config from "./physics.config.json";
 import type RAPIER_API from "@dimforge/rapier2d";
 import { keyColorLevels } from "./palette";
 import { parseHsla, hslToRgb, lerpColor } from "../../../utils/color";
 
 const BYTES_PER_COLOR = 3;
+
+// Per-instance stride (bytes)
+const DYNAMIC_BYTES = 12; // vec2 position (8) + float angle (4)
+const STATIC_BYTES = 8; // float radius (4) + u8 vec4 color (4)
 let activeSettings: PhysicsSettings;
 
 const paletteCache = new Map<string, Uint8Array>();
@@ -89,10 +88,16 @@ let wallColliderHandles: number[] = [];
 let vao: WebGLVertexArrayObject | null = null;
 let interleavedVbo: WebGLBuffer | null = null;
 let cornerVbo: WebGLBuffer | null = null;
-let interleavedBuffer: ArrayBuffer;
+let interleavedBuffer: ArrayBuffer; // dynamic buffer
 let interleavedFloat32: Float32Array;
 let interleavedUint8: Uint8Array;
 let interleavedSlice: Uint8Array | null = null;
+
+let staticVbo: WebGLBuffer | null = null;
+let staticBuffer: ArrayBuffer;
+let staticFloat32: Float32Array;
+let staticUint8: Uint8Array;
+let staticSlice: Uint8Array | null = null;
 
 let isRunning = false;
 let isPaused = false;
@@ -177,49 +182,60 @@ function setupWebgl() {
 
   slabs = makeSlabs();
 
-  interleavedBuffer = new ArrayBuffer(MAX_BODIES * BYTES_PER_VERTEX);
+  // Dynamic instance buffer
+  interleavedBuffer = new ArrayBuffer(MAX_BODIES * DYNAMIC_BYTES);
   interleavedFloat32 = new Float32Array(interleavedBuffer);
   interleavedUint8 = new Uint8Array(interleavedBuffer);
-
   interleavedVbo = WebGL.createVbo(gl, interleavedBuffer, gl.STREAM_DRAW);
 
+  // Static instance buffer (radius + color)
+  staticBuffer = new ArrayBuffer(MAX_BODIES * STATIC_BYTES);
+  staticFloat32 = new Float32Array(staticBuffer);
+  staticUint8 = new Uint8Array(staticBuffer);
+  staticVbo = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, staticVbo);
+  gl.bufferData(gl.ARRAY_BUFFER, staticBuffer, gl.STATIC_DRAW);
+
+  // Corner quad buffer
   const cornerData = new Float32Array([-1, -1, -1, 1, 1, -1, 1, 1]);
   cornerVbo = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, cornerVbo);
   gl.bufferData(gl.ARRAY_BUFFER, cornerData, gl.STATIC_DRAW);
 
+  // Vertex array object
   vao = gl.createVertexArray();
   gl.bindVertexArray(vao);
 
+  // Corner attribute
   gl.bindBuffer(gl.ARRAY_BUFFER, cornerVbo);
   const cornerLoc = gl.getAttribLocation(program, "a_corner");
   gl.enableVertexAttribArray(cornerLoc);
   gl.vertexAttribPointer(cornerLoc, 2, gl.FLOAT, false, 0, 0);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
-
-  const positionLoc = gl.getAttribLocation(program, "a_position");
-  const angleLoc = gl.getAttribLocation(program, "a_angle");
+  // Static attributes (radius, color)
+  gl.bindBuffer(gl.ARRAY_BUFFER, staticVbo);
   const radiusLoc = gl.getAttribLocation(program, "a_radius");
   const colorLoc = gl.getAttribLocation(program, "a_color");
-
-  const stride = BYTES_PER_VERTEX;
-
-  gl.enableVertexAttribArray(positionLoc);
-  gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, stride, 0);
-  gl.vertexAttribDivisor(positionLoc, 1);
-
-  gl.enableVertexAttribArray(angleLoc);
-  gl.vertexAttribPointer(angleLoc, 1, gl.FLOAT, false, stride, 8);
-  gl.vertexAttribDivisor(angleLoc, 1);
-
   gl.enableVertexAttribArray(radiusLoc);
-  gl.vertexAttribPointer(radiusLoc, 1, gl.FLOAT, false, stride, 12);
+  gl.vertexAttribPointer(radiusLoc, 1, gl.FLOAT, false, STATIC_BYTES, 0);
   gl.vertexAttribDivisor(radiusLoc, 1);
 
   gl.enableVertexAttribArray(colorLoc);
-  gl.vertexAttribPointer(colorLoc, 4, gl.UNSIGNED_BYTE, true, stride, 16);
+  gl.vertexAttribPointer(colorLoc, 4, gl.UNSIGNED_BYTE, true, STATIC_BYTES, 4);
   gl.vertexAttribDivisor(colorLoc, 1);
+
+  // Dynamic attributes (position, angle)
+  gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
+  const positionLoc = gl.getAttribLocation(program, "a_position");
+  const angleLoc = gl.getAttribLocation(program, "a_angle");
+
+  gl.enableVertexAttribArray(positionLoc);
+  gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, DYNAMIC_BYTES, 0);
+  gl.vertexAttribDivisor(positionLoc, 1);
+
+  gl.enableVertexAttribArray(angleLoc);
+  gl.vertexAttribPointer(angleLoc, 1, gl.FLOAT, false, DYNAMIC_BYTES, 8);
+  gl.vertexAttribDivisor(angleLoc, 1);
 
   gl.bindVertexArray(null);
 }
@@ -253,7 +269,14 @@ function createBodies(settings: PhysicsSettings) {
   const startRadiusPixels =
     settings.bodies.startRadius * Math.min(canvasWidth, canvasHeight);
 
-  const canvasArea = canvasWidth * canvasHeight;
+  const wallOffset = (settings.world as any).wallOffset ?? 0;
+  const offsetX = canvasWidth * wallOffset;
+  const offsetY = canvasHeight * wallOffset;
+
+  const usableWidth = Math.max(0, canvasWidth - 2 * offsetX);
+  const usableHeight = Math.max(0, canvasHeight - 2 * offsetY);
+
+  const canvasArea = usableWidth * usableHeight;
   const circleArea = Math.PI * Math.pow(startRadiusPixels, 2);
   const usableArea = Math.max(0, canvasArea - circleArea);
 
@@ -261,8 +284,8 @@ function createBodies(settings: PhysicsSettings) {
 
   const totalPointsInCanvas = Math.ceil(targetDensity * canvasArea);
   const spacing = Math.sqrt(canvasArea / totalPointsInCanvas);
-  const cols = Math.floor(canvasWidth / spacing);
-  const rows = Math.floor(canvasHeight / spacing);
+  const cols = Math.floor(usableWidth / spacing);
+  const rows = Math.floor(usableHeight / spacing);
 
   let currentBodyIndex = 0;
 
@@ -270,8 +293,8 @@ function createBodies(settings: PhysicsSettings) {
     for (let col = 0; col < cols; col++) {
       if (currentBodyIndex >= bodyCount) break;
 
-      const x = (col + 0.5) * spacing;
-      const y = (row + 0.5) * spacing;
+      const x = offsetX + (col + 0.5) * spacing;
+      const y = offsetY + (row + 0.5) * spacing;
 
       const dx = x - centerX;
       const dy = y - centerY;
@@ -345,17 +368,19 @@ function createBodies(settings: PhysicsSettings) {
         slabs.colors[currentBodyIndex] = color;
 
         if (interleavedBuffer) {
-          const baseByte = currentBodyIndex * BYTES_PER_VERTEX;
-          const baseFloat = baseByte >> 2;
+          const dynByte = currentBodyIndex * DYNAMIC_BYTES;
+          const dynFloat = dynByte >> 2;
+          interleavedFloat32[dynFloat] = x;
+          interleavedFloat32[dynFloat + 1] = y;
+          interleavedFloat32[dynFloat + 2] = 0;
 
-          interleavedFloat32[baseFloat] = x;
-          interleavedFloat32[baseFloat + 1] = y;
-          interleavedFloat32[baseFloat + 2] = 0;
-          interleavedFloat32[baseFloat + 3] = finalRadiusPixels;
-          interleavedUint8[baseByte + 16] = color & 0xff;
-          interleavedUint8[baseByte + 17] = (color >> 8) & 0xff;
-          interleavedUint8[baseByte + 18] = (color >> 16) & 0xff;
-          interleavedUint8[baseByte + 19] = (color >> 24) & 0xff;
+          const statByte = currentBodyIndex * STATIC_BYTES;
+          const statFloat = statByte >> 2;
+          staticFloat32[statFloat] = finalRadiusPixels;
+          staticUint8[statByte + 4] = color & 0xff;
+          staticUint8[statByte + 5] = (color >> 8) & 0xff;
+          staticUint8[statByte + 6] = (color >> 16) & 0xff;
+          staticUint8[statByte + 7] = (color >> 24) & 0xff;
         }
 
         currentBodyIndex++;
@@ -369,17 +394,30 @@ function createBodies(settings: PhysicsSettings) {
   if (gl && interleavedVbo) {
     if (
       !interleavedSlice ||
-      interleavedSlice.length !== bodyCount * BYTES_PER_VERTEX
+      interleavedSlice.length !== bodyCount * DYNAMIC_BYTES
     ) {
       interleavedSlice = new Uint8Array(
         interleavedUint8.buffer,
         0,
-        bodyCount * BYTES_PER_VERTEX,
+        bodyCount * DYNAMIC_BYTES,
       );
     }
 
     gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
     gl.bufferSubData(gl.ARRAY_BUFFER, 0, interleavedSlice);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+  }
+
+  if (gl && staticVbo) {
+    if (!staticSlice || staticSlice.length !== bodyCount * STATIC_BYTES) {
+      staticSlice = new Uint8Array(
+        staticUint8.buffer,
+        0,
+        bodyCount * STATIC_BYTES,
+      );
+    }
+    gl.bindBuffer(gl.ARRAY_BUFFER, staticVbo);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, staticSlice);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
   }
 }
@@ -404,7 +442,7 @@ function update(currentTime: number) {
   const frameTime = (currentTime - lastTime) / 1000.0;
   lastTime = currentTime;
   accumulator += Math.min(frameTime, 0.2);
-  const MAX_ACCUMULATED_STEPS = 5;
+  const MAX_ACCUMULATED_STEPS = 1;
   if (accumulator > dt * MAX_ACCUMULATED_STEPS) {
     accumulator = dt * MAX_ACCUMULATED_STEPS;
   }
@@ -433,7 +471,7 @@ function update(currentTime: number) {
 
   let stepCount = 0;
   const simStart = performance.now();
-  while (accumulator >= dt && stepCount < 5) {
+  while (accumulator >= dt && stepCount < 1) {
     const planetRadiusPixels =
       settings.world.centerCircleRadius * Math.min(canvasWidth, canvasHeight);
     const planetRadiusMeters = planetRadiusPixels * INV_PIXELS_PER_METER;
@@ -456,10 +494,11 @@ function update(currentTime: number) {
           const dist = 1 / invDist;
           const radialDist = dist - planetRadiusMeters;
           if (radialDist > 0) {
-            const pullScale = Math.min(radialDist / planetRadiusMeters, 1);
+            const pullNorm = Math.min(radialDist / planetRadiusMeters, 1);
+            let smoothPull = pullNorm * pullNorm * (3 - 2 * pullNorm);
             const easeExp = (settings.simulation as any).gravityEase ?? 1;
-            const scaledPull =
-              easeExp === 1 ? pullScale : Math.pow(pullScale, easeExp);
+            if (easeExp !== 1) smoothPull = Math.pow(smoothPull, easeExp);
+            const scaledPull = smoothPull;
             const F_gravity = gravityCoeff * mass * scaledPull;
 
             const coeff = invDist * F_gravity;
@@ -515,24 +554,22 @@ function update(currentTime: number) {
     slabs.positions[i * 2 + 1] = pos.y * PIXELS_PER_METER;
     slabs.angles[i] = rot;
 
-    const baseByte = i * BYTES_PER_VERTEX;
+    const baseByte = i * DYNAMIC_BYTES;
     const baseFloat = baseByte >> 2;
     interleavedFloat32[baseFloat] = slabs.positions[i * 2];
     interleavedFloat32[baseFloat + 1] = slabs.positions[i * 2 + 1];
     interleavedFloat32[baseFloat + 2] = rot;
-
-    interleavedUint8[baseByte + 19] = 255;
   }
 
   if (gl && interleavedVbo) {
     if (
       !interleavedSlice ||
-      interleavedSlice.length !== bodyCount * BYTES_PER_VERTEX
+      interleavedSlice.length !== bodyCount * DYNAMIC_BYTES
     ) {
       interleavedSlice = new Uint8Array(
         interleavedUint8.buffer,
         0,
-        bodyCount * BYTES_PER_VERTEX,
+        bodyCount * DYNAMIC_BYTES,
       );
     }
 
@@ -734,7 +771,7 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
   }
   wallColliderHandles = [];
 
-  const wallThicknessPx = (settings.world as any).wallThickness ?? 100.0;
+  const wallThicknessPx = (settings.world as any).wallThickness ?? 50.0;
   const wallThicknessMeters = wallThicknessPx * INV_PIXELS_PER_METER;
   const widthMeters = canvasWidth * INV_PIXELS_PER_METER;
   const heightMeters = canvasHeight * INV_PIXELS_PER_METER;
