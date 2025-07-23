@@ -1,6 +1,6 @@
 import Container from "@/app/(site)/components/Container";
 import { Metadata } from "next";
-import { FaFilePdf, FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa";
+import { FaFilePdf, FaGithub, FaLinkedin, FaXTwitter } from "react-icons/fa6";
 import WavyLine from "../components/WavyLine";
 import Button from "../components/Button";
 export const metadata: Metadata = {
@@ -25,9 +25,9 @@ export default function Contact() {
                 Github
                 <FaGithub size={size} />
               </Button>
-              <Button href="https://twitter.com/ChaseCee/" target="_blank">
-                Twitter
-                <FaTwitter size={size} />
+              <Button href="https://x.com/ChaseCee/" target="_blank">
+                X (Twitter)
+                <FaXTwitter size={size} />
               </Button>
               <Button
                 href="https://www.linkedin.com/in/chasechristensen-1/"
