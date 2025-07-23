@@ -6,6 +6,8 @@ Personal portfolio site showcasing my best work.
 
 Next.js 15 + TypeScript + Bun. Tailwind v4 with custom components and dark mode. Sanity CMS for content management with Portable Text.
 
+CMS Backend is Sanity.io.
+
 Physics simulation via Rapier2D, WebGL graphics, Lottie animations, D3 visualizations.
 
 ## Dev
