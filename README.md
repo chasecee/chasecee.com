@@ -15,7 +15,3 @@ bun i && bun dev
 ```
 
 CMS at `/studio`.
-
-## Deploy
-
-Vercel. Optimized.
