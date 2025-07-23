@@ -1,7 +1,7 @@
 import Container from "@/app/(site)/components/Container";
 import { Metadata } from "next";
 import { FaFilePdf, FaGithub, FaLinkedin, FaXTwitter } from "react-icons/fa6";
-import WavyLine from "../components/WavyLine";
+import WavyLine from "../components/WavyLineDynamic";
 import Button from "../components/Button";
 export const metadata: Metadata = {
   title: "Contact - Chase Cee",

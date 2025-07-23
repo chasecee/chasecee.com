@@ -30,12 +30,14 @@ export default function HeaderMenu() {
       </Link>
       <Link
         href="/about"
+        prefetch={false}
         className={pathname === "/about" ? activeClass : inactiveClass}
       >
         About <div className={barClass}></div>
       </Link>
       <Link
         href="/contact"
+        prefetch={false}
         className={pathname === "/contact" ? activeClass : inactiveClass}
       >
         Contact <div className={barClass}></div>

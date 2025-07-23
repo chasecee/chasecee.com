@@ -1,7 +1,7 @@
 import Container from "@/app/(site)/components/Container";
 import { Metadata } from "next";
 import ViewSwitcher from "./skills/ViewSwitcher";
-import ArrowsLottie from "./ArrowsLottie";
+import ArrowsLottie from "./ArrowsLottieDynamic";
 import ProfilePic from "./ProfilePic";
 import Link from "next/link";
 
