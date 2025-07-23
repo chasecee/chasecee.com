@@ -11,7 +11,7 @@ Physics simulation via Rapier2D, WebGL graphics, Lottie animations, D3 visualiza
 ## Dev
 
 ```bash
-bun dev
+bun i && bun dev
 ```
 
 CMS at `/studio`.
