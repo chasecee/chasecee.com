@@ -11,6 +11,7 @@ const bodyClass =
   " w-full min-h-screen bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-white";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://chasecee.com"),
   title: "Work - Chase Cee",
   description: "Building excellent products front to back.",
   icons: {
