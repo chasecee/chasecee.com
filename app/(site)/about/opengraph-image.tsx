@@ -5,5 +5,6 @@ const { Image, size, contentType } = createOGImage({
   title: "About",
 });
 
+export const runtime = "nodejs";
 export { size, contentType };
 export default Image;

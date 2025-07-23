@@ -169,7 +169,7 @@
 @layer base {
   .prose a:not(.not-prose) {
     @apply text-indigo-600 underline underline-offset-2 dark:text-indigo-500;
-    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600;
+    @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600;
   }
   .prose a:not(.not-prose):hover {
     @apply text-indigo-500 underline-offset-4 dark:text-indigo-400;

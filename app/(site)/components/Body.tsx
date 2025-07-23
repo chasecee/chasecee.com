@@ -1,4 +1,6 @@
 import React from "react";
+import Image from "next/image";
+import urlFor from "@/sanity/sanity.image";
 import {
   PortableText,
   PortableTextComponents,
@@ -85,6 +87,48 @@ const components: PortableTextComponents = {
   marks: {
     internalLink: InternalLink,
     link: ExternalLink,
+  },
+  types: {
+    image: ({ value }) => {
+      if (!value) return null;
+
+      const img = value as any;
+
+      let width = img?.asset?.metadata?.dimensions?.width as number | undefined;
+      let height = img?.asset?.metadata?.dimensions?.height as
+        | number
+        | undefined;
+
+      if ((!width || !height) && (img?.asset?._ref || img?.asset?._id)) {
+        const ref: string = img.asset._ref || img.asset._id;
+        const parts = ref.split("-");
+        if (parts.length >= 3) {
+          const dims = parts[2];
+          const [w, h] = dims.split("x").map((v) => parseInt(v, 10));
+          if (!isNaN(w) && !isNaN(h)) {
+            width = w;
+            height = h;
+          }
+        }
+      }
+
+      width = width ?? 800;
+      height = height ?? 600;
+
+      return (
+        <Image
+          src={urlFor(value as any)
+            .width(width)
+            .height(height)
+            .fit("max")
+            .url()}
+          alt={(img?.alt as string) || ""}
+          width={width}
+          height={height}
+          className="mx-auto rounded-lg"
+        />
+      );
+    },
   },
 };
 
