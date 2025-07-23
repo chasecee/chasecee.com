@@ -10,10 +10,10 @@ interface ButtonProps
 }
 
 const layoutStyles =
-  "not-prose inline-flex items-center justify-center gap-x-3 rounded-[.25rem] border-0 px-6 py-2 text-base text-black dark:text-white no-underline shadow-xs transition-colors";
+  "not-prose inline-flex items-center justify-center gap-x-3 rounded-[.25rem] border-0 px-6 py-3 text-base text-black dark:text-white no-underline shadow-xs transition-colors";
 
 const chromaStyles =
-  "ring-[.125rem] ring-black/50 dark:ring-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-current focus-visible:ring-opacity-60 dark:focus-visible:ring-current dark:focus-visible:ring-opacity-80";
+  "ring-[.125rem] ring-black/30 bg-black/5 dark:bg-white/5 dark:ring-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-current focus-visible:ring-opacity-60 dark:focus-visible:ring-current dark:focus-visible:ring-opacity-80";
 
 const baseStyles = clsx(layoutStyles, chromaStyles);
 

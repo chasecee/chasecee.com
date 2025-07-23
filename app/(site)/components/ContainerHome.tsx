@@ -22,7 +22,7 @@ const ContainerHome: React.FC<ContainerHomeProps> = ({
         {showCTA && (
           <CTASection
             title="Let's get started"
-            subtitle="I build powerful and beautiful applications for businesses of all sizes. I'm available for work, let's get started!"
+            subtitle="I build powerful and beautiful applications for businesses of all sizes. I'm available for work, reach out!"
             primaryLink="/contact"
             secondaryLink="/about"
             outerClass=""
