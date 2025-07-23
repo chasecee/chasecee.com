@@ -1,6 +1,6 @@
-# Chase Cee Portfolio
+# chasecee.com
 
-Personal portfolio site. Designer and developer building experiences front to back.
+Personal portfolio site showcasing my best work.
 
 ## Stack
 
