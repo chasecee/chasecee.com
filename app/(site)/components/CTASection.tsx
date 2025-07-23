@@ -44,11 +44,7 @@ const CTASection: React.FC<CTASectionProps> = ({
             >
               Get Started
             </Button>
-            <Button
-              href={secondaryLink}
-              target="_self"
-              className="border-0 hover:bg-white/30"
-            >
+            <Button href={secondaryLink} target="_self" className="group">
               About Me{" "}
               <FaChevronRight
                 className="transition-transform duration-200 group-hover:translate-x-1 group-active:translate-x-1"

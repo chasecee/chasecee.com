@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
 @plugin '@tailwindcss/typography';
-@plugin '@tailwindcss/forms';
 
 @theme {
   --transition-delay-400: 400ms;
@@ -256,18 +255,7 @@
     }
   }
 }
-#my_dataviz text,
-#d3viz text {
-  pointer-events: none;
-  fill: black;
-}
-@media (prefers-color-scheme: dark) {
-  #my_dataviz text,
-  #d3viz text {
-    pointer-events: none;
-    fill: white;
-  }
-}
+
 
 :root {
   --physics-color-level: 8;

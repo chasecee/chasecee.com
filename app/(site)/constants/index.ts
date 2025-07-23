@@ -29,30 +29,6 @@ export const ANIMATION = {
   },
 } as const;
 
-export const D3_VISUALIZATION = {
-  WIDTH: 1280,
-  HEIGHT: 500,
-  BUBBLE_CONFIG: {
-    BASE_SIZE: 736,
-    PADDING: 3,
-    STROKE_WIDTH: 2,
-    DRAG_SENSITIVITY: 1,
-    MIN_RADIUS: 15,
-    RADIUS_MULTIPLIER: 5,
-    MAX_FONT_SIZE: 24,
-    FONT_SIZE_DIVISOR: 3,
-    LINE_HEIGHT_MULTIPLIER: 1.1,
-  },
-  FORCE_CONFIG: {
-    COLLISION_PADDING: 5,
-    COLLISION_STRENGTH: 1,
-    CHARGE_STRENGTH: -300,
-    CLUSTER_STRENGTH: 2.85,
-    X_FORCE_STRENGTH: 0.1,
-    Y_FORCE_STRENGTH: 0.5,
-  },
-} as const;
-
 export const PHYSICS = {
   PIXELS_PER_METER: 50,
   MAX_BODIES: 4096,
@@ -77,7 +53,6 @@ export const COLORS = {
   LEVELS: 10,
   STEPS_PER_LEVEL: 1024,
   HUE_MULTIPLIER: 270,
-  DEPTH_DOMAIN: [0, 5],
 } as const;
 
 export const SANITY = {
