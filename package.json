@@ -8,6 +8,12 @@
     "start": "bun next start",
     "lint": "bun next lint"
   },
+  "browserslist": [
+    "chrome >= 91",
+    "firefox >= 90",
+    "safari >= 14",
+    "edge >= 91"
+  ],
   "dependencies": {
     "@aarsteinmedia/dotlottie-player": "^6.0.2",
     "@dimforge/rapier2d": "^0.18.0-beta.0",

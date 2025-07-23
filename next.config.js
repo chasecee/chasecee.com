@@ -1,6 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   productionBrowserSourceMaps: true,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
+  },
+  experimental: {
+    optimizePackageImports: ["react-icons"],
+  },
   images: {
     remotePatterns: [
       {
@@ -51,6 +57,14 @@ const nextConfig = {
       test: /\.wasm$/,
       type: "webassembly/async",
     });
+
+    // Disable polyfills for modern browsers
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      path: false,
+      crypto: false,
+    };
 
     return config;
   },
