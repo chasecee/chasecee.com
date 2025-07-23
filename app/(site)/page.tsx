@@ -1,3 +1,4 @@
+export const dynamic = "force-static";
 import { getPersonalProjects, getClientProjects } from "@/sanity/sanity-utils";
 import ContainerHome from "./components/ContainerHome";
 import ProjectsList from "./components/ProjectsList";
