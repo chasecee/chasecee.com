@@ -2,8 +2,9 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { DM_Sans, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
-const font = Inter({
+const font = DM_Sans({
   subsets: ["latin"],
   style: ["normal"],
   display: "swap",
@@ -32,6 +33,7 @@ export default async function RootLayout({
       <body className={font.className + bodyClass}>
         {children}
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
