@@ -1,19 +1,12 @@
 import { Project } from "@/types/Project";
-
-interface ColorPaletteObject {
-  darkest: string;
-  darker: string;
-  main: string;
-  lighter: string;
-  lightest: string;
-}
+import type { ColorPalette } from "@/types/UI";
 
 interface ColorPaletteProps {
-  colorPalette: ColorPaletteObject;
+  colorPalette: ColorPalette;
   project?: Project;
 }
 
-export function ColorPalette({ colorPalette, project }: ColorPaletteProps) {
+function ColorPaletteComponent({ colorPalette, project }: ColorPaletteProps) {
   const colors = [
     colorPalette.darkest,
     colorPalette.darker,
@@ -70,4 +63,4 @@ export function ColorPalette({ colorPalette, project }: ColorPaletteProps) {
   );
 }
 
-export default ColorPalette;
+export default ColorPaletteComponent;

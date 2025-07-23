@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Tilt from "react-parallax-tilt";
-import profilePic from "@/public/me.jpeg";
+import profilePic from "@/public/me.webp";
 
 const alt = "alt text";
 

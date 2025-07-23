@@ -8,3 +8,9 @@ export interface SkillDotsProps {
   value: number;
   max?: number;
 }
+
+export interface SkillsListProps {
+  skills: Skill[];
+  loading?: boolean;
+  error?: string;
+}

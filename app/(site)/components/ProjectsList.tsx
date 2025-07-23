@@ -3,7 +3,7 @@ import Image from "next/image";
 import urlFor from "@/sanity/sanity.image";
 import generateColorPalette from "../utils/colorUtils";
 import { Project } from "@/types/Project";
-import ColorPalette from "./ColorPalette";
+import ColorPaletteComponent from "./ColorPalette";
 import dynamic from "next/dynamic";
 
 const LoopPlayerCard = dynamic(() => import("./project-cards/LoopPlayerCard"));
@@ -44,7 +44,7 @@ function ProjectsListContent({
 }: ProjectsListProps) {
   return (
     <div className="project-list">
-      {title && <h2 className="mb-6 text-left text-2xl font-bold">{title}</h2>}
+      {title && <h2 className="mb-6 text-left text-xl font-bold">{title}</h2>}
       <div className="flex flex-nowrap gap-12 overflow-x-auto pb-10">
         {projects.map((project: Project, index: number) => {
           const slugname =
@@ -87,7 +87,7 @@ function ProjectsListContent({
                     )}
 
                     {displayType === "popup" && project.color?.hex && (
-                      <ColorPalette
+                      <ColorPaletteComponent
                         colorPalette={generateColorPalette(project.color.hex)}
                       />
                     )}

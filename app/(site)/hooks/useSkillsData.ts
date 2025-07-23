@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Skill } from "../types/skills";
+import { Skill } from "@/types";
 
 const dataCache = new Map<string, Skill>();
 

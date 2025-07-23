@@ -3,13 +3,9 @@ import Header from "./Header";
 import CTASection from "./CTASection";
 import Footer from "./Footer";
 
-interface ContainerHomeProps {
-  children: React.ReactNode;
-  className?: string;
-  showCTA?: boolean;
-}
+import type { ContainerProps } from "@/types/UI";
 
-const ContainerHome: React.FC<ContainerHomeProps> = ({
+const ContainerHome: React.FC<ContainerProps> = ({
   children,
   className = "",
   showCTA = false,

@@ -2,12 +2,7 @@ import Link, { LinkProps } from "next/link";
 import React from "react";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-
-interface ButtonProps
-  extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "href">,
-    LinkProps {
-  className?: string;
-}
+import type { ButtonProps } from "@/types/UI";
 
 const layoutStyles =
   "not-prose inline-flex items-center justify-center gap-x-3 rounded-[.25rem] border-0 px-6 py-3 text-base text-black dark:text-white no-underline shadow-xs transition-colors";

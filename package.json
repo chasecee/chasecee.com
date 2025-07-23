@@ -6,7 +6,8 @@
     "dev": "bun next dev",
     "build": "bun next build",
     "start": "bun next start",
-    "lint": "bun next lint"
+    "lint": "bun next lint",
+    "convert-webp": "node scripts/convert-to-webp.mjs"
   },
   "browserslist": [
     "chrome >= 91",

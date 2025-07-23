@@ -42,7 +42,7 @@ const CTASection: React.FC<CTASectionProps> = ({
               target="_self"
               className="bg-indigo-600 ring-indigo-300 dark:bg-indigo-500/20 dark:ring-indigo-300/20"
             >
-              Get Started
+              Contact
             </Button>
             <Button href={secondaryLink} target="_self" className="group">
               About Me{" "}

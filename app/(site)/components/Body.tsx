@@ -12,36 +12,12 @@ import {
   TypedObject,
   ArbitraryTypedObject,
 } from "@portabletext/types";
-
-interface InternalLinkValue extends TypedObject {
-  _type: "internalLink";
-  slug: string;
-  refType: "project" | "page";
-}
-
-interface ExternalLinkValue extends TypedObject {
-  _type: "link";
-  blank: boolean;
-  href: string;
-}
-
-const hasAnchorTag = (children: React.ReactNode): boolean => {
-  if (typeof children === "string") return false;
-  if (React.isValidElement(children) && children.type === "a") return true;
-  if (Array.isArray(children)) {
-    return children.some((child) => hasAnchorTag(child));
-  }
-  return false;
-};
+import { InternalLinkValue, ExternalLinkValue } from "@/types/Content";
 
 const InternalLink: React.FC<
   PortableTextMarkComponentProps<InternalLinkValue>
 > = ({ value, children }) => {
   if (!value) return <>{children}</>;
-
-  if (hasAnchorTag(children)) {
-    return <span className="internal-link-nested">{children}</span>;
-  }
 
   const { slug, refType } = value;
   let href: string;
@@ -55,6 +31,7 @@ const InternalLink: React.FC<
     default:
       href = "#";
   }
+
   return <a href={href}>{children}</a>;
 };
 
@@ -63,11 +40,8 @@ const ExternalLink: React.FC<
 > = ({ value, children }) => {
   if (!value) return <>{children}</>;
 
-  if (hasAnchorTag(children)) {
-    return <span className="external-link-nested">{children}</span>;
-  }
-
   const { blank, href } = value;
+
   return blank ? (
     <a
       href={href}

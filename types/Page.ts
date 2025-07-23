@@ -1,15 +1,5 @@
 import { PortableTextBlock } from "sanity";
-
-type Skills = {
-  _type: 'skills';
-  placeholder: string;
-};
-
-type ImageBlock = {
-  _type: 'image';
-  imageUrl: string;
-  alt: string;
-};
+import { Skills, ImageBlock } from "./Content";
 
 export type Page = {
   name: string;

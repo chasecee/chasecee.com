@@ -1,8 +1,10 @@
-import { Skill } from "../../types/skills";
+import { Skill } from "@/types";
 
 export const getSkillCount = (skill: Skill): number =>
-  skill.children?.reduce((sum, child) => sum + getSkillCount(child), 0) ??
-  (skill.value ? 1 : 0);
+  skill.children?.reduce(
+    (sum: number, child: Skill) => sum + getSkillCount(child),
+    0,
+  ) ?? (skill.value ? 1 : 0);
 
 export const sortSkills = (skills: Skill[]): Skill[] =>
   skills.sort((a, b) => {

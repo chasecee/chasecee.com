@@ -1,13 +1,8 @@
 import React from "react";
 
-interface DoxymeIconProps {
-  className?: string;
-  width?: number | string;
-  height?: number | string;
-  [key: string]: any;
-}
+import type { IconProps } from "@/types/UI";
 
-const DoxymeIcon: React.FC<DoxymeIconProps> = ({
+const DoxymeIcon: React.FC<IconProps> = ({
   className,
   width = 147,
   height = 45,
