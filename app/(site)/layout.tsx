@@ -1,8 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { DM_Sans, Inter } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
+import Script from "next/script";
 
 const font = DM_Sans({
   subsets: ["latin"],
@@ -32,8 +31,12 @@ export default async function RootLayout({
     <html lang="en">
       <body className={font.className + bodyClass}>
         {children}
-        <Analytics />
-        <SpeedInsights />
+        {/* Defer Vercel analytics and performance scripts until after hydration */}
+        <Script strategy="afterInteractive" src="/_vercel/insights/script.js" />
+        <Script
+          strategy="afterInteractive"
+          src="/_vercel/speed-insights/script.js"
+        />
       </body>
     </html>
   );
