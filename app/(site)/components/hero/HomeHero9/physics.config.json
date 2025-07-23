@@ -35,7 +35,7 @@
   },
   "rendering": {
     "colorLevel": 5,
-    "colorSteps": 24,
+    "colorSteps": 32,
     "shapeSides": 0
   },
 
