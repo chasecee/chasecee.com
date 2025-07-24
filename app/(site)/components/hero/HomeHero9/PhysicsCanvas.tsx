@@ -221,19 +221,13 @@ export function PhysicsCanvas() {
       if (!entries || entries.length === 0) return;
       const { width, height } = entries[0].contentRect;
 
-      if ((resizeObserver as any)._debounceId) {
-        clearTimeout((resizeObserver as any)._debounceId);
-      }
-      (resizeObserver as any)._debounceId = setTimeout(() => {
-        const resizeMessage: Extract<MainToWorkerMessage, { type: "RESIZE" }> =
-          {
-            type: "RESIZE",
-            width,
-            height,
-            devicePixelRatio: window.devicePixelRatio || 1,
-          };
-        workerRef.current?.postMessage(resizeMessage);
-      }, 100);
+      const resizeMessage: Extract<MainToWorkerMessage, { type: "RESIZE" }> = {
+        type: "RESIZE",
+        width,
+        height,
+        devicePixelRatio: window.devicePixelRatio || 1,
+      };
+      workerRef.current?.postMessage(resizeMessage);
     });
 
     resizeObserver.observe(canvas);

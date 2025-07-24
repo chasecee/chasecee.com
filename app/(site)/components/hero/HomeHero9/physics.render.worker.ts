@@ -8,6 +8,7 @@ import { keyColorLevels } from "./palette";
 import { parseHsla, hslToRgb, lerpColor } from "../../../utils/color";
 
 const BYTES_PER_COLOR = 3;
+const RESIZE_JITTER = 80;
 
 // Per-instance stride (bytes)
 const DYNAMIC_BYTES = 12; // vec2 position (8) + float angle (4)
@@ -698,6 +699,51 @@ async function handleInit(msg: Extract<MainToWorkerMessage, { type: "INIT" }>) {
 
 function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
   if (!canvas || !gl || !program || !rapier) return;
+
+  if (
+    msg.width === canvasWidth &&
+    Math.abs(msg.height - canvasHeight) < RESIZE_JITTER
+  ) {
+    canvasWidth = msg.width;
+    canvasHeight = msg.height;
+    centerX = canvasWidth / 2;
+    centerY = canvasHeight / 2;
+
+    const bufferWidth = Math.floor(canvasWidth * msg.devicePixelRatio);
+    const bufferHeight = Math.floor(canvasHeight * msg.devicePixelRatio);
+    canvas.width = bufferWidth;
+    canvas.height = bufferHeight;
+    gl.viewport(0, 0, bufferWidth, bufferHeight);
+
+    if (program && projectionMatrix) {
+      const l = 0,
+        r = canvasWidth,
+        b = 0,
+        t = canvasHeight;
+      const m = [
+        2 / (r - l),
+        0,
+        0,
+        0,
+        0,
+        2 / (t - b),
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        -((r + l) / (r - l)),
+        -((t + b) / (t - b)),
+        0,
+        1,
+      ];
+      gl.useProgram(program);
+      gl.uniformMatrix4fv(projectionMatrix, false, m);
+    }
+
+    return;
+  }
 
   canvasWidth = msg.width;
   canvasHeight = msg.height;
