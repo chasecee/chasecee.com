@@ -704,44 +704,6 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
     msg.width === canvasWidth &&
     Math.abs(msg.height - canvasHeight) < RESIZE_JITTER
   ) {
-    canvasWidth = msg.width;
-    canvasHeight = msg.height;
-    centerX = canvasWidth / 2;
-    centerY = canvasHeight / 2;
-
-    const bufferWidth = Math.floor(canvasWidth * msg.devicePixelRatio);
-    const bufferHeight = Math.floor(canvasHeight * msg.devicePixelRatio);
-    canvas.width = bufferWidth;
-    canvas.height = bufferHeight;
-    gl.viewport(0, 0, bufferWidth, bufferHeight);
-
-    if (program && projectionMatrix) {
-      const l = 0,
-        r = canvasWidth,
-        b = 0,
-        t = canvasHeight;
-      const m = [
-        2 / (r - l),
-        0,
-        0,
-        0,
-        0,
-        2 / (t - b),
-        0,
-        0,
-        0,
-        0,
-        -1,
-        0,
-        -((r + l) / (r - l)),
-        -((t + b) / (t - b)),
-        0,
-        1,
-      ];
-      gl.useProgram(program);
-      gl.uniformMatrix4fv(projectionMatrix, false, m);
-    }
-
     return;
   }
 
