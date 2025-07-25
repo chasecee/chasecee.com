@@ -10,7 +10,6 @@ import { parseHsla, hslToRgb, lerpColor } from "../../../utils/color";
 const BYTES_PER_COLOR = 3;
 const RESIZE_JITTER = 80;
 
-// Per-instance stride (bytes)
 const DYNAMIC_BYTES = 20;
 let activeSettings: PhysicsSettings;
 
@@ -89,7 +88,7 @@ let wallColliderHandles: number[] = [];
 let vao: WebGLVertexArrayObject | null = null;
 let interleavedVbo: WebGLBuffer | null = null;
 let cornerVbo: WebGLBuffer | null = null;
-let interleavedBuffer: ArrayBuffer; // dynamic buffer
+let interleavedBuffer: ArrayBuffer;
 let interleavedFloat32: Float32Array;
 let interleavedUint8: Uint8Array;
 let interleavedSlice: Uint8Array | null = null;
@@ -175,23 +174,19 @@ function setupWebgl() {
     gl.uniform1i(shapeSidesUniform, sidesVal);
   }
 
-  // Dynamic instance buffer
   interleavedBuffer = new ArrayBuffer(MAX_BODIES * DYNAMIC_BYTES);
   interleavedFloat32 = new Float32Array(interleavedBuffer);
   interleavedUint8 = new Uint8Array(interleavedBuffer);
   interleavedVbo = WebGL.createVbo(gl, interleavedBuffer, gl.STREAM_DRAW);
 
-  // Corner quad buffer
   const cornerData = new Float32Array([-1, -1, -1, 1, 1, -1, 1, 1]);
   cornerVbo = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, cornerVbo);
   gl.bufferData(gl.ARRAY_BUFFER, cornerData, gl.STATIC_DRAW);
 
-  // Vertex array object
   vao = gl.createVertexArray();
   gl.bindVertexArray(vao);
 
-  // Corner attribute
   gl.bindBuffer(gl.ARRAY_BUFFER, cornerVbo);
   const cornerLoc = gl.getAttribLocation(program, "a_corner");
   gl.enableVertexAttribArray(cornerLoc);
@@ -215,7 +210,6 @@ function setupWebgl() {
   );
   gl.vertexAttribDivisor(colorLoc, 1);
 
-  // Dynamic attributes (position, angle)
   gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
   const positionLoc = gl.getAttribLocation(program, "a_position");
   const angleLoc = gl.getAttribLocation(program, "a_angle");
@@ -668,9 +662,15 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
   if (!canvas || !gl || !program || !rapier) return;
 
   if (
-    msg.width === canvasWidth &&
+    Math.abs(msg.width - canvasWidth) < RESIZE_JITTER &&
     Math.abs(msg.height - canvasHeight) < RESIZE_JITTER
   ) {
+    return;
+  }
+
+  const nextBufferW = Math.floor(msg.width * msg.devicePixelRatio);
+  const nextBufferH = Math.floor(msg.height * msg.devicePixelRatio);
+  if (canvas && canvas.width === nextBufferW && canvas.height === nextBufferH) {
     return;
   }
 
