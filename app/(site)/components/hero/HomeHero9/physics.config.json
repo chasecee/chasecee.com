@@ -1,6 +1,6 @@
 {
   "simulation": {
-    "timeStep": 25,
+    "timeStep": 16.666,
     "gravity": 0.1,
     "gravityEase": 0.75,
     "damping": 1.5,
