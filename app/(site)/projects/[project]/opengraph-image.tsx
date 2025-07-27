@@ -11,5 +11,6 @@ const { Image, size, contentType } = createDynamicOGImage(
   },
 );
 
+export const runtime = "nodejs";
 export { size, contentType };
 export default Image;

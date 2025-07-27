@@ -1,8 +1,8 @@
 {
   "simulation": {
-    "timeStep": 25,
-    "gravity": 0.1,
-    "gravityEase": 0.75,
+    "timeStep": 16.666,
+    "gravity": 0.096,
+    "gravityEase": 0.7,
     "damping": 1.5,
     "initialClockwiseVelocity": 0,
     "tangentialDamping": 0.02,

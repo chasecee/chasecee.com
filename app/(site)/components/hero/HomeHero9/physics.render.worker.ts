@@ -1,20 +1,21 @@
 import { initRapier } from "./rapier-init";
 import { MainToWorkerMessage } from "./messages";
 import * as WebGL from "./gl";
-import { makeSlabs, PhysicsSlabs, MAX_BODIES } from "./struct";
+import { MAX_BODIES } from "./struct";
 import config from "./physics.config.json";
 import type RAPIER_API from "@dimforge/rapier2d";
 import { keyColorLevels } from "./palette";
 import { parseHsla, hslToRgb, lerpColor } from "../../../utils/color";
 
 const BYTES_PER_COLOR = 3;
+const RESIZE_JITTER = 80;
 
-// Per-instance stride (bytes)
-const DYNAMIC_BYTES = 12; // vec2 position (8) + float angle (4)
-const STATIC_BYTES = 8; // float radius (4) + u8 vec4 color (4)
+const DYNAMIC_BYTES = 20;
 let activeSettings: PhysicsSettings;
 
 const paletteCache = new Map<string, Uint8Array>();
+let paletteLut: Uint8Array;
+let paletteSteps = 0;
 
 function hslToRgbObj(h: number, s: number, l: number) {
   const [r, g, b] = hslToRgb(h, s, l);
@@ -73,7 +74,6 @@ let rapier: typeof RAPIER_API;
 let canvas: OffscreenCanvas | null = null;
 let gl: WebGL2RenderingContext | null = null;
 let world: import("@dimforge/rapier2d").World;
-let slabs: PhysicsSlabs;
 let rigidBodies: import("@dimforge/rapier2d").RigidBody[] = [];
 let planetBody: import("@dimforge/rapier2d").RigidBody | null = null;
 let planetCollider: import("@dimforge/rapier2d").Collider | null = null;
@@ -88,16 +88,10 @@ let wallColliderHandles: number[] = [];
 let vao: WebGLVertexArrayObject | null = null;
 let interleavedVbo: WebGLBuffer | null = null;
 let cornerVbo: WebGLBuffer | null = null;
-let interleavedBuffer: ArrayBuffer; // dynamic buffer
+let interleavedBuffer: ArrayBuffer;
 let interleavedFloat32: Float32Array;
 let interleavedUint8: Uint8Array;
 let interleavedSlice: Uint8Array | null = null;
-
-let staticVbo: WebGLBuffer | null = null;
-let staticBuffer: ArrayBuffer;
-let staticFloat32: Float32Array;
-let staticUint8: Uint8Array;
-let staticSlice: Uint8Array | null = null;
 
 let isRunning = false;
 let isPaused = false;
@@ -180,51 +174,42 @@ function setupWebgl() {
     gl.uniform1i(shapeSidesUniform, sidesVal);
   }
 
-  slabs = makeSlabs();
-
-  // Dynamic instance buffer
   interleavedBuffer = new ArrayBuffer(MAX_BODIES * DYNAMIC_BYTES);
   interleavedFloat32 = new Float32Array(interleavedBuffer);
   interleavedUint8 = new Uint8Array(interleavedBuffer);
   interleavedVbo = WebGL.createVbo(gl, interleavedBuffer, gl.STREAM_DRAW);
 
-  // Static instance buffer (radius + color)
-  staticBuffer = new ArrayBuffer(MAX_BODIES * STATIC_BYTES);
-  staticFloat32 = new Float32Array(staticBuffer);
-  staticUint8 = new Uint8Array(staticBuffer);
-  staticVbo = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, staticVbo);
-  gl.bufferData(gl.ARRAY_BUFFER, staticBuffer, gl.STATIC_DRAW);
-
-  // Corner quad buffer
   const cornerData = new Float32Array([-1, -1, -1, 1, 1, -1, 1, 1]);
   cornerVbo = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, cornerVbo);
   gl.bufferData(gl.ARRAY_BUFFER, cornerData, gl.STATIC_DRAW);
 
-  // Vertex array object
   vao = gl.createVertexArray();
   gl.bindVertexArray(vao);
 
-  // Corner attribute
   gl.bindBuffer(gl.ARRAY_BUFFER, cornerVbo);
   const cornerLoc = gl.getAttribLocation(program, "a_corner");
   gl.enableVertexAttribArray(cornerLoc);
   gl.vertexAttribPointer(cornerLoc, 2, gl.FLOAT, false, 0, 0);
 
-  // Static attributes (radius, color)
-  gl.bindBuffer(gl.ARRAY_BUFFER, staticVbo);
+  gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
   const radiusLoc = gl.getAttribLocation(program, "a_radius");
   const colorLoc = gl.getAttribLocation(program, "a_color");
   gl.enableVertexAttribArray(radiusLoc);
-  gl.vertexAttribPointer(radiusLoc, 1, gl.FLOAT, false, STATIC_BYTES, 0);
+  gl.vertexAttribPointer(radiusLoc, 1, gl.FLOAT, false, DYNAMIC_BYTES, 12);
   gl.vertexAttribDivisor(radiusLoc, 1);
 
   gl.enableVertexAttribArray(colorLoc);
-  gl.vertexAttribPointer(colorLoc, 4, gl.UNSIGNED_BYTE, true, STATIC_BYTES, 4);
+  gl.vertexAttribPointer(
+    colorLoc,
+    4,
+    gl.UNSIGNED_BYTE,
+    true,
+    DYNAMIC_BYTES,
+    16,
+  );
   gl.vertexAttribDivisor(colorLoc, 1);
 
-  // Dynamic attributes (position, angle)
   gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
   const positionLoc = gl.getAttribLocation(program, "a_position");
   const angleLoc = gl.getAttribLocation(program, "a_angle");
@@ -351,37 +336,26 @@ function createBodies(settings: PhysicsSettings) {
 
         rigidBodies.push(rigidBody);
 
-        slabs.radii[currentBodyIndex] = finalRadiusPixels;
-        slabs.positions[currentBodyIndex * 2] = x;
-        slabs.positions[currentBodyIndex * 2 + 1] = y;
-        slabs.angles[currentBodyIndex] = 0;
-
-        const colorLevel = settings.rendering.colorLevel;
-        const steps = settings.rendering.colorSteps ?? 1024;
-        const { r, g, b } = getPaletteColor(
-          colorLevel,
-          normalizedPosition,
-          steps,
-        );
+        const instByte = currentBodyIndex * DYNAMIC_BYTES;
+        const instFloat = instByte >> 2;
+        interleavedFloat32[instFloat] = x;
+        interleavedFloat32[instFloat + 1] = y;
+        interleavedFloat32[instFloat + 2] = 0;
+        interleavedFloat32[instFloat + 3] = finalRadiusPixels;
+        const idxColor =
+          Math.floor(normalizedPosition * paletteSteps) * BYTES_PER_COLOR;
+        const r = paletteLut[idxColor];
+        const g = paletteLut[idxColor + 1];
+        const b = paletteLut[idxColor + 2];
 
         const color = (255 << 24) | (b << 16) | (g << 8) | r;
-        slabs.colors[currentBodyIndex] = color;
-
-        if (interleavedBuffer) {
-          const dynByte = currentBodyIndex * DYNAMIC_BYTES;
-          const dynFloat = dynByte >> 2;
-          interleavedFloat32[dynFloat] = x;
-          interleavedFloat32[dynFloat + 1] = y;
-          interleavedFloat32[dynFloat + 2] = 0;
-
-          const statByte = currentBodyIndex * STATIC_BYTES;
-          const statFloat = statByte >> 2;
-          staticFloat32[statFloat] = finalRadiusPixels;
-          staticUint8[statByte + 4] = color & 0xff;
-          staticUint8[statByte + 5] = (color >> 8) & 0xff;
-          staticUint8[statByte + 6] = (color >> 16) & 0xff;
-          staticUint8[statByte + 7] = (color >> 24) & 0xff;
-        }
+        interleavedUint8[currentBodyIndex * DYNAMIC_BYTES + 16] = color & 0xff;
+        interleavedUint8[currentBodyIndex * DYNAMIC_BYTES + 17] =
+          (color >> 8) & 0xff;
+        interleavedUint8[currentBodyIndex * DYNAMIC_BYTES + 18] =
+          (color >> 16) & 0xff;
+        interleavedUint8[currentBodyIndex * DYNAMIC_BYTES + 19] =
+          (color >> 24) & 0xff;
 
         currentBodyIndex++;
       }
@@ -407,19 +381,6 @@ function createBodies(settings: PhysicsSettings) {
     gl.bufferSubData(gl.ARRAY_BUFFER, 0, interleavedSlice);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
   }
-
-  if (gl && staticVbo) {
-    if (!staticSlice || staticSlice.length !== bodyCount * STATIC_BYTES) {
-      staticSlice = new Uint8Array(
-        staticUint8.buffer,
-        0,
-        bodyCount * STATIC_BYTES,
-      );
-    }
-    gl.bindBuffer(gl.ARRAY_BUFFER, staticVbo);
-    gl.bufferSubData(gl.ARRAY_BUFFER, 0, staticSlice);
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
-  }
 }
 
 function update(currentTime: number) {
@@ -441,37 +402,32 @@ function update(currentTime: number) {
 
   const frameTime = (currentTime - lastTime) / 1000.0;
   lastTime = currentTime;
-  accumulator += Math.min(frameTime, 0.2);
-  const MAX_ACCUMULATED_STEPS = 1;
-  if (accumulator > dt * MAX_ACCUMULATED_STEPS) {
-    accumulator = dt * MAX_ACCUMULATED_STEPS;
-  }
-
-  frameCount++;
-
+  accumulator += frameTime;
+  const simStart = performance.now();
+  let didStep = false;
   const settings = activeSettings;
   const centerXMeters = centerX * INV_PIXELS_PER_METER;
   const centerYMeters = centerY * INV_PIXELS_PER_METER;
 
-  const normalizedScroll = Math.tanh(scrollForce * 0.005);
-  const scrollInfluence =
-    normalizedScroll * settings.interactions.scroll.forceMultiplier;
-  if (Math.abs(scrollInfluence) > 0.05) {
-    const impulseStrength = scrollInfluence * 2.5;
+  if (accumulator >= dt) {
+    accumulator -= dt;
+    didStep = true;
 
-    for (const body of rigidBodies) {
-      const vel = body.linvel();
-      tmpLinvel.x = vel.x;
-      tmpLinvel.y = vel.y + impulseStrength;
-      body.setLinvel(tmpLinvel, true);
+    const normalizedScroll = Math.tanh(scrollForce * 0.005);
+    const scrollInfluence =
+      normalizedScroll * settings.interactions.scroll.forceMultiplier;
+    if (Math.abs(scrollInfluence) > 0.05) {
+      const impulseStrength = scrollInfluence * 2.5;
+      for (const body of rigidBodies) {
+        const vel = body.linvel();
+        tmpLinvel.x = vel.x;
+        tmpLinvel.y = vel.y + impulseStrength;
+        body.setLinvel(tmpLinvel, true);
+      }
     }
-  }
 
-  scrollForce *= settings.interactions.scroll.velocityDamping ?? 0.98;
+    scrollForce *= settings.interactions.scroll.velocityDamping ?? 0.98;
 
-  let stepCount = 0;
-  const simStart = performance.now();
-  while (accumulator >= dt && stepCount < 1) {
     const planetRadiusPixels =
       settings.world.centerCircleRadius * Math.min(canvasWidth, canvasHeight);
     const planetRadiusMeters = planetRadiusPixels * INV_PIXELS_PER_METER;
@@ -498,8 +454,7 @@ function update(currentTime: number) {
             let smoothPull = pullNorm * pullNorm * (3 - 2 * pullNorm);
             const easeExp = (settings.simulation as any).gravityEase ?? 1;
             if (easeExp !== 1) smoothPull = Math.pow(smoothPull, easeExp);
-            const scaledPull = smoothPull;
-            const F_gravity = gravityCoeff * mass * scaledPull;
+            const F_gravity = gravityCoeff * mass * smoothPull;
 
             const coeff = invDist * F_gravity;
             scratchForce.x = scratchDir.x * coeff;
@@ -514,20 +469,31 @@ function update(currentTime: number) {
 
             const tangentialDamping =
               settings.simulation.tangentialDamping ?? 1.0;
-            const tangDragX = -tangentialDamping * tangVelX * mass;
-            const tangDragY = -tangentialDamping * tangVelY * mass;
-            body.addForce({ x: tangDragX, y: tangDragY }, true);
+            body.addForce(
+              {
+                x: -tangentialDamping * tangVelX * mass,
+                y: -tangentialDamping * tangVelY * mass,
+              },
+              true,
+            );
 
             const radialDamping = settings.simulation.radialDamping ?? 0.06;
             const radialDrag = -radialDamping * radialVel * mass;
-            const radialDragX = radialDrag * scratchDir.x * invDist;
-            const radialDragY = radialDrag * scratchDir.y * invDist;
-            body.addForce({ x: radialDragX, y: radialDragY }, true);
+            body.addForce(
+              {
+                x: radialDrag * scratchDir.x * invDist,
+                y: radialDrag * scratchDir.y * invDist,
+              },
+              true,
+            );
           }
         }
       }
     }
+
+    world.integrationParameters.dt = dt;
     world.step();
+
     const maxSpeedCfg = (activeSettings?.simulation as any).maxSpeed;
     if (typeof maxSpeedCfg === "number" && maxSpeedCfg > 0) {
       const maxSpeedSq = maxSpeedCfg * maxSpeedCfg;
@@ -540,8 +506,6 @@ function update(currentTime: number) {
         }
       }
     }
-    accumulator -= dt;
-    stepCount++;
   }
   simEnd = performance.now();
 
@@ -550,14 +514,10 @@ function update(currentTime: number) {
     if (!body) continue;
     const pos = body.translation();
     const rot = body.rotation();
-    slabs.positions[i * 2] = pos.x * PIXELS_PER_METER;
-    slabs.positions[i * 2 + 1] = pos.y * PIXELS_PER_METER;
-    slabs.angles[i] = rot;
-
     const baseByte = i * DYNAMIC_BYTES;
     const baseFloat = baseByte >> 2;
-    interleavedFloat32[baseFloat] = slabs.positions[i * 2];
-    interleavedFloat32[baseFloat + 1] = slabs.positions[i * 2 + 1];
+    interleavedFloat32[baseFloat] = pos.x * PIXELS_PER_METER;
+    interleavedFloat32[baseFloat + 1] = pos.y * PIXELS_PER_METER;
     interleavedFloat32[baseFloat + 2] = rot;
   }
 
@@ -590,7 +550,7 @@ function update(currentTime: number) {
   const renderTime = drawEnd - drawStart;
   const totalTime = drawEnd - frameStart;
   const fpsCalc = frameTime > 0 ? 1 / frameTime : 0;
-  const calcsPerSec = frameTime > 0 ? (bodyCount * stepCount) / frameTime : 0;
+  const calcsPerSec = frameTime > 0 && didStep ? bodyCount / frameTime : 0;
 
   self.postMessage({
     type: "METRICS",
@@ -664,6 +624,8 @@ async function handleInit(msg: Extract<MainToWorkerMessage, { type: "INIT" }>) {
       } as PhysicsSettings;
     }
     activeSettings = settingsInit;
+    paletteSteps = settingsInit.rendering.colorSteps ?? 1024;
+    paletteLut = buildPalette(settingsInit.rendering.colorLevel, paletteSteps);
     let dtCfg = settingsInit.simulation.timeStep ?? 60;
     if (dtCfg > 1) {
       dtCfg /= 1000;
@@ -699,6 +661,19 @@ async function handleInit(msg: Extract<MainToWorkerMessage, { type: "INIT" }>) {
 function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
   if (!canvas || !gl || !program || !rapier) return;
 
+  if (
+    Math.abs(msg.width - canvasWidth) < RESIZE_JITTER &&
+    Math.abs(msg.height - canvasHeight) < RESIZE_JITTER
+  ) {
+    return;
+  }
+
+  const nextBufferW = Math.floor(msg.width * msg.devicePixelRatio);
+  const nextBufferH = Math.floor(msg.height * msg.devicePixelRatio);
+  if (canvas && canvas.width === nextBufferW && canvas.height === nextBufferH) {
+    return;
+  }
+
   canvasWidth = msg.width;
   canvasHeight = msg.height;
   centerX = canvasWidth / 2;
@@ -723,6 +698,8 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
         nextSettings.rendering.colorLevel,
     },
   } as PhysicsSettings;
+  paletteSteps = activeSettings.rendering.colorSteps ?? 1024;
+  paletteLut = buildPalette(activeSettings.rendering.colorLevel, paletteSteps);
   const settings = activeSettings;
   const centerXMeters = centerX * INV_PIXELS_PER_METER;
   const centerYMeters = centerY * INV_PIXELS_PER_METER;
@@ -872,13 +849,6 @@ self.onmessage = (event: MessageEvent<MainToWorkerMessage>) => {
         break;
       case "TERMINATE":
         handleTerminate();
-        break;
-      case "GET_STATE":
-        self.postMessage({
-          type: "STATE_UPDATE",
-          positions: slabs.positions,
-          angles: slabs.angles,
-        });
         break;
       case "SHOCKWAVE":
         handleShockwave(msg);

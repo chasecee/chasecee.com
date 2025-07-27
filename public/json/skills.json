@@ -36,7 +36,7 @@
             { "name": "Headless WP + GraphQL", "value": 8 },
             { "name": "Woocommerce", "value": 6 },
             { "name": "Yoast SEO", "value": 5 },
-            { "name": "Sanity.io", "value": 3 },
+            { "name": "Sanity.io", "value": 6 },
             { "name": "Directus", "value": 3 },
             { "name": "HubSpot", "value": 3 },
             { "name": "Squarespace", "value": 2 }

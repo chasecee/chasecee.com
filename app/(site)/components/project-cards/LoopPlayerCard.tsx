@@ -1,18 +1,21 @@
+import Image from "next/image";
 import { Project } from "@/types/Project";
+import type { ProjectCardProps } from "@/types/UI";
 
-type LoopPlayerCardProps = {
-  project: Project;
-};
-
-export default function LoopPlayerCard({ project }: LoopPlayerCardProps) {
+export default function LoopPlayerCard({
+  project,
+}: Pick<ProjectCardProps, "project">) {
   return (
     <div className="relative h-0 overflow-hidden rounded-xl pt-[100%]">
-      <div
-        className="absolute inset-0 scale-105 rounded-xl bg-black bg-size-[200%] bg-top-left bg-no-repeat transition-[background-position] duration-300 group-hover:bg-top-right group-active:bg-top-right md:group-active:bg-bottom-right"
-        style={{
-          backgroundImage: `url(/img/loop-box.jpg)`,
-        }}
-      ></div>
+      <Image
+        src="/img/loop-box.webp"
+        alt=""
+        width={473}
+        height={473}
+        className="absolute inset-0 h-full w-full rounded-xl object-cover"
+        fetchPriority="high"
+        loading="eager"
+      />
 
       {project.svgcode?.code && (
         <div className="view-actor absolute inset-0 transition-transform delay-[25ms] duration-500 group-hover:scale-105 group-hover:duration-300">

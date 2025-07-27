@@ -2,12 +2,7 @@ import React from "react";
 import Header from "./Header";
 import CTASection from "./CTASection";
 import Footer from "./Footer";
-
-interface ContainerProps {
-  children: React.ReactNode;
-  className?: string;
-  showCTA?: boolean;
-}
+import type { ContainerProps } from "@/types/UI";
 
 const Container: React.FC<ContainerProps> = ({
   children,

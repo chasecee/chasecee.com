@@ -88,6 +88,9 @@ export async function getProject(slug: string): Promise<{
                 _type == "internalLink" => {
                   "slug": @.reference->slug.current,
                   "refType": @.reference->_type
+                },
+                _type == "link" => {
+                  ...,
                 }
               }
             }

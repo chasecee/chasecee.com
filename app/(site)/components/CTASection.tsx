@@ -1,4 +1,4 @@
-import { FaArrowRight } from "react-icons/fa";
+import { FaChevronRight } from "react-icons/fa";
 import Button from "./Button";
 import { UI } from "../constants";
 
@@ -40,16 +40,16 @@ const CTASection: React.FC<CTASectionProps> = ({
             <Button
               href={primaryLink}
               target="_self"
-              className="border-indigo-300 bg-indigo-600"
+              className="bg-indigo-600 ring-indigo-300 dark:bg-indigo-500/20 dark:ring-indigo-300/20"
             >
-              Get Started
+              Contact
             </Button>
-            <Button
-              href={secondaryLink}
-              target="_self"
-              className="border-0 hover:bg-white/30"
-            >
-              About Me <FaArrowRight />
+            <Button href={secondaryLink} target="_self" className="group">
+              About Me{" "}
+              <FaChevronRight
+                className="transition-transform duration-200 group-hover:translate-x-1 group-active:translate-x-1"
+                size={12}
+              />
             </Button>
           </div>
         </div>

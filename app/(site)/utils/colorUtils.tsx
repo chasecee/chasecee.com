@@ -1,10 +1,4 @@
-interface ColorPalette {
-  darkest: string;
-  darker: string;
-  main: string;
-  lighter: string;
-  lightest: string;
-}
+import { ColorPalette } from "@/types/UI";
 
 function hexToHsl(hex: string): [number, number, number] {
   hex = hex.replace("#", "");

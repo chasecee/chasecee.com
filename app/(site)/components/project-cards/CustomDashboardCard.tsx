@@ -6,15 +6,12 @@ import urlFor from "@/sanity/sanity.image";
 
 const { useState, useEffect, useRef } = React;
 
-type CustomDashboardCardProps = {
-  project: Project;
-  index: number;
-};
+import type { ProjectCardProps } from "@/types/UI";
 
 export default function CustomDashboardCard({
   project,
   index,
-}: CustomDashboardCardProps) {
+}: ProjectCardProps) {
   const [shouldLoadIframe, setShouldLoadIframe] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 

@@ -217,23 +217,25 @@ export function PhysicsCanvas() {
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
+    const lastBuf = { w: 0, h: 0 };
     const resizeObserver = new ResizeObserver((entries) => {
       if (!entries || entries.length === 0) return;
       const { width, height } = entries[0].contentRect;
 
-      if ((resizeObserver as any)._debounceId) {
-        clearTimeout((resizeObserver as any)._debounceId);
-      }
-      (resizeObserver as any)._debounceId = setTimeout(() => {
-        const resizeMessage: Extract<MainToWorkerMessage, { type: "RESIZE" }> =
-          {
-            type: "RESIZE",
-            width,
-            height,
-            devicePixelRatio: window.devicePixelRatio || 1,
-          };
-        workerRef.current?.postMessage(resizeMessage);
-      }, 100);
+      const dpr = window.devicePixelRatio || 1;
+      const bufW = Math.floor(width * dpr);
+      const bufH = Math.floor(height * dpr);
+      if (bufW === lastBuf.w && bufH === lastBuf.h) return;
+      lastBuf.w = bufW;
+      lastBuf.h = bufH;
+
+      const resizeMessage: Extract<MainToWorkerMessage, { type: "RESIZE" }> = {
+        type: "RESIZE",
+        width,
+        height,
+        devicePixelRatio: dpr,
+      };
+      workerRef.current?.postMessage(resizeMessage);
     });
 
     resizeObserver.observe(canvas);

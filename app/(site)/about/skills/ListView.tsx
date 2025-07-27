@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { palette } from "../../components/palette";
 import { useSkillsData } from "../../hooks/useSkillsData";
-import { Skill, SkillDotsProps } from "../../types/skills";
+import { Skill, SkillDotsProps } from "@/types";
 import { getSkillCount, sortSkills } from "./utils";
 import { ErrorDisplay } from "./ErrorDisplay";
 

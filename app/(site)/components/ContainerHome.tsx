@@ -3,13 +3,9 @@ import Header from "./Header";
 import CTASection from "./CTASection";
 import Footer from "./Footer";
 
-interface ContainerHomeProps {
-  children: React.ReactNode;
-  className?: string;
-  showCTA?: boolean;
-}
+import type { ContainerProps } from "@/types/UI";
 
-const ContainerHome: React.FC<ContainerHomeProps> = ({
+const ContainerHome: React.FC<ContainerProps> = ({
   children,
   className = "",
   showCTA = false,
@@ -22,7 +18,7 @@ const ContainerHome: React.FC<ContainerHomeProps> = ({
         {showCTA && (
           <CTASection
             title="Let's get started"
-            subtitle="I build powerful and beautiful applications for businesses of all sizes. I'm available for work, let's get started!"
+            subtitle="I build powerful and beautiful applications for businesses of all sizes. I'm available for work, reach out!"
             primaryLink="/contact"
             secondaryLink="/about"
             outerClass=""

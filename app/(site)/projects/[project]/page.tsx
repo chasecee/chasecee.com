@@ -1,5 +1,5 @@
 import Container from "@/app/(site)/components/Container";
-import { getProject } from "@/sanity/sanity-utils";
+import { getProject, getProjects } from "@/sanity/sanity-utils";
 import Image from "next/image";
 import urlFor from "@/sanity/sanity.image";
 import { Body } from "@/app/(site)/components/Body";
@@ -10,6 +10,11 @@ type Props = {
   params: Promise<{ project: string }>;
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 };
+
+export async function generateStaticParams() {
+  const projects = await getProjects();
+  return projects.map((p) => ({ project: p.slug }));
+}
 
 export default async function Project({ params }: Props) {
   const { project: slug } = await params;
@@ -36,12 +41,12 @@ export default async function Project({ params }: Props) {
                   {project.archived ? (
                     <span className="flex h-[2.1rem] flex-row items-center justify-normal gap-1">
                       See Archived Website
-                      <ArrowTopRightIcon className="text-[1.6rem] transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" />
+                      <ArrowTopRightIcon className="text-[1.6rem] transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
                     </span>
                   ) : (
                     <span className="flex h-[2.1rem] flex-row items-center justify-normal gap-1">
                       See Live Website
-                      <ArrowTopRightIcon className="text-[1.6rem] transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" />
+                      <ArrowTopRightIcon className="text-[1.6rem] transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
                     </span>
                   )}
                 </Link>
@@ -62,7 +67,7 @@ export default async function Project({ params }: Props) {
               <Body value={project.content} />
             </div>
           )}
-          <h3 className="mb-4 mt-20 text-xl">
+          <h3 className="mt-20 mb-4 text-xl">
             Thanks for reading! Check out more:
           </h3>
           <div className="not-prose grid gap-4 md:grid-cols-2">

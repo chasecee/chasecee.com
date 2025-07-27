@@ -11,10 +11,9 @@ const HeroText = () => {
         Let&apos;s build.
       </h1>
       <div className="container flex flex-col gap-8">
-        <p className="mx-auto w-[90%] text-base font-light text-pretty text-gray-600 md:w-auto md:text-xl dark:text-gray-400">
-          I&apos;m Chase, a developer obsessed with
-          <br className="hidden sm:block" />
-          &nbsp;crafting excellent experiences.
+        <p className="mx-auto w-[80%] text-base font-light text-balance text-gray-600 md:w-[60%] md:text-xl dark:text-gray-400">
+          I&apos;m Chase, a developer obsessed with crafting excellent
+          experiences.
         </p>
         <div className="inline-block">
           <Button className="group pointer-events-auto" href="/about">
