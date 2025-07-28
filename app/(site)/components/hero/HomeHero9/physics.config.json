@@ -3,19 +3,19 @@
     "timeStep": 16.666,
     "gravity": 0.096,
     "gravityEase": 0.7,
-    "damping": 1.5,
+    "damping": 1,
     "initialClockwiseVelocity": 0,
     "tangentialDamping": 0.02,
     "radialDamping": 0.01,
-    "angularDamping": 0.25,
+    "angularDamping": 0.1,
     "maxSpeed": 8
   },
   "bodies": {
     "count": 4096,
-    "radius": 2.5,
+    "radius": 3,
     "radiusVariance": 0,
-    "friction": 0.001,
-    "restitution": 0.25,
+    "friction": 0,
+    "restitution": 0.5,
     "startRadius": 0.35
   },
   "world": {

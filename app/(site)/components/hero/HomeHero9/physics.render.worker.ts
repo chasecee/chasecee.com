@@ -244,8 +244,8 @@ function createBodies(settings: PhysicsSettings) {
     const planetColliderDesc = rapier.ColliderDesc.ball(
       planetRadiusPixels / PIXELS_PER_METER,
     )
-      .setFriction(0.05)
-      .setRestitution(0.1);
+      .setFriction(0)
+      .setRestitution(0.5);
     planetCollider = world.createCollider(planetColliderDesc, planetBody);
   }
 
