@@ -99,9 +99,10 @@ export function PhysicsCanvas() {
     );
     let lastMetricsTime = 0;
     workerRef.current.onmessage = (e) => {
-      if (!IS_DEV) return;
       const data = e.data as { type: string; [key: string]: unknown };
-      if (data && data.type === "METRICS") {
+      if (!data) return;
+      if (data.type === "METRICS") {
+        if (!IS_DEV) return; 
         const now = performance.now();
         if (now - lastMetricsTime > 250) {
           lastMetricsTime = now;
@@ -109,6 +110,20 @@ export function PhysicsCanvas() {
             new CustomEvent("physicsMetrics", { detail: data }),
           );
         }
+      } else if (data.type === "FRAME_COLORS") {
+        window.dispatchEvent(
+          new CustomEvent("physicsFrameColors", { detail: data.colors }),
+        );
+      } else if (data.type === "AVG_COLOR") {
+        window.dispatchEvent(
+          new CustomEvent("physicsAvgColor", {
+            detail: {
+              r: data.r as number,
+              g: data.g as number,
+              b: data.b as number,
+            },
+          }),
+        );
       }
     };
 

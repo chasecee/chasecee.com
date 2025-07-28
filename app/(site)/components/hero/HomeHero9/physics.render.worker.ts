@@ -10,6 +10,28 @@ import { parseHsla, hslToRgb, lerpColor } from "../../../utils/color";
 const BYTES_PER_COLOR = 3;
 const RESIZE_JITTER = 80;
 
+
+const COLOR_BUCKETS = 12;
+let sampleFrameCounter = 0;
+const FRAME_SKIP = 2;
+let frameSkipCounter = 0;
+const SMOOTH_ALPHA = 0.3;
+let prevColorsF: Float32Array | null = null;
+let prevPostedHash = "";
+
+let isMobileDevice = false;
+
+// Preallocate buffers to avoid per-frame allocations
+const bucketSumR = new Uint32Array(COLOR_BUCKETS);
+const bucketSumG = new Uint32Array(COLOR_BUCKETS);
+const bucketSumB = new Uint32Array(COLOR_BUCKETS);
+const bucketCounts = new Uint32Array(COLOR_BUCKETS);
+
+const colorsBuf = new Uint8Array(COLOR_BUCKETS * 3);
+const flippedBuf = new Uint8Array(COLOR_BUCKETS * 3);
+const rotatedBuf = new Uint8Array(COLOR_BUCKETS * 3);
+const smoothUintBuf = new Uint8Array(COLOR_BUCKETS * 3);
+
 const DYNAMIC_BYTES = 20;
 let activeSettings: PhysicsSettings;
 
@@ -385,8 +407,7 @@ function createBodies(settings: PhysicsSettings) {
 
   if (gl && interleavedVbo) {
     gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
-    
-    
+
     gl.bufferSubData(
       gl.ARRAY_BUFFER,
       0,
@@ -539,8 +560,7 @@ function update(currentTime: number) {
 
   if (gl && interleavedVbo) {
     gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
-    
-    
+
     gl.bufferSubData(
       gl.ARRAY_BUFFER,
       0,
@@ -558,6 +578,102 @@ function update(currentTime: number) {
   }
 
   const drawEnd = performance.now();
+
+  
+  if (frameSkipCounter++ % FRAME_SKIP === 0 && rigidBodies.length) {
+    const planetRadiusPixels =
+      activeSettings.world.centerCircleRadius *
+      Math.min(canvasWidth, canvasHeight);
+    const bodyRadius = activeSettings.bodies.radius;
+    const minDist = planetRadiusPixels - bodyRadius * 2;
+    const maxDist = planetRadiusPixels + bodyRadius * 2;
+    const minDistSq = minDist * minDist;
+    const maxDistSq = maxDist * maxDist;
+
+    bucketSumR.fill(0);
+    bucketSumG.fill(0);
+    bucketSumB.fill(0);
+    bucketCounts.fill(0);
+
+    for (let i = 0; i < bodyCount; i++) {
+      const pos = rigidBodies[i].translation();
+      const dx = pos.x * PIXELS_PER_METER - centerX;
+      const dy = pos.y * PIXELS_PER_METER - centerY;
+      const distSq = dx * dx + dy * dy;
+      if (distSq < minDistSq || distSq > maxDistSq) continue;
+
+      let ang = Math.atan2(dy, dx);
+      if (ang < 0) ang += Math.PI * 2;
+      const bucket =
+        Math.floor((ang / (Math.PI * 2)) * COLOR_BUCKETS) % COLOR_BUCKETS;
+
+      const colorIndex = i * DYNAMIC_BYTES + 16;
+      const r = interleavedUint8[colorIndex];
+      const g = interleavedUint8[colorIndex + 1];
+      const b = interleavedUint8[colorIndex + 2];
+
+      bucketSumR[bucket] += r;
+      bucketSumG[bucket] += g;
+      bucketSumB[bucket] += b;
+      bucketCounts[bucket]++;
+    }
+
+    for (let b = 0; b < COLOR_BUCKETS; b++) {
+      if (bucketCounts[b] === 0) {
+        colorsBuf[b * 3] = 0;
+        colorsBuf[b * 3 + 1] = 0;
+        colorsBuf[b * 3 + 2] = 0;
+      } else {
+        colorsBuf[b * 3] = Math.round(bucketSumR[b] / bucketCounts[b]);
+        colorsBuf[b * 3 + 1] = Math.round(bucketSumG[b] / bucketCounts[b]);
+        colorsBuf[b * 3 + 2] = Math.round(bucketSumB[b] / bucketCounts[b]);
+      }
+    }
+
+    
+    for (let b = 0; b < COLOR_BUCKETS; b++) {
+      const src = b * 3;
+      const destBucket = (COLOR_BUCKETS - b) % COLOR_BUCKETS;
+      const dest = destBucket * 3;
+      flippedBuf[dest] = colorsBuf[src];
+      flippedBuf[dest + 1] = colorsBuf[src + 1];
+      flippedBuf[dest + 2] = colorsBuf[src + 2];
+    }
+
+    const ROT = COLOR_BUCKETS / 4;
+    for (let b = 0; b < COLOR_BUCKETS; b++) {
+      const src = b * 3;
+      const dest = ((b + ROT) % COLOR_BUCKETS) * 3;
+      rotatedBuf[dest] = flippedBuf[src];
+      rotatedBuf[dest + 1] = flippedBuf[src + 1];
+      rotatedBuf[dest + 2] = flippedBuf[src + 2];
+    }
+
+    
+    if (!prevColorsF) {
+      prevColorsF = new Float32Array(rotatedBuf.length);
+      for (let i = 0; i < rotatedBuf.length; i++)
+        prevColorsF[i] = rotatedBuf[i];
+    } else {
+      for (let i = 0; i < rotatedBuf.length; i++) {
+        const alpha = isMobileDevice ? 1 : SMOOTH_ALPHA;
+        prevColorsF[i] = prevColorsF[i] * (1 - alpha) + rotatedBuf[i] * alpha;
+      }
+    }
+
+    for (let i = 0; i < rotatedBuf.length; i++)
+      smoothUintBuf[i] = Math.round(prevColorsF![i]);
+
+    
+    let hash = "";
+    for (let i = 0; i < COLOR_BUCKETS; i++) {
+      hash += String.fromCharCode(smoothUintBuf[i * 3]);
+    }
+    if (hash !== prevPostedHash) {
+      prevPostedHash = hash;
+      self.postMessage({ type: "FRAME_COLORS", colors: smoothUintBuf });
+    }
+  }
 
   const simulationTime = simEnd - simStart;
   const renderTime = drawEnd - drawStart;

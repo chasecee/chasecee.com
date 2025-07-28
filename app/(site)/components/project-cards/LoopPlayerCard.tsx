@@ -15,6 +15,7 @@ export default function LoopPlayerCard({
         className="absolute inset-0 h-full w-full rounded-xl object-cover"
         fetchPriority="high"
         loading="eager"
+        priority={true}
       />
 
       {project.svgcode?.code && (

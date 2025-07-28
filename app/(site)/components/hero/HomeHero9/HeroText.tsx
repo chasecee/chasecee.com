@@ -1,5 +1,6 @@
 import { FaArrowRight, FaChevronRight, FaGithub } from "react-icons/fa";
 import Button from "../../Button";
+import BorderGlow from "./BorderGlow";
 
 const containerBase =
   "relative mx-auto flex mt-[11svh] select-none flex-col items-center justify-center gap-5 py-10 text-center lg:max-w-2xl";
@@ -15,14 +16,19 @@ const HeroText = () => {
           I&apos;m Chase, a developer obsessed with crafting excellent
           experiences.
         </p>
-        <div className="inline-block">
-          <Button className="group pointer-events-auto" href="/about">
-            About Me
-            <FaChevronRight
-              className="transition-transform duration-200 group-hover:translate-x-1 group-active:translate-x-1"
-              size={12}
-            />
-          </Button>
+        <div className="group inline-block">
+          <BorderGlow>
+            <Button
+              className="pointer-events-auto bg-neutral-100 ring-black/5 dark:bg-neutral-900 dark:ring-white/5"
+              href="/about"
+            >
+              About Me
+              <FaChevronRight
+                className="transition-transform duration-200 group-hover:translate-x-1 group-active:translate-x-1"
+                size={12}
+              />
+            </Button>
+          </BorderGlow>
         </div>
       </div>
     </div>

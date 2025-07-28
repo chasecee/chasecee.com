@@ -75,7 +75,21 @@ export type InitializedWorkerMessage = {
   type: "INITIALIZED";
 };
 
+export type FrameColorsWorkerMessage = {
+  type: "FRAME_COLORS";
+  colors: Uint8Array;
+};
+
+export type AvgColorWorkerMessage = {
+  type: "AVG_COLOR";
+  r: number;
+  g: number;
+  b: number;
+};
+
 export type WorkerToMainMessage =
   | StateUpdateWorkerMessage
   | MetricsWorkerMessage
-  | InitializedWorkerMessage;
+  | InitializedWorkerMessage
+  | FrameColorsWorkerMessage
+  | AvgColorWorkerMessage;
