@@ -31,7 +31,7 @@ export default async function RootLayout({
     <html lang="en">
       <body className={font.className + bodyClass}>
         {children}
-        {/* Defer Vercel analytics and performance scripts until after hydration */}
+        {}
         <Script strategy="afterInteractive" src="/_vercel/insights/script.js" />
         <Script
           strategy="afterInteractive"

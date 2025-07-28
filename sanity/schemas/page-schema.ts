@@ -32,7 +32,7 @@ const page = {
                 {
                     type: 'image',
                     options: {
-                        hotspot: true, // enable hotspot
+                        hotspot: true, 
                     },
                     fields: [
                       {

@@ -104,7 +104,7 @@ export async function getProject(slug: string): Promise<{
               _id,
               name,
               "slug": slug.current,
-              "image": image.asset->url // Include this field
+              "image": image.asset->url 
           }`,
       { orderRank: project.orderRank },
     );
@@ -114,7 +114,7 @@ export async function getProject(slug: string): Promise<{
               _id,
               name,
               "slug": slug.current,
-              "image": image.asset->url // Include this field
+              "image": image.asset->url 
           }`,
       { orderRank: project.orderRank },
     );

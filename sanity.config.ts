@@ -10,7 +10,7 @@ import {
 } from "@sanity/orderable-document-list";
 import { ImagesIcon, DocumentsIcon } from "@sanity/icons";
 
-// Type assertion for schema arrays - Sanity's internal types are complex
+
 const schemasAny = schemas as any;
 const projectSchema = schemasAny.find(
   (schema: any) => schema.name === "project",

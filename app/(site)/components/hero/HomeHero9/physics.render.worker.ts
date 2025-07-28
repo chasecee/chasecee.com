@@ -14,7 +14,6 @@ const DYNAMIC_BYTES = 20;
 let activeSettings: PhysicsSettings;
 
 const paletteCache = new Map<string, Uint8Array>();
-// Keep the palette cache from ballooning on theme toggles / experiments.
 const PALETTE_CACHE_LIMIT = 32;
 let paletteLut: Uint8Array;
 let paletteSteps = 0;
@@ -51,7 +50,6 @@ function buildPalette(level: number, steps: number): Uint8Array {
     lut[base + 1] = g;
     lut[base + 2] = b;
   }
-  // Simple FIFO eviction – Map preserves insertion order.
   if (paletteCache.size >= PALETTE_CACHE_LIMIT) {
     const oldestKey = paletteCache.keys().next().value as string | undefined;
     if (oldestKey !== undefined) paletteCache.delete(oldestKey);
@@ -184,9 +182,6 @@ function setupWebgl() {
   interleavedBuffer = new ArrayBuffer(MAX_BODIES * DYNAMIC_BYTES);
   interleavedFloat32 = new Float32Array(interleavedBuffer);
   interleavedUint8 = new Uint8Array(interleavedBuffer);
-  // Allocate a single view for the entire buffer once; we’ll upload only the
-  // active byte range via the `length` overload of `bufferSubData`, avoiding
-  // per-frame/per-resize Uint8Array allocations.
   interleavedSlice = new Uint8Array(interleavedUint8.buffer);
 
   interleavedVbo = WebGL.createVbo(gl, interleavedBuffer, gl.STREAM_DRAW);
@@ -238,7 +233,6 @@ function setupWebgl() {
 }
 
 function createBodies(settings: PhysicsSettings) {
-  // Clean up any previous simulation bodies before rebuilding.
   for (const body of rigidBodies) {
     world.removeRigidBody(body);
   }
@@ -391,8 +385,8 @@ function createBodies(settings: PhysicsSettings) {
 
   if (gl && interleavedVbo) {
     gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
-    // Upload only the active portion of the buffer without allocating a new
-    // typed-array view.
+    
+    
     gl.bufferSubData(
       gl.ARRAY_BUFFER,
       0,
@@ -411,7 +405,7 @@ function update(currentTime: number) {
   if (!isRunning || !canvas) return;
 
   if (isPaused) {
-    return; // Halt update loop while paused; resumed via SET_PAUSED handler.
+    return;
   }
 
   if (lastTime === 0) {
@@ -423,8 +417,7 @@ function update(currentTime: number) {
   const frameTime = (currentTime - lastTime) / 1000.0;
   lastTime = currentTime;
   accumulator += frameTime;
-  // Prevent huge catch-up steps after the tab has been in the background.
-  const MAX_ACCUM = dt * 4; // at most four physics ticks worth
+  const MAX_ACCUM = dt * 4;
   if (accumulator > MAX_ACCUM) accumulator = MAX_ACCUM;
   const simStart = performance.now();
   let didStep = false;
@@ -546,8 +539,8 @@ function update(currentTime: number) {
 
   if (gl && interleavedVbo) {
     gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
-    // Upload only the active portion of the buffer without allocating a new
-    // typed-array view.
+    
+    
     gl.bufferSubData(
       gl.ARRAY_BUFFER,
       0,
@@ -853,15 +846,12 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
 function handleTerminate() {
   isRunning = false;
   try {
-    // Dispose physics world if initialized.
     if (world) world.free();
-
     if (gl) {
       if (interleavedVbo) gl.deleteBuffer(interleavedVbo);
       if (cornerVbo) gl.deleteBuffer(cornerVbo);
       if (vao) gl.deleteVertexArray(vao);
       if (program) gl.deleteProgram(program);
-      // Lose the context to make sure GPU memory is reclaimed.
       gl.getExtension("WEBGL_lose_context")?.loseContext();
     }
   } catch {}

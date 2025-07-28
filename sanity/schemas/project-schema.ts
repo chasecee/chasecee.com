@@ -27,7 +27,7 @@ const project = {
         ],
         layout: "radio",
       },
-      // Sanity's validation Rule type is complex and varies by version
+      
       validation: (Rule: any) => Rule.required(),
     },
     {
@@ -171,7 +171,7 @@ const project = {
               name: "media",
               type: "file",
               title: "Media file",
-              // Sanity's file type structure varies by version
+              
             } as { name: string; type: string; title: string; media: any },
           ],
         },
