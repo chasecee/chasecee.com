@@ -58,7 +58,6 @@ const BorderGlow = ({ children, className = "" }: Props) => {
       setBg(grad);
     };
 
-    window.addEventListener("physicsFrameColors", handler);
     window.addEventListener("physicsAvgColor", avgHandler);
     return () => {
       window.removeEventListener("physicsFrameColors", handler);

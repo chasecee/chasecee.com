@@ -10,7 +10,6 @@ import { parseHsla, hslToRgb, lerpColor } from "../../../utils/color";
 const BYTES_PER_COLOR = 3;
 const RESIZE_JITTER = 80;
 
-
 const COLOR_BUCKETS = 12;
 let sampleFrameCounter = 0;
 const FRAME_SKIP = 2;
@@ -579,7 +578,6 @@ function update(currentTime: number) {
 
   const drawEnd = performance.now();
 
-  
   if (frameSkipCounter++ % FRAME_SKIP === 0 && rigidBodies.length) {
     const planetRadiusPixels =
       activeSettings.world.centerCircleRadius *
@@ -630,7 +628,6 @@ function update(currentTime: number) {
       }
     }
 
-    
     for (let b = 0; b < COLOR_BUCKETS; b++) {
       const src = b * 3;
       const destBucket = (COLOR_BUCKETS - b) % COLOR_BUCKETS;
@@ -649,7 +646,6 @@ function update(currentTime: number) {
       rotatedBuf[dest + 2] = flippedBuf[src + 2];
     }
 
-    
     if (!prevColorsF) {
       prevColorsF = new Float32Array(rotatedBuf.length);
       for (let i = 0; i < rotatedBuf.length; i++)
@@ -664,7 +660,6 @@ function update(currentTime: number) {
     for (let i = 0; i < rotatedBuf.length; i++)
       smoothUintBuf[i] = Math.round(prevColorsF![i]);
 
-    
     let hash = "";
     for (let i = 0; i < COLOR_BUCKETS; i++) {
       hash += String.fromCharCode(smoothUintBuf[i * 3]);
@@ -681,14 +676,17 @@ function update(currentTime: number) {
   const fpsCalc = frameTime > 0 ? 1 / frameTime : 0;
   const calcsPerSec = frameTime > 0 && didStep ? bodyCount / frameTime : 0;
 
-  self.postMessage({
-    type: "METRICS",
-    simulationTime,
-    renderTime,
-    totalTime,
-    fps: fpsCalc,
-    calcsPerSec,
-  });
+  const IS_DEV = process.env.NODE_ENV !== "production";
+  if (IS_DEV) {
+    self.postMessage({
+      type: "METRICS",
+      simulationTime,
+      renderTime,
+      totalTime,
+      fps: fpsCalc,
+      calcsPerSec,
+    });
+  }
 
   requestAnimationFrame(update);
 }
