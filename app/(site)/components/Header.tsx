@@ -11,7 +11,7 @@ export default function Header() {
             href="/"
           >
             <div className="sr-only">Chase Cee Logo</div>
-            <div className="max-w-[120px]">
+            <div className="max-w-[100px]">
               <ChaseCeeLogo />
             </div>
           </Link>
