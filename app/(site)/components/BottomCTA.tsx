@@ -26,7 +26,7 @@ export default function BottomCTA() {
       <div className="relative flex flex-col items-center justify-center gap-20 px-4 py-16 md:flex-row md:text-left">
         <Image
           src={profilePic}
-          alt="alt text"
+          alt="Chase Christensen profile photo"
           width={500}
           height={500}
           className="m-0 w-40 rounded-full sm:w-60"

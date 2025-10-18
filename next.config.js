@@ -54,13 +54,18 @@ const nextConfig = {
       layers: true,
     };
 
-    // Configure output for modern browsers that support async/await and WebAssembly
+    // Set target for modern browsers that support async/await and WebAssembly
     if (!isServer) {
+      config.target = ["web", "es2020"];
       config.output = {
         ...config.output,
         environment: {
           ...config.output?.environment,
           asyncFunction: true,
+          arrowFunction: true,
+          const: true,
+          destructuring: true,
+          forOf: true,
           module: true,
         },
       };
