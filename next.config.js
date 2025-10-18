@@ -46,17 +46,46 @@ const nextConfig = {
       },
     ];
   },
-  webpack(config) {
+  webpack(config, { isServer }) {
     config.experiments = {
       ...config.experiments,
       asyncWebAssembly: true,
       topLevelAwait: true,
+      layers: true,
     };
 
+    // Configure output for modern browsers that support async/await and WebAssembly
+    if (!isServer) {
+      config.output = {
+        ...config.output,
+        environment: {
+          ...config.output?.environment,
+          asyncFunction: true,
+          module: true,
+        },
+      };
+    }
+
+    // Handle WASM files
     config.module.rules.push({
       test: /\.wasm$/,
       type: "webassembly/async",
     });
+
+    // Fix for Rapier2D WASM loading in workers
+    if (!isServer) {
+      try {
+        config.resolve.alias = {
+          ...config.resolve.alias,
+          "@dimforge/rapier2d": require.resolve("@dimforge/rapier2d"),
+        };
+      } catch (e) {
+        // Fallback if module resolution fails during build
+        console.warn(
+          "Could not resolve @dimforge/rapier2d path, using default",
+        );
+      }
+    }
 
     // Disable polyfills for modern browsers
     config.resolve.fallback = {
@@ -64,6 +93,23 @@ const nextConfig = {
       fs: false,
       path: false,
       crypto: false,
+    };
+
+    // Optimize chunks for better module loading
+    config.optimization = {
+      ...config.optimization,
+      splitChunks: {
+        ...config.optimization.splitChunks,
+        cacheGroups: {
+          ...config.optimization.splitChunks?.cacheGroups,
+          rapier: {
+            test: /[\\/]node_modules[\\/]@dimforge[\\/]rapier2d/,
+            name: "rapier",
+            chunks: "all",
+            priority: 10,
+          },
+        },
+      },
     };
 
     return config;

@@ -47,7 +47,7 @@ export default function BottomCTA() {
               target="_self"
               className="group flex items-center gap-2 bg-indigo-600 ring-indigo-300 dark:bg-indigo-500/20 dark:ring-indigo-300/20"
             >
-              Let's talk
+              Let&apos;s talk
               <FaChevronRight
                 className="transition-transform duration-200 group-hover:translate-x-1 group-active:translate-x-1"
                 size={12}

@@ -5,7 +5,7 @@ import profilePic from "@/public/me.webp";
 
 const alt = "alt text";
 
-export default function ProfilePic(): JSX.Element {
+export default function ProfilePic() {
   return (
     <>
       <Tilt
