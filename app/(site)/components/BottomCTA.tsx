@@ -16,13 +16,13 @@ const ArrowsLottie = dynamic(() => import("../about/ArrowsLottie"), {
 export default function BottomCTA() {
   return (
     <div className="relative my-20 overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-800/50">
-      <div
-        className="absolute inset-0 bg-repeat opacity-20 mix-blend-multiply"
+      {/* <div
+        className="absolute inset-0 bg-repeat opacity-20"
         style={{
           backgroundImage: `url('/noise1.webp')`,
           backgroundSize: `${UI.NOISE_SIZE}px`,
         }}
-      />
+      /> */}
       <div className="relative flex flex-col items-center justify-center gap-20 px-4 py-16 md:flex-row md:text-left">
         <Image
           src={profilePic}
