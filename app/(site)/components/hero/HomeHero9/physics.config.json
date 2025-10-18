@@ -2,7 +2,7 @@
   "simulation": {
     "timeStep": 16.666,
     "gravity": 0.096,
-    "gravityEase": 0.7,
+    "gravityEase": 1,
     "damping": 1,
     "initialClockwiseVelocity": 0,
     "tangentialDamping": 0.02,
@@ -12,7 +12,7 @@
   },
   "bodies": {
     "count": 4096,
-    "radius": 3,
+    "radius": 4,
     "radiusVariance": 0,
     "friction": 0,
     "restitution": 0.5,

@@ -3,6 +3,7 @@ import { getPersonalProjects, getClientProjects } from "@/sanity/sanity-utils";
 import ContainerHome from "./components/ContainerHome";
 import ProjectsList from "./components/ProjectsList";
 import HomeHero9 from "./components/hero/HomeHero9/HomeHero9";
+import BottomCTA from "./components/BottomCTA";
 
 export default async function Home() {
   const [personalProjects, clientProjects] = await Promise.all([
@@ -12,7 +13,7 @@ export default async function Home() {
 
   return (
     <>
-      <ContainerHome className="relative z-10" showCTA={true}>
+      <ContainerHome className="relative z-10" showCTA={false}>
         <HomeHero9 />
         <div className="relative z-10 flex flex-col gap-10">
           <ProjectsList
@@ -27,6 +28,7 @@ export default async function Home() {
             forceLoading={false}
           />
         </div>
+        <BottomCTA />
       </ContainerHome>
     </>
   );

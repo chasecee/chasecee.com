@@ -32,6 +32,34 @@ const rotatedBuf = new Uint8Array(COLOR_BUCKETS * 3);
 const smoothUintBuf = new Uint8Array(COLOR_BUCKETS * 3);
 
 const DYNAMIC_BYTES = 20;
+
+// Upload helper using buffer mapping to avoid an extra CPU→GPU copy per frame
+function uploadInterleavedData(byteCount: number) {
+  if (!gl || !interleavedVbo) return;
+  gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
+
+  // Map the range we are about to overwrite. If mapping fails, fall back.
+  const MAP_WRITE_BIT = 0x0002;
+  const MAP_INVALIDATE_RANGE_BIT = 0x0004;
+
+  const mapped = (gl as any).mapBufferRange?.(
+    gl.ARRAY_BUFFER,
+    0,
+    byteCount,
+    MAP_WRITE_BIT | MAP_INVALIDATE_RANGE_BIT,
+  ) as ArrayBuffer | null;
+
+  if (mapped) {
+    new Uint8Array(mapped).set(interleavedUint8.subarray(0, byteCount));
+    (gl as any).unmapBuffer?.(gl.ARRAY_BUFFER);
+  } else {
+    // Fallback path for older browsers
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, interleavedUint8, 0, byteCount);
+  }
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, null);
+}
+
 let activeSettings: PhysicsSettings;
 
 const paletteCache = new Map<string, Uint8Array>();
@@ -117,7 +145,6 @@ let cornerVbo: WebGLBuffer | null = null;
 let interleavedBuffer: ArrayBuffer;
 let interleavedFloat32: Float32Array;
 let interleavedUint8: Uint8Array;
-let interleavedSlice: Uint8Array | null = null;
 
 let isRunning = false;
 let isPaused = false;
@@ -203,9 +230,12 @@ function setupWebgl() {
   interleavedBuffer = new ArrayBuffer(MAX_BODIES * DYNAMIC_BYTES);
   interleavedFloat32 = new Float32Array(interleavedBuffer);
   interleavedUint8 = new Uint8Array(interleavedBuffer);
-  interleavedSlice = new Uint8Array(interleavedUint8.buffer);
 
-  interleavedVbo = WebGL.createVbo(gl, interleavedBuffer, gl.STREAM_DRAW);
+  // Allocate GPU storage without initial data; we'll map it on demand.
+  interleavedVbo = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
+  gl.bufferData(gl.ARRAY_BUFFER, interleavedBuffer.byteLength, gl.STREAM_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
   const cornerData = new Float32Array([-1, -1, -1, 1, 1, -1, 1, 1]);
   cornerVbo = gl.createBuffer();
@@ -405,16 +435,7 @@ function createBodies(settings: PhysicsSettings) {
   bodyCount = rigidBodies.length;
 
   if (gl && interleavedVbo) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
-
-    gl.bufferSubData(
-      gl.ARRAY_BUFFER,
-      0,
-      interleavedUint8,
-      0,
-      bodyCount * DYNAMIC_BYTES,
-    );
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    uploadInterleavedData(bodyCount * DYNAMIC_BYTES);
   }
 }
 
@@ -558,16 +579,7 @@ function update(currentTime: number) {
   }
 
   if (gl && interleavedVbo) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
-
-    gl.bufferSubData(
-      gl.ARRAY_BUFFER,
-      0,
-      interleavedUint8,
-      0,
-      bodyCount * DYNAMIC_BYTES,
-    );
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    uploadInterleavedData(bodyCount * DYNAMIC_BYTES);
   }
 
   const drawStart = performance.now();
@@ -667,6 +679,26 @@ function update(currentTime: number) {
     if (hash !== prevPostedHash) {
       prevPostedHash = hash;
       self.postMessage({ type: "FRAME_COLORS", colors: smoothUintBuf });
+
+      let totalR = 0,
+        totalG = 0,
+        totalB = 0,
+        totalCount = 0;
+      for (let i = 0; i < COLOR_BUCKETS; i++) {
+        const idx = i * 3;
+        totalR += smoothUintBuf[idx];
+        totalG += smoothUintBuf[idx + 1];
+        totalB += smoothUintBuf[idx + 2];
+        totalCount++;
+      }
+      if (totalCount > 0) {
+        self.postMessage({
+          type: "AVG_COLOR",
+          r: Math.round(totalR / totalCount),
+          g: Math.round(totalG / totalCount),
+          b: Math.round(totalB / totalCount),
+        });
+      }
     }
   }
 
@@ -736,7 +768,8 @@ async function handleInit(msg: Extract<MainToWorkerMessage, { type: "INIT" }>) {
     if (!gl) throw new Error("Could not create WebGL2 context");
 
     rapier = await initRapier();
-
+    // Persist device type so we don't re-evaluate on every resize
+    isMobileDevice = msg.isMobile;
     const gravity = { x: 0.0, y: 0.0 };
     world = new rapier.World(gravity);
 
@@ -815,7 +848,7 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
 
   gl.viewport(0, 0, bufferWidth, bufferHeight);
 
-  const nextSettings = getSettings(msg.width < 768);
+  const nextSettings = getSettings(isMobileDevice);
   activeSettings = {
     ...nextSettings,
     rendering: {

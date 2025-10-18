@@ -67,7 +67,7 @@ export const UI = {
     MAX: 6,
     DEFAULT: 4,
   },
-  NOISE_SIZE: 150,
+  NOISE_SIZE: 250,
   BORDER_RADIUS: {
     SMALL: 8,
     MEDIUM: 12,
@@ -84,4 +84,8 @@ export const FILE_TYPES = {
 export const CACHE_KEYS = {
   SKILLS_DATA: "/json/skills.json",
   BLOB_STORAGE: "cee-app-blobs",
+} as const;
+
+export const LINKS = {
+  RESUME: "/ChaseChristensen-Resume-2025.pdf",
 } as const;
