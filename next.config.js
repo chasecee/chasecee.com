@@ -4,9 +4,7 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
   },
-  experimental: {
-    optimizePackageImports: ["react-icons"],
-  },
+  experimental: {},
   images: {
     remotePatterns: [
       {
@@ -80,15 +78,18 @@ const nextConfig = {
     // Fix for Rapier2D WASM loading in workers
     if (!isServer) {
       try {
+        const rapierPath = require.resolve("@dimforge/rapier2d");
         config.resolve.alias = {
           ...config.resolve.alias,
-          "@dimforge/rapier2d": require.resolve("@dimforge/rapier2d"),
+          "@dimforge/rapier2d": rapierPath,
         };
       } catch (e) {
-        // Fallback if module resolution fails during build
-        console.warn(
-          "Could not resolve @dimforge/rapier2d path, using default",
-        );
+        // Only warn if the package is actually missing
+        if (e.code !== "MODULE_NOT_FOUND") {
+          console.warn(
+            "Could not resolve @dimforge/rapier2d path, using default",
+          );
+        }
       }
     }
 

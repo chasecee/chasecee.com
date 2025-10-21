@@ -1,13 +1,12 @@
 import Container from "@/app/(site)/components/Container";
 import { Metadata } from "next";
-import { FaFilePdf, FaGithub, FaLinkedin, FaXTwitter } from "react-icons/fa6";
 import WavyLine from "../components/WavyLineDynamic";
 import Button from "../components/Button";
+import { GithubIcon, LinkedInIcon } from "../components/icons";
 export const metadata: Metadata = {
   title: "Contact - Chase Cee",
   description: "Web Designer and Developer",
 };
-const size = 24;
 export default function Contact() {
   return (
     <Container>
@@ -20,25 +19,38 @@ export default function Contact() {
             <WavyLine />
           </div>
           <div className="m-0 mt-2 text-xl">
-            <div className="m-0 grid grid-cols-2 gap-5 sm:grid-cols-4">
+            <div className="m-0 grid grid-cols-2 gap-5 sm:grid-cols-3">
               <Button href="https://github.com/chasecee/" target="_blank">
                 Github
-                <FaGithub size={size} />
+                <GithubIcon size={24} />
               </Button>
-              <Button href="https://x.com/ChaseCee/" target="_blank">
-                X (Twitter)
-                <FaXTwitter size={size} />
-              </Button>
+
               <Button
                 href="https://www.linkedin.com/in/chasechristensen-1/"
                 target="_blank"
               >
                 LinkedIn
-                <FaLinkedin size={size} />
+                <LinkedInIcon size={24} />
               </Button>
               <Button href="/ChaseChristensen-Resume-2025.pdf" target="_blank">
                 Resume
-                <FaFilePdf size={size} />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+                  <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+                  <path d="M10 9H8" />
+                  <path d="M16 13H8" />
+                  <path d="M16 17H8" />
+                </svg>
               </Button>
             </div>
           </div>

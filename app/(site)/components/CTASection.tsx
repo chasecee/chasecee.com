@@ -1,4 +1,3 @@
-import { FaChevronRight } from "react-icons/fa";
 import Button from "./Button";
 import { UI } from "../constants";
 
@@ -46,10 +45,20 @@ const CTASection: React.FC<CTASectionProps> = ({
             </Button>
             <Button href={secondaryLink} target="_self" className="group">
               About Me{" "}
-              <FaChevronRight
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
                 className="transition-transform duration-200 group-hover:translate-x-1 group-active:translate-x-1"
-                size={12}
-              />
+              >
+                <path d="m9 18 6-6-6-6" />
+              </svg>
             </Button>
           </div>
         </div>
