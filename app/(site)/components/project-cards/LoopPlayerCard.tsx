@@ -19,7 +19,7 @@ export default function LoopPlayerCard({
       />
 
       {project.svgcode?.code && (
-        <div className="view-actor absolute inset-0 transition-transform delay-[25ms] duration-500 group-hover:scale-105 group-hover:duration-300">
+        <div className="view-actor absolute inset-0 transition-transform delay-[25ms] duration-500 group-hover:scale-110 group-hover:duration-300">
           <div
             className="svg-parent absolute top-1/2 left-1/2 h-full w-[50%] -translate-x-1/2 -translate-y-1/2 text-white"
             dangerouslySetInnerHTML={{

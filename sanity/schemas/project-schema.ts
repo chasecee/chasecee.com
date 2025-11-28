@@ -85,13 +85,6 @@ const project = {
       type: "boolean",
     },
     {
-      title: "Use Custom Component (Legacy)",
-      name: "useCustomComponent",
-      type: "boolean",
-      description: "Legacy field - will be removed",
-      hidden: true,
-    },
-    {
       name: "content",
       title: "Content",
       type: "array",

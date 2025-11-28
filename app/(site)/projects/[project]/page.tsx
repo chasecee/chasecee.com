@@ -4,8 +4,21 @@ import Image from "next/image";
 import urlFor from "@/sanity/sanity.image";
 import { Body } from "@/app/(site)/components/Body";
 import Link from "next/link";
-import { ArrowTopRightIcon } from "@sanity/icons";
+import { LinkOutIcon } from "@/app/(site)/components/icons";
 import ProjectLink from "./ProjectLink";
+
+function shortenUrl(url: string): string {
+  try {
+    const urlObj = new URL(url);
+    let hostname = urlObj.hostname;
+    if (hostname.startsWith("www.")) {
+      hostname = hostname.slice(4);
+    }
+    return hostname;
+  } catch {
+    return url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
+  }
+}
 type Props = {
   params: Promise<{ project: string }>;
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -36,19 +49,13 @@ export default async function Project({ params }: Props) {
                   href={project?.url}
                   title={project.name}
                   target="_blank"
-                  className="not-prose group inline-flex rounded-xl border border-current px-3 py-0 pr-2 text-black no-underline opacity-80 hover:opacity-100 dark:text-white/90"
+                  className="not-prose group inline-flex rounded-xl px-3 py-0 pr-2 text-green-500 no-underline opacity-80 hover:opacity-100 dark:text-emerald-400"
                 >
-                  {project.archived ? (
-                    <span className="flex h-[2.1rem] flex-row items-center justify-normal gap-1">
-                      See Archived Website
-                      <ArrowTopRightIcon className="text-[1.6rem] transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
-                    </span>
-                  ) : (
-                    <span className="flex h-[2.1rem] flex-row items-center justify-normal gap-1">
-                      See Live Website
-                      <ArrowTopRightIcon className="text-[1.6rem] transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
-                    </span>
-                  )}
+                  <span className="flex h-[2.1rem] flex-row items-center justify-normal gap-1">
+                    {project.archived ? "Archived: " : ""}
+                    {shortenUrl(project.url)}
+                    <LinkOutIcon size={16} className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+                  </span>
                 </Link>
               </div>
             )}

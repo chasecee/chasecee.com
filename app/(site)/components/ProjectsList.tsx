@@ -96,12 +96,12 @@ function ProjectsListContent({
                       <div
                         className={`view-actor absolute inset-0 transition-transform delay-[25ms] duration-500 ${
                           displayType === "background"
-                            ? "group-hover:scale-110 group-hover:duration-300"
-                            : "group-hover:-translate-y-[28%] group-hover:duration-300"
+                            ? "group-hover:scale-100 scale-[80%] origin-center group-hover:duration-300"
+                            : "group-hover:-translate-y-[28%] origin-center group-hover:duration-300"
                         }`}
                       >
                         <div
-                          className="svg-parent absolute top-1/2 left-1/2 h-1/2 w-1/2 -translate-x-1/2 -translate-y-1/2 text-white"
+                          className="svg-parent absolute origin-center top-1/2 left-1/2 h-1/2 w-2/3 -translate-x-1/2 -translate-y-1/2 text-white"
                           dangerouslySetInnerHTML={{
                             __html: project.svgcode.code,
                           }}
