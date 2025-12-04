@@ -46,7 +46,7 @@ export default function Header() {
         </div>
 
         <div className="flex w-1/3 shrink justify-end">
-          <div className="flex items-center gap-3 pt-[1px] sm:gap-4">
+          <div className="flex items-center gap-3 pt-px sm:gap-4">
             <Tooltip content="GitHub">
               <Link
                 href="https://github.com/chasecee/"

@@ -93,6 +93,13 @@ const nextConfig = {
       }
     }
 
+    // Fix react-refractor default export issue with @sanity/orderable-document-list
+    const path = require("path");
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "react-refractor": path.resolve(__dirname, "lib/react-refractor-wrapper.js"),
+    };
+
     // Disable polyfills for modern browsers
     config.resolve.fallback = {
       ...config.resolve.fallback,
