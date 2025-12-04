@@ -24,6 +24,9 @@ type Props = {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
+export const dynamic = "force-static";
+export const revalidate = false;
+
 export async function generateStaticParams() {
   const projects = await getProjects();
   return projects.map((p) => ({ project: p.slug }));

@@ -21,6 +21,8 @@ export async function getProjects(): Promise<Project[]> {
             url,
             content
         }`,
+    {},
+    { cache: "no-store" },
   );
 }
 
@@ -42,6 +44,8 @@ export async function getPersonalProjects(): Promise<Project[]> {
             url,
             content
         }`,
+    {},
+    { cache: "no-store" },
   );
 }
 
@@ -63,6 +67,8 @@ export async function getClientProjects(): Promise<Project[]> {
             url,
             content
         }`,
+    {},
+    { cache: "no-store" },
   );
 }
 

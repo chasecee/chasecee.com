@@ -71,11 +71,13 @@ function ProjectsListContent({
                 ) : (
                   <div className="relative h-0 overflow-hidden rounded-xl pt-[100%]">
                     {displayType === "background" && project.image ? (
-                      <div
-                        className="absolute inset-0 rounded-xl bg-cover bg-center"
-                        style={{
-                          backgroundImage: `url(${project.image})`,
-                        }}
+                      <Image
+                        src={project.image}
+                        alt={project.name}
+                        fill
+                        className="absolute inset-0 rounded-xl object-cover"
+                        sizes="(max-width: 768px) 80vw, 25vw"
+                        loading="lazy"
                       />
                     ) : (
                       project.color?.hex && (

@@ -9,6 +9,9 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
+export const dynamic = "force-static";
+export const revalidate = false;
+
 export async function generateStaticParams() {
   const pages = await getPages();
   return pages.map((page) => ({

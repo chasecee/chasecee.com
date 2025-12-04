@@ -1,3 +1,4 @@
+export const dynamic = "force-static";
 import Container from "@/app/(site)/components/Container";
 import { Metadata } from "next";
 import WavyLine from "../components/WavyLineDynamic";
