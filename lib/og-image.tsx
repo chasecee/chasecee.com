@@ -222,8 +222,9 @@ export function createOGImage(options: OGImageOptions = {}) {
 export function createDynamicOGImage<T>(
   getOptions: (params: T) => Promise<OGImageOptions> | OGImageOptions,
 ) {
-  const Image = async ({ params }: { params: T }) => {
-    const options = await getOptions(params);
+  const Image = async ({ params }: { params: Promise<T> }) => {
+    const resolvedParams = await params;
+    const options = await getOptions(resolvedParams);
     return generateOGImage(options);
   };
   return { Image, size, contentType };
