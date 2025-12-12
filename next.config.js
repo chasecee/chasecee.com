@@ -4,7 +4,9 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
   },
-  experimental: {},
+  experimental: {
+    esmExternals: 'loose',
+  },
   images: {
     remotePatterns: [
       {
@@ -51,6 +53,15 @@ const nextConfig = {
       topLevelAwait: true,
       layers: true,
     };
+
+    if (isServer) {
+      const originalExternals = config.externals;
+      config.externals = [
+        ...(Array.isArray(originalExternals) ? originalExternals : [originalExternals].filter(Boolean)),
+        /^parse5$/,
+      ];
+    }
+
 
     // Set target for modern browsers that support async/await and WebAssembly
     if (!isServer) {
