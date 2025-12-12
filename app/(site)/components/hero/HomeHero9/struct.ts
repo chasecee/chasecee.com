@@ -1,4 +1,4 @@
-export const MAX_BODIES = 4096;
+export const MAX_BODIES = 8096;
 export const BYTES_PER_BODY = {
   positions: 2 * 4,
   angles: 1 * 4,

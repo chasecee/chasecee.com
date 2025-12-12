@@ -8,12 +8,12 @@
     "tangentialDamping": 0.02,
     "radialDamping": 0.01,
     "angularDamping": 0.1,
-    "maxSpeed": 8
+    "maxSpeed": 10
   },
   "bodies": {
-    "count": 4096,
-    "radius": 4,
-    "radiusVariance": 0,
+    "count": 6096,
+    "radius": 3.5,
+    "radiusVariance": 0.05,
     "friction": 0,
     "restitution": 0.5,
     "startRadius": 0.35

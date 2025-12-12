@@ -295,7 +295,7 @@ function createBodies(settings: PhysicsSettings) {
     planetCollider = null;
   }
 
-  bodyCount = settings.bodies.count;
+  bodyCount = Math.min(settings.bodies.count, MAX_BODIES);
   const baseRadius = settings.bodies.radius;
   const radiusVariance = settings.bodies.radiusVariance;
   const initialClockwiseVelocity = settings.simulation.initialClockwiseVelocity;
