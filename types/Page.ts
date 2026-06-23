@@ -1,4 +1,4 @@
-import { PortableTextBlock } from "sanity";
+import { PortableTextBlock } from "@portabletext/types";
 import { Skills, ImageBlock } from "./Content";
 
 export type Page = {

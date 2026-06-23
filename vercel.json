@@ -1,0 +1,23 @@
+{
+  "headers": [
+    {
+      "source": "/icons/site/favicon.ico",
+      "headers": [
+        { "key": "Content-Type", "value": "image/x-icon" },
+        { "key": "Cache-Control", "value": "public, max-age=15552000" }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/studio",
+      "destination": "https://chasecee.sanity.studio",
+      "permanent": false
+    },
+    {
+      "source": "/studio/:path*",
+      "destination": "https://chasecee.sanity.studio/:path*",
+      "permanent": false
+    }
+  ]
+}

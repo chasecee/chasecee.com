@@ -1,0 +1,120 @@
+---
+import SiteLayout from "@/src/layouts/SiteLayout.astro";
+import Container from "@/src/components/Container.astro";
+import { Body } from "@/src/components/Body";
+import ProjectLink from "@/src/components/ProjectLink.astro";
+import { getProject, getProjects } from "@/sanity/sanity-utils";
+import urlFor from "@/sanity/sanity.image";
+
+export async function getStaticPaths() {
+  const projects = await getProjects();
+  return projects.map((p) => ({ params: { project: p.slug } }));
+}
+
+const { project: slug } = Astro.params;
+const { project, nextProject, prevProject } = await getProject(slug!);
+
+if (!project) {
+  return Astro.redirect("/404");
+}
+
+function shortenUrl(url: string): string {
+  try {
+    const urlObj = new URL(url);
+    let hostname = urlObj.hostname;
+    if (hostname.startsWith("www.")) {
+      hostname = hostname.slice(4);
+    }
+    return hostname;
+  } catch {
+    return url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
+  }
+}
+---
+
+<SiteLayout
+  title={`${project.name} - Chase Cee`}
+  description={`Project: ${project.name}`}
+  ogImage={`/og/project/${project.slug}.png`}
+>
+  <Container>
+    <div class="prose dark:prose-invert mx-auto">
+      <header
+        class="flex flex-col flex-wrap justify-start gap-6 sm:flex-row sm:flex-nowrap sm:items-center sm:justify-between"
+      >
+        <h1 class="mb-0">{project.name}</h1>
+
+        {
+          project.url && (
+            <div>
+              <a
+                href={project.url}
+                title={project.name}
+                target="_blank"
+                class="not-prose group inline-flex rounded-xl px-3 py-0 pr-2 text-green-500 no-underline opacity-80 hover:opacity-100 dark:text-emerald-400"
+              >
+                <span class="flex h-[2.1rem] flex-row items-center justify-normal gap-1">
+                  {project.archived ? "Archived: " : ""}
+                  {shortenUrl(project.url)}
+                  <svg
+                    role="img"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    class="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"
+                  >
+                    <path
+                      d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"></path>
+                    <path
+                      d="M15 3h6v6"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"></path>
+                    <path
+                      d="M10 14L21 3"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"></path>
+                  </svg>
+                </span>
+              </a>
+            </div>
+          )
+        }
+      </header>
+      {
+        project.image && (
+          <img
+            src={urlFor(project.image).width(722).height(452).dpr(1.5).url()}
+            alt={project.name}
+            width={722}
+            height={452}
+            class="rounded-xl object-cover"
+          />
+        )
+      }
+      {
+        project.content && (
+          <div>
+            <Body value={project.content} />
+          </div>
+        )
+      }
+      <h3 class="mt-20 mb-4 text-xl">Thanks for reading! Check out more:</h3>
+      <div class="not-prose grid gap-4 md:grid-cols-2">
+        {prevProject && <ProjectLink project={prevProject} direction="prev" />}
+        {nextProject && <ProjectLink project={nextProject} direction="next" />}
+      </div>
+    </div>
+  </Container>
+</SiteLayout>

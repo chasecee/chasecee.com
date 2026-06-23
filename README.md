@@ -4,11 +4,11 @@ Personal portfolio site showcasing my best work.
 
 ## Stack
 
-Next.js 15 + TypeScript + Bun. Tailwind v4 with custom components and dark mode.
+Astro + React islands + TypeScript + Bun. Tailwind v4 with custom components and dark mode.
 
 Sanity CMS for content management with Portable Text.
 
-Physics simulation via Rapier2D, WebGL graphics, Lottie animations, D3 visualizations.
+Physics simulation via Rapier2D, WebGL graphics, and Lottie animations.
 
 ## Dev
 
@@ -16,4 +16,14 @@ Physics simulation via Rapier2D, WebGL graphics, Lottie animations, D3 visualiza
 bun i && bun dev
 ```
 
-CMS at `/studio`.
+Sanity Studio:
+
+```bash
+bun studio:dev
+```
+
+Deploy Studio:
+
+```bash
+bun studio:deploy
+```

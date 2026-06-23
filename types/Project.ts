@@ -1,4 +1,4 @@
-import { PortableTextBlock } from "sanity";
+import { PortableTextBlock } from "@portabletext/types";
 import { CodeField, ColorField, LinkField, InternalLinkField } from "./Content";
 
 export type Project = {

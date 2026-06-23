@@ -1,0 +1,34 @@
+---
+import SiteLayout from "@/src/layouts/SiteLayout.astro";
+import Container from "@/src/components/Container.astro";
+import { Body } from "@/src/components/Body";
+import { getPage, getPages } from "@/sanity/sanity-utils";
+
+export async function getStaticPaths() {
+  const pages = await getPages();
+  return pages.map((page) => ({ params: { slug: page.slug } }));
+}
+
+const { slug } = Astro.params;
+const page = await getPage(slug!);
+
+if (!page) {
+  return Astro.redirect("/404");
+}
+
+const title = `${page.title} - Chase Cee`;
+const description = page.subtitle || `Learn more about ${page.title}`;
+---
+
+<SiteLayout {title} {description}>
+  <Container className="pt-24" showCTA={true}>
+    <div class="prose dark:prose-invert mx-auto">
+      <header>
+        <h1>{page.subtitle ?? page.title}</h1>
+      </header>
+      <div class="content">
+        <Body value={page.content} />
+      </div>
+    </div>
+  </Container>
+</SiteLayout>

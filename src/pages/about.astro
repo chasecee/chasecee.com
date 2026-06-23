@@ -1,0 +1,68 @@
+---
+import SiteLayout from "@/src/layouts/SiteLayout.astro";
+import Container from "@/src/components/Container.astro";
+import ProfilePic from "@/src/components/about/ProfilePic";
+import ArrowsLottie from "@/src/components/about/ArrowsLottie";
+import ViewSwitcher from "@/src/components/about/skills/ViewSwitcher";
+---
+
+<SiteLayout
+  title="About - Chase Cee"
+  description="Web Designer and Developer"
+  ogImage="/og/about.png"
+>
+  <Container>
+    <div class="prose dark:prose-invert prose-p:text-pretty mx-auto mt-10">
+      <div
+        class="relative mb-10 flex w-full flex-col justify-between sm:flex-row sm:items-center"
+      >
+        <div class="relative mb-10 md:mb-0">
+          <ProfilePic client:visible />
+          <ArrowsLottie client:visible />
+        </div>
+
+        <h1 class="relative z-20 m-0 mb-0 text-[13vw] sm:text-[2.9rem] md:text-[3.3rem]">
+          Hard worker. <br /> Fast learner.
+        </h1>
+      </div>
+
+      <p class="text-xl">
+        I'm Chase, a designer and developer based in Salt Lake City, Utah.
+      </p>
+
+      <p>
+        I build online experiences front to back. Effective design should be
+        driven by powerful, elegant applications. Magic happens when these are
+        unified under a single, beautiful brand.
+      </p>
+      <p>
+        From nationwide organizations to growing businesses, I have the
+        experience and skillset guaranteed to deliver results. I'm a front-end
+        fanatic with a love for blending design and code into a platform that
+        helps clients achieve their goals.
+      </p>
+      <h2>Curiousity is the key</h2>
+      <p>
+        Working freelance as a designer and developer for over a decade taught
+        me to adapt and learn based off the client mandate. Over the years I've
+        done just about everything, and learned a lot along the way. I am
+        obsessed with learning new things.
+      </p>
+
+      <div class="mb-10">
+        <ViewSwitcher client:visible />
+      </div>
+
+      <p>
+        I'm constantly researching and evolving, whether it be for code best
+        practices or keeping at the cutting edge of design trends.
+      </p>
+      <p>
+        Overall, I just love to build things and tackle new challenges. I'm
+        always open to talk about new opportunities!
+        <a href="/contact" class="underline">Let's get started</a>
+        on your next big idea.
+      </p>
+    </div>
+  </Container>
+</SiteLayout>
