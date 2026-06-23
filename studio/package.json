@@ -6,11 +6,11 @@
     "deploy": "sanity deploy"
   },
   "dependencies": {
-    "@sanity/code-input": "^6.0.3",
-    "@sanity/color-input": "^5.0.4",
+    "@sanity/code-input": "^7.1.6",
+    "@sanity/color-input": "^6.0.8",
     "@sanity/icons": "^3.7.4",
-    "@sanity/orderable-document-list": "^1.4.1",
-    "sanity": "^4.21.1",
-    "styled-components": "^6.1.19"
+    "@sanity/orderable-document-list": "^2.0.4",
+    "sanity": "^6.1.0",
+    "styled-components": "^6.4.2"
   }
 }
