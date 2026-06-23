@@ -5,4 +5,7 @@ export default defineCliConfig({
     projectId: "lgevplo8",
     dataset: "production",
   },
+  deployment: {
+    appId: "ksqu42puhnbcxg35cnckoug9",
+  },
 });

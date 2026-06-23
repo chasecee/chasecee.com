@@ -2,6 +2,7 @@
 import type { Project } from "@/types/Project";
 import generateColorPalette from "@/src/utils/colorUtils";
 import CustomDashboardCard from "@/src/components/project-cards/CustomDashboardCard";
+import urlFor from "@/sanity/sanity.image";
 
 interface Props {
   projects: Project[];
@@ -30,9 +31,45 @@ const getColumnClass = (cols: number): string => {
   }
 };
 
+const getCardImageSizes = (cols: number): string => {
+  switch (cols) {
+    case 2:
+      return "(min-width: 768px) 50vw, 80vw";
+    case 3:
+      return "(min-width: 768px) 33vw, 80vw";
+    case 4:
+      return "(min-width: 768px) 25vw, 80vw";
+    case 5:
+      return "(min-width: 768px) 20vw, 80vw";
+    case 6:
+      return "(min-width: 768px) 16vw, 80vw";
+    default:
+      return "(min-width: 768px) 25vw, 80vw";
+  }
+};
+
+const getCardImageWidths = (cols: number): number[] => {
+  switch (cols) {
+    case 2:
+      return [320, 480, 640, 800, 960];
+    case 3:
+      return [320, 480, 640, 800];
+    case 4:
+    case 5:
+    case 6:
+      return [240, 320, 480, 640];
+    default:
+      return [320, 480, 640, 800];
+  }
+};
+
 const validProjects = projects.filter(
   (project) => project && project._id && project.name,
 );
+
+const cardImageWidths = getCardImageWidths(columns);
+const cardImageSizes = getCardImageSizes(columns);
+const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
 ---
 
 <div class="project-list">
@@ -48,6 +85,7 @@ const validProjects = projects.filter(
         const colorPalette = project.color?.hex
           ? generateColorPalette(project.color.hex)
           : null;
+        const projectImage = project.image;
 
         return (
           <div
@@ -86,12 +124,33 @@ const validProjects = projects.filter(
                 />
               ) : (
                 <div class="relative h-0 overflow-hidden rounded-xl pt-[100%]">
-                  {displayType === "background" && project.image ? (
+                  {displayType === "background" && projectImage ? (
                     <img
-                      src={project.image}
+                      src={urlFor(projectImage)
+                        .width(cardImageMaxWidth)
+                        .height(cardImageMaxWidth)
+                        .fit("crop")
+                        .dpr(1)
+                        .url()}
+                      srcset={cardImageWidths
+                        .map(
+                          (width) =>
+                            `${urlFor(projectImage)
+                              .width(width)
+                              .height(width)
+                              .fit("crop")
+                              .dpr(1)
+                              .url()} ${width}w`,
+                        )
+                        .join(", ")}
+                      sizes={cardImageSizes}
                       alt={project.name}
-                      class="absolute inset-0 rounded-xl object-cover"
-                      loading="lazy"
+                      width={cardImageMaxWidth}
+                      height={cardImageMaxWidth}
+                      class="absolute inset-0 h-full w-full rounded-xl object-cover"
+                      loading={index === 0 ? "eager" : "lazy"}
+                      fetchpriority={index === 0 ? "high" : "auto"}
+                      decoding="async"
                     />
                   ) : (
                     project.color?.hex && (
