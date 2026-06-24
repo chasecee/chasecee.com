@@ -2,7 +2,9 @@
 
 import ChaseCeeLogo from "./logo/ChaseCeeLogo";
 import Tooltip from "./Tooltip";
-import { GithubIcon, LinkedInIcon, ResumeIcon } from "./icons";
+import LucideIcon from "./icons/LucideIcon";
+import { GithubIcon, LinkedInIcon } from "./icons";
+import { LUCIDE_ICONS } from "./icons/lucide";
 
 interface HeaderProps {
   activePath: string;
@@ -76,7 +78,7 @@ export default function Header({ activePath }: HeaderProps) {
                 rel="noopener noreferrer"
                 className="header_item transition-colors hover:opacity-30"
               >
-                <ResumeIcon size={20} />
+                <LucideIcon icon={LUCIDE_ICONS.fileText} size={20} />
               </a>
             </Tooltip>
           </div>

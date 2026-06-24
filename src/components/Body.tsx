@@ -5,7 +5,8 @@ import type {
   PortableTextComponents,
   PortableTextMarkComponentProps,
 } from "@portabletext/react";
-import { LaunchIcon } from "@sanity/icons";
+import LucideIcon from "./icons/LucideIcon";
+import { LUCIDE_ICONS } from "./icons/lucide";
 import type {
   PortableTextBlock,
   ArbitraryTypedObject,
@@ -48,7 +49,11 @@ const ExternalLink: React.FC<
       className="link_external group inline-flex items-center gap-1"
     >
       {children}
-      <LaunchIcon className="group-hover:scale-125" />
+      <LucideIcon
+        icon={LUCIDE_ICONS.externalLink}
+        size={16}
+        className="group-hover:scale-125"
+      />
     </a>
   ) : (
     <a href={href}>{children}</a>

@@ -2,6 +2,8 @@
 
 import React, { useState, useMemo, useCallback } from "react";
 import { palette } from "@/src/components/palette";
+import LucideIcon from "@/src/components/icons/LucideIcon";
+import { LUCIDE_ICONS } from "@/src/components/icons/lucide";
 import { useSkillsData } from "@/src/hooks/useSkillsData";
 import type { Skill, SkillDotsProps } from "@/types";
 import { getSkillCount, sortSkills } from "./utils";
@@ -65,17 +67,11 @@ const ListView = () => {
           >
             <div className="flex min-w-0 flex-1 items-center gap-2">
               {hasChildren && (
-                <svg
-                  className={`h-3 w-3 opacity-60 transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`}
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                <LucideIcon
+                  icon={LUCIDE_ICONS.chevronRight}
+                  size={12}
+                  className={`opacity-60 transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`}
+                />
               )}
               <span
                 className={`truncate text-sm ${hasChildren ? "font-medium" : "opacity-90"}`}
@@ -88,7 +84,7 @@ const ListView = () => {
                 </span>
               )}
             </div>
-            <div className="flex flex-shrink-0 items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2">
               {skill.value && <SkillDots value={skill.value} />}
             </div>
           </div>

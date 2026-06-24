@@ -1,0 +1,15 @@
+---
+import { getLucideSvg } from "./lucide";
+
+interface Props {
+  icon: string;
+  size?: number;
+  class?: string;
+  strokeWidth?: number;
+}
+
+const { icon, size = 24, class: className, strokeWidth } = Astro.props;
+const svg = getLucideSvg(icon, { size, className, strokeWidth });
+---
+
+<Fragment set:html={svg} />

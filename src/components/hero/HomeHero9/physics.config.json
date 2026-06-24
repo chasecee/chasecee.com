@@ -17,7 +17,7 @@
   },
   "bodies": {
     "count": 8000,
-    "radius": 2.5,
+    "radius": 3,
     "radiusVariance": 0.01,
     "friction": 0,
     "restitution": 0.5,

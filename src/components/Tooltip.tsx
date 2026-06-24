@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { LinkOutIcon } from "./icons";
+import LucideIcon from "./icons/LucideIcon";
+import { LUCIDE_ICONS } from "./icons/lucide";
 
 interface TooltipProps {
   children: React.ReactNode;
@@ -53,7 +54,7 @@ export default function Tooltip({
       >
         <div className="flex items-center gap-1">
           <span>{content}</span>
-          <LinkOutIcon size={12} />
+          <LucideIcon icon={LUCIDE_ICONS.externalLink} size={12} />
         </div>
         <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-neutral-100 dark:border-t-neutral-900" />
       </div>

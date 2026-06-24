@@ -3,6 +3,8 @@ import SiteLayout from "@/src/layouts/SiteLayout.astro";
 import Container from "@/src/components/Container.astro";
 import { Body } from "@/src/components/Body";
 import ProjectLink from "@/src/components/ProjectLink.astro";
+import LucideIcon from "@/src/components/icons/LucideIcon.astro";
+import { LUCIDE_ICONS } from "@/src/components/icons/lucide";
 import { getProject, getProjects } from "@/sanity/sanity-utils";
 import urlFor from "@/sanity/sanity.image";
 
@@ -12,7 +14,13 @@ export async function getStaticPaths() {
 }
 
 const { project: slug } = Astro.params;
-const { project, nextProject, prevProject } = await getProject(slug!);
+const projectSlug = typeof slug === "string" ? slug : "";
+
+if (!projectSlug) {
+  return Astro.redirect("/404");
+}
+
+const { project, nextProject, prevProject } = await getProject(projectSlug);
 
 if (!project) {
   return Astro.redirect("/404");
@@ -30,6 +38,8 @@ function shortenUrl(url: string): string {
     return url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
   }
 }
+
+const projectUrl = typeof project.url === "string" ? project.url : "";
 ---
 
 <SiteLayout
@@ -45,47 +55,22 @@ function shortenUrl(url: string): string {
         <h1 class="mb-0">{project.name}</h1>
 
         {
-          project.url && (
+          projectUrl && (
             <div>
               <a
-                href={project.url}
+                href={projectUrl}
                 title={project.name}
                 target="_blank"
                 class="not-prose group inline-flex rounded-xl px-3 py-0 pr-2 text-green-500 no-underline opacity-80 hover:opacity-100 dark:text-emerald-400"
               >
                 <span class="flex h-[2.1rem] flex-row items-center justify-normal gap-1">
                   {project.archived ? "Archived: " : ""}
-                  {shortenUrl(project.url)}
-                  <svg
-                    role="img"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
+                  {shortenUrl(projectUrl)}
+                  <LucideIcon
+                    icon={LUCIDE_ICONS.externalLink}
+                    size={16}
                     class="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"
-                  >
-                    <path
-                      d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"></path>
-                    <path
-                      d="M15 3h6v6"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"></path>
-                    <path
-                      d="M10 14L21 3"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"></path>
-                  </svg>
+                  />
                 </span>
               </a>
             </div>
