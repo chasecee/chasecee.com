@@ -1,5 +1,5 @@
-import { PortableTextBlock } from "@portabletext/types";
-import { Skills, ImageBlock } from "./Content";
+import type { PortableTextBlock } from "@portabletext/types";
+import type { Skills, ImageBlock } from "./Content";
 
 export type Page = {
   name: string;

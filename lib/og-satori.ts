@@ -2,6 +2,7 @@ import satori from "satori";
 import sharp from "sharp";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import type { ReactNode } from "react";
 
 export const OG_SIZE = { width: 1200, height: 630 };
 
@@ -216,7 +217,7 @@ export async function generateOGImagePng(options: OGImageOptions = {}) {
           content,
         ],
       },
-    },
+    } as ReactNode,
     {
       ...OG_SIZE,
       fonts,

@@ -1,5 +1,10 @@
-import { PortableTextBlock } from "@portabletext/types";
-import { CodeField, ColorField, LinkField, InternalLinkField } from "./Content";
+import type { PortableTextBlock } from "@portabletext/types";
+import type {
+  CodeField,
+  ColorField,
+  LinkField,
+  InternalLinkField,
+} from "./Content";
 
 export type Project = {
   _id: string;

@@ -19,7 +19,7 @@ export default function Header({ activePath }: HeaderProps) {
 
   return (
     <div className="fixed top-2 right-2 left-2 z-40 md:top-4 md:right-4 md:left-4">
-      <header className="header container flex items-center rounded-xl border border-neutral-100/30 bg-neutral-100/10 px-4 py-4 backdrop-blur-md sm:px-6 dark:border-neutral-900/30 dark:bg-neutral-900/20">
+      <header className="header container flex items-center rounded-xl border border-neutral-100/30 bg-neutral-100/10 px-4 py-2 backdrop-blur-md sm:px-6 dark:border-neutral-900/30 dark:bg-neutral-900/20">
         <div className="flex w-1/3 shrink justify-start">
           <a
             className="header__title group flex flex-row items-center gap-2"
@@ -58,7 +58,7 @@ export default function Header({ activePath }: HeaderProps) {
                 rel="noopener noreferrer"
                 className="header_item transition-colors hover:opacity-30"
               >
-                <GithubIcon size={20} />
+                <GithubIcon size={16} />
               </a>
             </Tooltip>
             <Tooltip content="LinkedIn">
@@ -68,7 +68,7 @@ export default function Header({ activePath }: HeaderProps) {
                 rel="noopener noreferrer"
                 className="header_item transition-colors hover:opacity-30"
               >
-                <LinkedInIcon size={20} />
+                <LinkedInIcon size={16} />
               </a>
             </Tooltip>
             <Tooltip content="Resume">
@@ -76,9 +76,9 @@ export default function Header({ activePath }: HeaderProps) {
                 href="/ChaseChristensen-Resume-2025.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="header_item transition-colors hover:opacity-30"
+                className="header_item transition-colors hover:opacity-30 flex"
               >
-                <LucideIcon icon={LUCIDE_ICONS.fileText} size={20} />
+                <LucideIcon icon={LUCIDE_ICONS.fileText} size={16} />
               </a>
             </Tooltip>
           </div>

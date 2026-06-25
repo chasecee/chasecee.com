@@ -7,7 +7,9 @@ export const prerender = true;
 export const getStaticPaths = (async () => {
   const projects = await getProjects();
   return projects.map((project) => ({
-    params: { slug: project.slug },
+    params: {
+      slug: typeof project.slug === "string" ? project.slug : project.slug.current,
+    },
     props: { name: project.name },
   }));
 }) satisfies GetStaticPaths;

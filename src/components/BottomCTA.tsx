@@ -28,7 +28,7 @@ export default function BottomCTA() {
           </div>
           <div className="flex flex-col items-center gap-4 sm:flex-row">
             <Button
-              href="/contact"
+              href="/#contact"
               target="_self"
               className="group flex items-center gap-2 bg-indigo-600 ring-indigo-300 dark:bg-indigo-500/20 dark:ring-indigo-300/20"
             >

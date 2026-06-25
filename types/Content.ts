@@ -1,4 +1,4 @@
-import { TypedObject, PortableTextBlock } from "@portabletext/types";
+import type { TypedObject, PortableTextBlock } from "@portabletext/types";
 
 export interface LinkField {
   _type: string;

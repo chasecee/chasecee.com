@@ -3,7 +3,6 @@ import SiteLayout from "@/src/layouts/SiteLayout.astro";
 import ContainerHome from "@/src/components/ContainerHome.astro";
 import ProjectsList from "@/src/components/ProjectsList.astro";
 import HomeHero9 from "@/src/components/hero/HomeHero9/HomeHero9";
-import BottomCTA from "@/src/components/BottomCTA";
 import { getPersonalProjects, getClientProjects } from "@/sanity/sanity-utils";
 
 const [personalProjects, clientProjects] = await Promise.all([
@@ -13,7 +12,7 @@ const [personalProjects, clientProjects] = await Promise.all([
 ---
 
 <SiteLayout ogImage="/og/home.png">
-  <ContainerHome className="relative z-10">
+  <ContainerHome className="relative z-10 pt-4">
     <HomeHero9 client:load />
     <div class="relative z-10 flex flex-col gap-10">
       <ProjectsList
@@ -27,6 +26,5 @@ const [personalProjects, clientProjects] = await Promise.all([
         columns={4}
       />
     </div>
-    <BottomCTA client:visible />
   </ContainerHome>
 </SiteLayout>

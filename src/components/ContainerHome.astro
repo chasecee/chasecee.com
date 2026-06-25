@@ -1,14 +1,15 @@
 ---
 import Header from "@/src/components/Header";
+import WavyLine from "@/src/components/WavyLine";
 import LucideIcon from "@/src/components/icons/LucideIcon.astro";
+import { GithubIcon, LinkedInIcon } from "@/src/components/icons";
 import { LUCIDE_ICONS } from "@/src/components/icons/lucide";
 
 interface Props {
   className?: string;
-  showCTA?: boolean;
 }
 
-const { className = "", showCTA = false } = Astro.props;
+const { className = "" } = Astro.props;
 ---
 
 <div class={`root min-h-screen w-full ${className} px-0 md:mt-0`}>
@@ -17,61 +18,47 @@ const { className = "", showCTA = false } = Astro.props;
     <main>
       <slot />
     </main>
-    {
-      showCTA && (
-        <div
-          class="bg-gradient-radial relative my-20 overflow-hidden rounded-xl from-neutral-100 to-neutral-200 dark:from-neutral-700 dark:to-neutral-800"
-        >
-          <div
-            class="absolute inset-0 rounded-xl bg-fixed bg-repeat opacity-20"
-            style="background-image: url('/noise1.webp'); background-size: 250px;"
-          />
-          <div class="relative px-4 py-16">
-            <div class="prose dark:prose-invert mx-auto text-center">
-              <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">
-                Let's get started
-              </h2>
-              <p class="mx-auto mt-6 max-w-xl text-lg leading-8 opacity-90">
-                I build powerful and beautiful applications for businesses of all
-                sizes. I'm available for work, reach out!
-              </p>
-              <div class="mt-10 flex flex-col items-center justify-center gap-6 sm:flex-row">
-                <a
-                  href="/contact"
-                  class="not-prose inline-flex items-center justify-center gap-x-3 rounded-[.25rem] border-0 px-6 py-3 text-base text-black dark:text-white no-underline shadow-xs transition-colors ring-[.125rem] ring-black/30 bg-indigo-600 ring-indigo-300 dark:bg-indigo-500/20 dark:ring-indigo-300/20"
-                >
-                  Contact
-                </a>
-                <a
-                  href="/about"
-                  class="not-prose group inline-flex items-center justify-center gap-x-3 rounded-[.25rem] border-0 px-6 py-3 text-base text-black dark:text-white no-underline shadow-xs transition-colors ring-[.125rem] ring-black/30 bg-black/5 dark:bg-white/5 dark:ring-white/30"
-                >
-                  About Me
-                  <LucideIcon
-                    icon={LUCIDE_ICONS.chevronRight}
-                    size={12}
-                    class="transition-transform duration-200 group-hover:translate-x-1 group-active:translate-x-1"
-                  />
-                </a>
-              </div>
-            </div>
+    <footer id="contact" class="site-footer mt-16 border-t border-black/10 py-10 dark:border-white/10">
+      <div class="prose dark:prose-invert flex max-w-3xl flex-col items-start gap-5">
+        <div class="flex items-center gap-3">
+          <h2 class="m-0 text-5xl sm:text-6xl my-0! grow">
+            Let's talk
+          </h2>
+          <div className="shrin1">
+            <WavyLine client:visible />
           </div>
         </div>
-      )
-    }
-    <footer class="site-footer mt-10 py-10">
-      <p
-        class="footer__text text-uppercase group prose flex flex-row items-center gap-[0.5ch] dark:prose-invert"
-      >
-        Made with
-        <LucideIcon
-          icon={LUCIDE_ICONS.heart}
-          size={24}
-          class="text-2xl transition group-hover:scale-125 group-hover:text-red-400"
-        />
-        by
-        <a href="/about">Chase Cee</a>
-      </p>
+        
+        <div class="m-0 mt-1 flex flex-wrap gap-3">
+          <a
+            href="https://github.com/chasecee/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="not-prose inline-flex items-center justify-center gap-x-2 rounded-[.25rem] border-0 px-4 py-2 text-base text-black dark:text-white no-underline shadow-xs transition-colors ring-[.125rem] ring-black/10 bg-black/5 dark:bg-white/5 dark:ring-white/30"
+          >
+            Github
+            <GithubIcon size={18} />
+          </a>
+          <a
+            href="https://www.linkedin.com/in/chasechristensen-1/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="not-prose inline-flex items-center justify-center gap-x-2 rounded-[.25rem] border-0 px-4 py-2 text-base text-black dark:text-white no-underline shadow-xs transition-colors ring-[.125rem] ring-black/10 bg-black/5 dark:bg-white/5 dark:ring-white/30"
+          >
+            LinkedIn
+            <LinkedInIcon size={18} />
+          </a>
+          <a
+            href="/ChaseChristensen-Resume-2025.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="not-prose inline-flex items-center justify-center gap-x-2 rounded-[.25rem] border-0 px-4 py-2 text-base text-black dark:text-white no-underline shadow-xs transition-colors ring-[.125rem] ring-black/10 bg-black/5 dark:bg-white/5 dark:ring-white/30"
+          >
+            Resume
+            <LucideIcon icon={LUCIDE_ICONS.fileText} size={18} />
+          </a>
+        </div>
+      </div>
     </footer>
   </div>
 </div>
