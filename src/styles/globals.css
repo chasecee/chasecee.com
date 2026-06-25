@@ -292,6 +292,70 @@
   }
 }
 
+.logo-kapow-bg {
+  @apply pointer-events-none absolute inset-0 z-0;
+}
+
+.logo-kapow-container {
+  --kapow-offset-x: 0px;
+  --kapow-offset-y: 0px;
+}
+
+.logo-kapow {
+  @apply absolute top-1/2 left-1/2 h-auto w-[190%] opacity-0;
+  transform-origin: center;
+  transform: translate(
+      calc(-50% + var(--kapow-offset-x)),
+      calc(-50% + var(--kapow-offset-y))
+    )
+    rotate(var(--kapow-rotate, 0deg));
+  will-change: transform, opacity;
+}
+
+.logo-kapow-one {
+  --kapow-rotate: -8deg;
+}
+
+.logo-kapow-two {
+  --kapow-rotate: 9deg;
+}
+
+.logo-kapow-container:hover .logo-kapow-one {
+  animation: logo-kapow-one 400ms steps(1, end) infinite;
+}
+
+.logo-kapow-container:hover .logo-kapow-two {
+  animation: logo-kapow-two 400ms steps(1, end) infinite;
+}
+
+@keyframes logo-kapow-one {
+  0% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes logo-kapow-two {
+  0%,
+  49.999% {
+    opacity: 0;
+  }
+  50%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-kapow-container:hover .logo-kapow-one,
+  .logo-kapow-container:hover .logo-kapow-two {
+    animation: none;
+  }
+}
+
 .form-row {
   @apply flex flex-col;
   input,
