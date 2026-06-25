@@ -7,6 +7,9 @@ import topLevelAwait from "vite-plugin-top-level-await";
 export default defineConfig({
   site: "https://chasecee.com",
   output: "static",
+  build: {
+    inlineStylesheets: "always",
+  },
   integrations: [react()],
   vite: {
     plugins: [tailwindcss(), wasm(), topLevelAwait()],
