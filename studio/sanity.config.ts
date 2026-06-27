@@ -26,11 +26,15 @@ const projectSchema = schemasAny.find(
 const pageSchema = schemasAny.find((schema: any) => schema.name === "page");
 
 if (projectSchema) {
-  projectSchema.fields.push(orderRankField({ type: "project" }));
+  projectSchema.fields.push(
+    orderRankField({ type: "project", fieldset: "details" }),
+  );
   projectSchema.orderings = [orderRankOrdering];
 }
 if (pageSchema) {
-  pageSchema.fields.push(orderRankField({ type: "page" }));
+  pageSchema.fields.push(
+    orderRankField({ type: "page", fieldset: "details" }),
+  );
   pageSchema.orderings = [orderRankOrdering];
 }
 

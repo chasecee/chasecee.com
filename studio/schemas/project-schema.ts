@@ -1,89 +1,17 @@
 import { LinkIcon, LaunchIcon } from "@sanity/icons";
 
+const detailsFieldset = {
+  name: "details",
+  title: "Details",
+  options: { collapsible: true, collapsed: true },
+};
+
 const project = {
   name: "project",
   title: "Projects",
   type: "document",
+  fieldsets: [detailsFieldset],
   fields: [
-    {
-      name: "name",
-      title: "Name",
-      type: "string",
-    },
-    {
-      name: "slug",
-      title: "Slug",
-      type: "slug",
-      options: { source: "name" },
-    },
-    {
-      title: "Project Type",
-      name: "type",
-      type: "string",
-      options: {
-        list: [
-          { title: "Personal Project", value: "personal" },
-          { title: "Client Work", value: "client" },
-        ],
-        layout: "radio",
-      },
-      
-      validation: (Rule: any) => Rule.required(),
-    },
-    {
-      name: "subtitle",
-      title: "Subtitle",
-      type: "string",
-    },
-    {
-      name: "image",
-      title: "Image",
-      type: "image",
-      options: { hotspot: true },
-      fields: [
-        {
-          name: "alt",
-          title: "Alt",
-          type: "string",
-        },
-      ],
-    },
-    {
-      type: "code",
-      name: "svgcode",
-      title: "SVG Code for Logo",
-      options: {
-        language: "xml",
-      },
-    },
-    {
-      name: "color",
-      title: "Color",
-      type: "color",
-    },
-    {
-      title: "Display Type",
-      name: "displayType",
-      type: "string",
-      options: {
-        list: [
-          { title: "Popup (Default)", value: "popup" },
-          { title: "Background", value: "background" },
-        ],
-        layout: "radio",
-      },
-      initialValue: "popup",
-    },
-    {
-      name: "url",
-      title: "URL",
-      type: "url",
-    },
-    {
-      title: "Archived",
-      name: "archived",
-      type: "boolean",
-    },
     {
       name: "content",
       title: "Content",
@@ -164,11 +92,98 @@ const project = {
               name: "media",
               type: "file",
               title: "Media file",
-              
             } as { name: string; type: string; title: string; media: any },
           ],
         },
       ],
+    },
+    {
+      name: "name",
+      title: "Name",
+      type: "string",
+      fieldset: "details",
+    },
+    {
+      name: "slug",
+      title: "Slug",
+      type: "slug",
+      options: { source: "name" },
+      fieldset: "details",
+    },
+    {
+      title: "Project Type",
+      name: "type",
+      type: "string",
+      options: {
+        list: [
+          { title: "Personal Project", value: "personal" },
+          { title: "Client Work", value: "client" },
+        ],
+        layout: "radio",
+      },
+      validation: (Rule: any) => Rule.required(),
+      fieldset: "details",
+    },
+    {
+      name: "subtitle",
+      title: "Subtitle",
+      type: "string",
+      fieldset: "details",
+    },
+    {
+      name: "image",
+      title: "Image",
+      type: "image",
+      options: { hotspot: true },
+      fieldset: "details",
+      fields: [
+        {
+          name: "alt",
+          title: "Alt",
+          type: "string",
+        },
+      ],
+    },
+    {
+      type: "code",
+      name: "svgcode",
+      title: "SVG Code for Logo",
+      options: {
+        language: "xml",
+      },
+      fieldset: "details",
+    },
+    {
+      name: "color",
+      title: "Color",
+      type: "color",
+      fieldset: "details",
+    },
+    {
+      title: "Display Type",
+      name: "displayType",
+      type: "string",
+      options: {
+        list: [
+          { title: "Popup (Default)", value: "popup" },
+          { title: "Background", value: "background" },
+        ],
+        layout: "radio",
+      },
+      initialValue: "popup",
+      fieldset: "details",
+    },
+    {
+      name: "url",
+      title: "URL",
+      type: "url",
+      fieldset: "details",
+    },
+    {
+      title: "Archived",
+      name: "archived",
+      type: "boolean",
+      fieldset: "details",
     },
   ],
   preview: {
