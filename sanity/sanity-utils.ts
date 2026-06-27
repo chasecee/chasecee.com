@@ -1,6 +1,6 @@
 import type { Project } from "@/types/Project";
-import sanityClient from "./sanityClient";
 import type { Page } from "@/types/Page";
+import { getSanityClient } from "./preview";
 
 const PROJECT_FIELDS = `{
   _id,
@@ -18,30 +18,46 @@ const PROJECT_FIELDS = `{
   content
 }`;
 
-export async function getProjects(): Promise<Project[]> {
-  return sanityClient.fetch(
+type QueryOptions = {
+  preview?: boolean;
+};
+
+function getClient(options?: QueryOptions) {
+  return getSanityClient(options?.preview === true);
+}
+
+export async function getProjects(options?: QueryOptions): Promise<Project[]> {
+  return getClient(options).fetch(
     `*[_type == "project"] | order(orderRank) ${PROJECT_FIELDS}`,
   );
 }
 
-export async function getPersonalProjects(): Promise<Project[]> {
-  return sanityClient.fetch(
+export async function getPersonalProjects(
+  options?: QueryOptions,
+): Promise<Project[]> {
+  return getClient(options).fetch(
     `*[_type == "project" && type == "personal"] | order(orderRank) ${PROJECT_FIELDS}`,
   );
 }
 
-export async function getClientProjects(): Promise<Project[]> {
-  return sanityClient.fetch(
+export async function getClientProjects(
+  options?: QueryOptions,
+): Promise<Project[]> {
+  return getClient(options).fetch(
     `*[_type == "project" && type == "client"] | order(orderRank) ${PROJECT_FIELDS}`,
   );
 }
 
-export async function getProject(slug: string): Promise<{
+export async function getProject(
+  slug: string,
+  options?: QueryOptions,
+): Promise<{
   project?: Project;
   nextProject?: Project;
   prevProject?: Project;
 }> {
-  const project = await sanityClient.fetch(
+  const client = getClient(options);
+  const project = await client.fetch(
     `*[_type == "project" && slug.current == $slug][0]{
       _id,
       _createdAt,
@@ -69,7 +85,7 @@ export async function getProject(slug: string): Promise<{
   );
 
   if (project) {
-    const nextProject = await sanityClient.fetch(
+    const nextProject = await client.fetch(
       `*[_type == "project" && orderRank > $orderRank] | order(orderRank) [0] {
         _id,
         name,
@@ -79,7 +95,7 @@ export async function getProject(slug: string): Promise<{
       { orderRank: project.orderRank },
     );
 
-    const prevProject = await sanityClient.fetch(
+    const prevProject = await client.fetch(
       `*[_type == "project" && orderRank < $orderRank] | order(orderRank desc) [0] {
         _id,
         name,
@@ -95,8 +111,8 @@ export async function getProject(slug: string): Promise<{
   return {};
 }
 
-export async function getPages(): Promise<Page[]> {
-  return sanityClient.fetch(
+export async function getPages(options?: QueryOptions): Promise<Page[]> {
+  return getClient(options).fetch(
     `*[_type == "page"]{
       _id,
       _createdAt,
@@ -106,8 +122,11 @@ export async function getPages(): Promise<Page[]> {
   );
 }
 
-export async function getPage(slug: string): Promise<Page> {
-  return sanityClient.fetch(
+export async function getPage(
+  slug: string,
+  options?: QueryOptions,
+): Promise<Page> {
+  return getClient(options).fetch(
     `*[_type == "page" && slug.current == $slug][0]{
       _id,
       _createdAt,

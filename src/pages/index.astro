@@ -5,6 +5,8 @@ import ProjectsList from "@/src/components/ProjectsList.astro";
 import HomeHero9 from "@/src/components/hero/HomeHero9/HomeHero9";
 import { getPersonalProjects, getClientProjects } from "@/sanity/sanity-utils";
 
+export const prerender = true;
+
 const [personalProjects, clientProjects] = await Promise.all([
   getPersonalProjects(),
   getClientProjects(),

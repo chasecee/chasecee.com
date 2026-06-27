@@ -27,3 +27,15 @@ Deploy Studio:
 ```bash
 bun studio:deploy
 ```
+
+## Preview Editing
+
+Required environment variables:
+
+- `SANITY_API_READ_TOKEN` (site deployment; server-side draft reads)
+- `SANITY_STUDIO_PREVIEW_URL` (studio deployment; defaults to `https://chasecee.com`)
+
+Preview endpoints:
+
+- `/api/draft-mode/enable`
+- `/api/draft-mode/disable`

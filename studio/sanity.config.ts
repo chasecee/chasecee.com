@@ -9,9 +9,15 @@ import {
   orderRankOrdering,
 } from "@sanity/orderable-document-list";
 import { ImagesIcon, DocumentsIcon } from "@sanity/icons";
+import {
+  defineDocuments,
+  defineLocations,
+  presentationTool,
+} from "sanity/presentation";
 import { StudioNavbar } from "./components/StudioNavbar";
 
 const SITE_URL = "https://chasecee.com";
+const PREVIEW_URL = process.env.SANITY_STUDIO_PREVIEW_URL || SITE_URL;
 
 const schemasAny = schemas as any;
 const projectSchema = schemasAny.find(
@@ -45,6 +51,56 @@ function resolveProductionUrl(
   return previousUrl || SITE_URL;
 }
 
+const presentationMainDocuments = defineDocuments([
+  {
+    route: "/projects/:slug",
+    filter: `_type == "project" && slug.current == $slug`,
+    params: ({ params }) => ({ slug: params.slug }),
+  },
+  {
+    route: "/:slug",
+    filter: `_type == "page" && slug.current == $slug`,
+    params: ({ params }) => ({ slug: params.slug }),
+  },
+]);
+
+const presentationLocations = {
+  project: defineLocations({
+    select: {
+      title: "name",
+      slug: "slug.current",
+    },
+    resolve: (doc) => {
+      if (!doc?.slug) return null;
+      return {
+        locations: [
+          {
+            title: doc.title || "Project",
+            href: `/projects/${doc.slug}`,
+          },
+        ],
+      };
+    },
+  }),
+  page: defineLocations({
+    select: {
+      title: "title",
+      slug: "slug.current",
+    },
+    resolve: (doc) => {
+      if (!doc?.slug) return null;
+      return {
+        locations: [
+          {
+            title: doc.title || "Page",
+            href: `/${doc.slug}`,
+          },
+        ],
+      };
+    },
+  }),
+};
+
 export default defineConfig({
   projectId: "lgevplo8",
   dataset: "production",
@@ -75,6 +131,19 @@ export default defineConfig({
     }),
     codeInput(),
     colorInput(),
+    presentationTool({
+      previewUrl: {
+        initial: PREVIEW_URL,
+        previewMode: {
+          enable: "/api/draft-mode/enable",
+          disable: "/api/draft-mode/disable",
+        },
+      },
+      resolve: {
+        mainDocuments: presentationMainDocuments,
+        locations: presentationLocations,
+      },
+    }),
   ],
   studio: {
     components: {

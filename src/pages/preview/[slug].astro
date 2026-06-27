@@ -2,17 +2,12 @@
 import SiteLayout from "@/src/layouts/SiteLayout.astro";
 import Container from "@/src/components/Container.astro";
 import { Body } from "@/src/components/Body";
-import { getPage, getPages } from "@/sanity/sanity-utils";
+import { getPage } from "@/sanity/sanity-utils";
 
-export const prerender = true;
-
-export async function getStaticPaths() {
-  const pages = await getPages();
-  return pages.map((page) => ({ params: { slug: page.slug } }));
-}
+export const prerender = false;
 
 const { slug } = Astro.params;
-const page = await getPage(slug!);
+const page = await getPage(slug!, { preview: true });
 
 if (!page) {
   return Astro.redirect("/404");

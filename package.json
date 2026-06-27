@@ -19,11 +19,13 @@
   "dependencies": {
     "@aarsteinmedia/dotlottie-player": "^6.3.9",
     "@astrojs/react": "^6.0.0",
+    "@astrojs/vercel": "^11.0.0",
     "@dimforge/rapier2d": "0.19.3",
     "@fontsource/dm-sans": "^5.2.8",
     "@portabletext/react": "^6.2.0",
     "@sanity/client": "^7.23.0",
     "@sanity/image-url": "^2.1.1",
+    "@sanity/preview-url-secret": "^4.0.7",
     "@tailwindcss/vite": "^4.3.1",
     "astro": "^7.0.3",
     "lucide-static": "^1.21.0",
