@@ -9,6 +9,9 @@ import {
   orderRankOrdering,
 } from "@sanity/orderable-document-list";
 import { ImagesIcon, DocumentsIcon } from "@sanity/icons";
+import { StudioNavbar } from "./components/StudioNavbar";
+
+const SITE_URL = "https://chasecee.com";
 
 const schemasAny = schemas as any;
 const projectSchema = schemasAny.find(
@@ -23,6 +26,23 @@ if (projectSchema) {
 if (pageSchema) {
   pageSchema.fields.push(orderRankField({ type: "page" }));
   pageSchema.orderings = [orderRankOrdering];
+}
+
+function resolveProductionUrl(
+  previousUrl: string | undefined,
+  context: { document?: any; schemaType?: string },
+) {
+  const slug = context.document?.slug?.current;
+
+  if (context.schemaType === "project" && slug) {
+    return `${SITE_URL}/projects/${slug}`;
+  }
+
+  if (context.schemaType === "page" && slug) {
+    return slug === "home" ? SITE_URL : `${SITE_URL}/${slug}`;
+  }
+
+  return previousUrl || SITE_URL;
 }
 
 export default defineConfig({
@@ -56,6 +76,14 @@ export default defineConfig({
     codeInput(),
     colorInput(),
   ],
+  studio: {
+    components: {
+      navbar: StudioNavbar,
+    },
+  },
+  document: {
+    productionUrl: resolveProductionUrl,
+  },
   schema: { types: schemas },
   useCdn: true,
 });
