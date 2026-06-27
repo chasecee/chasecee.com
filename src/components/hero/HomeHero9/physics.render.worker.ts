@@ -115,6 +115,9 @@ let world: import("@dimforge/rapier2d").World;
 let rigidBodies: import("@dimforge/rapier2d").RigidBody[] = [];
 let planetBody: import("@dimforge/rapier2d").RigidBody | null = null;
 let planetCollider: import("@dimforge/rapier2d").Collider | null = null;
+let planetShapeSides = 6;
+
+const PLANET_SHAPES = [6, 4, 3, 0];
 
 let scrollForce = 0;
 
@@ -234,8 +237,7 @@ function setupWebgl() {
   projectionMatrix = gl.getUniformLocation(program, "u_projection");
   shapeSidesUniform = gl.getUniformLocation(program, "u_sides");
   if (shapeSidesUniform) {
-    const sidesVal = activeSettings?.rendering?.shapeSides ?? 0;
-    gl.uniform1i(shapeSidesUniform, sidesVal);
+    gl.uniform1i(shapeSidesUniform, 0);
   }
 
   // Allocate GPU storage without initial data; we'll map it on demand.
@@ -288,6 +290,60 @@ function setupWebgl() {
   gl.bindVertexArray(null);
 }
 
+function getPlanetRadiusPixels(settings: PhysicsSettings) {
+  return settings.world.centerCircleRadius * Math.min(canvasWidth, canvasHeight);
+}
+
+function getShapeRadiusScale(sides: number) {
+  return sides === 3 ? 1.5 : 1;
+}
+
+function createPlanetColliderDesc(
+  sides: number,
+  radiusMeters: number,
+): import("@dimforge/rapier2d").ColliderDesc | null {
+  const scaledRadius = radiusMeters * getShapeRadiusScale(sides);
+  if (sides >= 3) {
+    const verts = new Float32Array(sides * 2);
+    for (let s = 0; s < sides; s++) {
+      const ang = (s * Math.PI * 2) / sides - Math.PI / 2;
+      verts[s * 2] = Math.cos(ang) * scaledRadius;
+      verts[s * 2 + 1] = Math.sin(ang) * scaledRadius;
+    }
+    const hull = rapier.ColliderDesc.convexHull(verts);
+    return hull ? hull.setFriction(0).setRestitution(0.5) : null;
+  }
+  return rapier.ColliderDesc.ball(scaledRadius)
+    .setFriction(0)
+    .setRestitution(0.5);
+}
+
+function updatePlanetCollider(sides: number) {
+  if (!world || !rapier || !planetBody) return;
+  const planetRadiusPixels = getPlanetRadiusPixels(activeSettings);
+  if (planetRadiusPixels <= 0) return;
+
+  if (planetCollider) {
+    world.removeCollider(planetCollider, true);
+    planetCollider = null;
+  }
+
+  const desc = createPlanetColliderDesc(
+    sides,
+    planetRadiusPixels / PIXELS_PER_METER,
+  );
+  if (desc) {
+    planetCollider = world.createCollider(desc, planetBody);
+  }
+}
+
+function cyclePlanetShape() {
+  const currentIndex = PLANET_SHAPES.indexOf(planetShapeSides);
+  planetShapeSides =
+    PLANET_SHAPES[(currentIndex + 1) % PLANET_SHAPES.length];
+  updatePlanetCollider(planetShapeSides);
+}
+
 function createBodies(settings: PhysicsSettings) {
   for (const body of rigidBodies) {
     world.removeRigidBody(body);
@@ -308,20 +364,14 @@ function createBodies(settings: PhysicsSettings) {
 
   const center = { x: centerX, y: centerY };
 
-  const planetRadiusPixels =
-    settings.world.centerCircleRadius * Math.min(canvasWidth, canvasHeight);
+  const planetRadiusPixels = getPlanetRadiusPixels(settings);
   if (planetRadiusPixels > 0) {
     const planetBodyDesc = rapier.RigidBodyDesc.fixed().setTranslation(
       center.x / PIXELS_PER_METER,
       center.y / PIXELS_PER_METER,
     );
     planetBody = world.createRigidBody(planetBodyDesc);
-    const planetColliderDesc = rapier.ColliderDesc.ball(
-      planetRadiusPixels / PIXELS_PER_METER,
-    )
-      .setFriction(0)
-      .setRestitution(0.5);
-    planetCollider = world.createCollider(planetColliderDesc, planetBody);
+    updatePlanetCollider(planetShapeSides);
   }
 
   rigidBodies.length = 0;
@@ -377,22 +427,8 @@ function createBodies(settings: PhysicsSettings) {
           .setCanSleep(true);
 
         const rigidBody = world.createRigidBody(rigidBodyDesc);
-        const shapeSides = settings.rendering.shapeSides ?? 0;
-        let colliderDesc: import("@dimforge/rapier2d").ColliderDesc;
         const radiusMeters = finalRadiusPixels / PIXELS_PER_METER;
-
-        if (shapeSides >= 3) {
-          const verts = new Float32Array(shapeSides * 2);
-          for (let s = 0; s < shapeSides; s++) {
-            const ang = (s * Math.PI * 2) / shapeSides;
-            verts[s * 2] = Math.cos(ang) * radiusMeters;
-            verts[s * 2 + 1] = Math.sin(ang) * radiusMeters;
-          }
-          const maybeHull = rapier.ColliderDesc.convexHull(verts);
-          colliderDesc = maybeHull ?? rapier.ColliderDesc.ball(radiusMeters);
-        } else {
-          colliderDesc = rapier.ColliderDesc.ball(radiusMeters);
-        }
+        let colliderDesc = rapier.ColliderDesc.ball(radiusMeters);
 
         colliderDesc = colliderDesc
           .setRestitution(settings.bodies.restitution)
@@ -677,11 +713,17 @@ function handleShockwave(
 ) {
   if (!canvas) return;
 
+  if (msg.cyclePlanetShape) {
+    cyclePlanetShape();
+  }
+
   const settingsSW = activeSettings;
   const shockConfig = settingsSW.interactions.shockwave;
   const strengthMul = msg.strength ?? 1;
+  const radiusMul = msg.radiusMul ?? 1;
+  const forceMul = msg.forceMul ?? 1;
   const shockRadiusPixels =
-    shockConfig.radius * Math.min(canvasWidth, canvasHeight);
+    shockConfig.radius * Math.min(canvasWidth, canvasHeight) * radiusMul;
   const shockRadiusMeters = shockRadiusPixels * INV_PIXELS_PER_METER;
 
   const msgXMeters = msg.x * INV_PIXELS_PER_METER;
@@ -702,7 +744,7 @@ function handleShockwave(
       const dirY = dist < 1e-6 ? 0 : dy / dist;
 
       const falloff = 1 - dist / shockRadiusMeters;
-      const baseImpulse = shockConfig.force * falloff * strengthMul;
+      const baseImpulse = shockConfig.force * falloff * strengthMul * forceMul;
       const impulse = baseImpulse * mass;
 
       body.applyImpulse({ x: dirX * impulse, y: dirY * impulse }, true);
@@ -810,13 +852,15 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
   const centerXMeters = centerX * INV_PIXELS_PER_METER;
   const centerYMeters = centerY * INV_PIXELS_PER_METER;
 
-  if (planetBody && planetCollider) {
-    const planetRadiusPixels =
-      settings.world.centerCircleRadius * Math.min(canvasWidth, canvasHeight);
-    const planetRadiusMeters = planetRadiusPixels * INV_PIXELS_PER_METER;
+  if (planetBody) {
+    const planetRadiusPixels = getPlanetRadiusPixels(settings);
+    const planetRadiusMeters =
+      planetRadiusPixels *
+      INV_PIXELS_PER_METER *
+      getShapeRadiusScale(planetShapeSides);
 
     planetBody.setTranslation({ x: centerXMeters, y: centerYMeters }, true);
-    planetCollider.setRadius(planetRadiusMeters);
+    updatePlanetCollider(planetShapeSides);
 
     const planetRadiusMetersSq = planetRadiusMeters * planetRadiusMeters;
 
@@ -932,7 +976,7 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
   }
   gl.uniformMatrix4fv(projectionMatrix, false, projection);
   if (shapeSidesUniform) {
-    gl.uniform1i(shapeSidesUniform, settings.rendering.shapeSides ?? 0);
+    gl.uniform1i(shapeSidesUniform, 0);
   }
 }
 

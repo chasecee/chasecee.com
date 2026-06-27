@@ -26,6 +26,9 @@ export type ShockMainMessage = {
   x: number;
   y: number;
   strength?: number;
+  radiusMul?: number;
+  forceMul?: number;
+  cyclePlanetShape?: boolean;
 };
 
 export type ScrollForceMainMessage = {

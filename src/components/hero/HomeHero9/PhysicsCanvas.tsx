@@ -3,11 +3,14 @@
 import { useRef, useEffect } from "react";
 import StatsOverlay from "./StatsOverlay";
 import type { MainToWorkerMessage } from "./messages";
+import { isMobileViewport, isWithinPlanet, prefersReducedMotion, shockwaveDiameterPx } from "./shockwave";
+import "./shockwave.css";
 
 const IS_DEV = import.meta.env.DEV;
 
 export function PhysicsCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const shockwaveOverlayRef = useRef<HTMLDivElement>(null);
   const workerRef = useRef<Worker | null>(null);
   const offscreenRef = useRef<OffscreenCanvas | null>(null);
   const instanceKeyRef = useRef(Math.random().toString(36).slice(2));
@@ -200,15 +203,47 @@ export function PhysicsCanvas() {
     const MIN_SHOCK_INTERVAL = 100;
     let lastShockTime = 0;
 
+    const spawnVisualShockwave = (
+      clientX: number,
+      clientY: number,
+      rect: DOMRect,
+      diameterMul = 1,
+    ) => {
+      if (prefersReducedMotion()) return;
+      const overlay = shockwaveOverlayRef.current;
+      if (!overlay) return;
+
+      const isMobile = isMobileViewport();
+      const ring = document.createElement("div");
+      ring.className = "hero-shockwave";
+      ring.style.left = `${clientX - rect.left}px`;
+      ring.style.top = `${clientY - rect.top}px`;
+      ring.style.setProperty(
+        "--shock-diameter",
+        `${shockwaveDiameterPx(rect.width, rect.height, isMobile, diameterMul)}px`,
+      );
+      ring.addEventListener(
+        "animationend",
+        () => {
+          ring.remove();
+        },
+        { once: true },
+      );
+      overlay.appendChild(ring);
+    };
+
     const sendShockwave = (
       clientX: number,
       clientY: number,
       strength = 1,
       force = false,
+      cyclePlanetShape = false,
     ) => {
       const now = performance.now();
       if (!force && now - lastShockTime < MIN_SHOCK_INTERVAL) return;
       const rect = canvas.getBoundingClientRect();
+      const isMobile = isMobileViewport();
+      const inPlanet = isWithinPlanet(clientX, clientY, rect, isMobile);
       const x = clientX - rect.left;
       const y = canvas.clientHeight - (clientY - rect.top);
       const msg: Extract<MainToWorkerMessage, { type: "SHOCKWAVE" }> = {
@@ -216,8 +251,14 @@ export function PhysicsCanvas() {
         x,
         y,
         strength,
+        ...(inPlanet && {
+          radiusMul: 2,
+          forceMul: 2,
+          ...(cyclePlanetShape && { cyclePlanetShape: true }),
+        }),
       };
       workerRef.current?.postMessage(msg);
+      spawnVisualShockwave(clientX, clientY, rect, inPlanet ? 2 : 1);
       lastShockX = clientX;
       lastShockY = clientY;
       lastShockTime = now;
@@ -226,7 +267,7 @@ export function PhysicsCanvas() {
     const handlePointerDown = (e: PointerEvent) => {
       isDragging = true;
 
-      sendShockwave(e.clientX, e.clientY, 0.25, true);
+      sendShockwave(e.clientX, e.clientY, 0.25, true, true);
     };
 
     let moveClientX = 0;
@@ -371,6 +412,11 @@ export function PhysicsCanvas() {
         key={instanceKeyRef.current}
         ref={canvasRef}
         className="h-full w-full"
+      />
+      <div
+        ref={shockwaveOverlayRef}
+        className="pointer-events-none absolute inset-0 z-10 overflow-hidden"
+        aria-hidden="true"
       />
       <div className="pointer-events-none absolute inset-x-0 top-[90%] bottom-0 bg-linear-to-t from-neutral-100 to-transparent dark:from-neutral-900" />
       {IS_DEV && <StatsOverlay />}

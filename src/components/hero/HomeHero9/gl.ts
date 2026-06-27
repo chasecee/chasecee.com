@@ -145,10 +145,16 @@ void main() {
     float sides = float(u_sides);
     vec2 p = v_corner;
     float angle = atan(p.y, p.x) + PI;
+    if (u_sides == 4) {
+      angle += 0.78539816339;
+    }
     float r = length(p);
     float sector = TAU / sides;
     float d = cos(sector * 0.5) / cos(mod(angle, sector) - sector * 0.5);
     dist = r / d;
+    if (u_sides == 3) {
+      dist /= 1.5;
+    }
   }
 
   float smooth_width = fwidth(dist);

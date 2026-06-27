@@ -16,10 +16,10 @@
     "maxSpeed": 10
   },
   "bodies": {
-    "count": 8000,
+    "count": 6500,
     "radius": 3,
     "radiusVariance": 0.01,
-    "friction": 0,
+    "friction": 0.01,
     "restitution": 0.5,
     "startRadius": 0.35
   },
