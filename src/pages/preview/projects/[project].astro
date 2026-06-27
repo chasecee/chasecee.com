@@ -5,6 +5,7 @@ import { Body } from "@/src/components/Body";
 import ProjectLink from "@/src/components/ProjectLink.astro";
 import LucideIcon from "@/src/components/icons/LucideIcon.astro";
 import { LUCIDE_ICONS } from "@/src/components/icons/lucide";
+import SanityVisualEditing from "@/src/components/sanity/SanityVisualEditing";
 import { getProject } from "@/sanity/sanity-utils";
 import urlFor from "@/sanity/sanity.image";
 
@@ -101,4 +102,5 @@ const projectUrl = typeof project.url === "string" ? project.url : "";
       </div>
     </div>
   </Container>
+  <SanityVisualEditing client:only="react" />
 </SiteLayout>

@@ -2,6 +2,7 @@ import { createClient } from "@sanity/client";
 import config from "./config/client-config";
 
 export const SANITY_PREVIEW_COOKIE = "sanity-preview";
+const STUDIO_URL = process.env.SANITY_STUDIO_URL || "https://studio.chasecee.com";
 
 export function isPreviewRequest(request?: Request): boolean {
   if (!request) return false;
@@ -24,5 +25,9 @@ export function getSanityClient(preview = false) {
     useCdn: false,
     token,
     perspective: "drafts",
+    stega: {
+      enabled: true,
+      studioUrl: STUDIO_URL,
+    },
   });
 }
