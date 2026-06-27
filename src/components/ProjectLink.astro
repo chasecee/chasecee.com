@@ -1,18 +1,21 @@
 ---
 import urlFor from "@/sanity/sanity.image";
 import type { Project } from "@/types/Project";
+import { previewPath } from "@/src/utils/previewPath";
 
 interface Props {
   project: Project;
   direction: "next" | "prev";
+  preview?: boolean;
 }
 
-const { project, direction } = Astro.props;
+const { project, direction, preview = false } = Astro.props;
 ---
 
 <div class={`${direction}-post grow`}>
   <a
-    href={`/projects/${project.slug}`}
+    href={previewPath(`/projects/${project.slug}`, preview)}
+    data-sanity-edit-target={preview ? "" : undefined}
     class={`${
       direction === "prev" ? "flex-row" : "flex-row-reverse"
     } not-prose group relative flex items-center justify-between gap-4 overflow-hidden rounded-xl bg-gray-500/30 no-underline transition-colors hover:bg-gray-500/10`}

@@ -91,14 +91,18 @@ const projectUrl = typeof project.url === "string" ? project.url : "";
       {
         project.content && (
           <div>
-            <Body value={project.content} />
+            <Body value={project.content} preview />
           </div>
         )
       }
       <h3 class="mt-20 mb-4 text-xl">Thanks for reading! Check out more:</h3>
       <div class="not-prose grid gap-4 md:grid-cols-2">
-        {prevProject && <ProjectLink project={prevProject} direction="prev" />}
-        {nextProject && <ProjectLink project={nextProject} direction="next" />}
+        {prevProject && (
+          <ProjectLink project={prevProject} direction="prev" preview />
+        )}
+        {nextProject && (
+          <ProjectLink project={nextProject} direction="next" preview />
+        )}
       </div>
     </div>
   </Container>

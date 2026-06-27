@@ -1,17 +1,25 @@
-import { Card, Flex, Text } from "@sanity/ui";
+import { Button, Flex } from "@sanity/ui";
 import type { NavbarProps } from "sanity";
+
+const SITE_URL = "https://chasecee.com";
 
 export function StudioNavbar(props: NavbarProps) {
   return (
-    <>
-      {props.renderDefault(props)}
-      <Card borderTop padding={2}>
-        <Flex justify="flex-end">
-          <a href="https://chasecee.com" target="_blank" rel="noreferrer">
-            <Text size={1}>Open chasecee.com</Text>
-          </a>
-        </Flex>
-      </Card>
-    </>
+    <Flex align="center" gap={1}>
+      <Button
+        as="a"
+        href={SITE_URL}
+        target="_blank"
+        rel="noreferrer"
+        text="chasecee.com"
+        mode="bleed"
+        tone="primary"
+        fontSize={1}
+        padding={2}
+      />
+      <Flex flex={1} align="center">
+        {props.renderDefault(props)}
+      </Flex>
+    </Flex>
   );
 }

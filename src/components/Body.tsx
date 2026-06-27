@@ -12,27 +12,34 @@ import type {
   ArbitraryTypedObject,
 } from "@portabletext/types";
 import type { InternalLinkValue, ExternalLinkValue } from "@/types/Content";
+import { previewPath } from "@/src/utils/previewPath";
 
-const InternalLink: React.FC<
-  PortableTextMarkComponentProps<InternalLinkValue>
-> = ({ value, children }) => {
-  if (!value) return <>{children}</>;
+function createInternalLink(preview: boolean) {
+  const InternalLink: React.FC<
+    PortableTextMarkComponentProps<InternalLinkValue>
+  > = ({ value, children }) => {
+    if (!value) return <>{children}</>;
 
-  const { slug, refType } = value;
-  let href: string;
-  switch (refType) {
-    case "project":
-      href = slug ? `/projects/${slug}` : "#";
-      break;
-    case "page":
-      href = slug ? `/${slug}` : "#";
-      break;
-    default:
-      href = "#";
-  }
+    const { slug, refType } = value;
+    let href: string;
+    switch (refType) {
+      case "project":
+        href = slug ? previewPath(`/projects/${slug}`, preview) : "#";
+        break;
+      case "page":
+        href = slug
+          ? previewPath(slug === "home" ? "/" : `/${slug}`, preview)
+          : "#";
+        break;
+      default:
+        href = "#";
+    }
 
-  return <a href={href}>{children}</a>;
-};
+    return <a href={href}>{children}</a>;
+  };
+
+  return InternalLink;
+}
 
 const ExternalLink: React.FC<
   PortableTextMarkComponentProps<ExternalLinkValue>
@@ -62,7 +69,7 @@ const ExternalLink: React.FC<
 
 const components: PortableTextComponents = {
   marks: {
-    internalLink: InternalLink,
+    internalLink: createInternalLink(false),
     link: ExternalLink,
   },
   types: {
@@ -110,10 +117,22 @@ const components: PortableTextComponents = {
 
 interface BodyProps {
   value: (PortableTextBlock | ArbitraryTypedObject)[];
+  preview?: boolean;
 }
 
-export const Body: React.FC<BodyProps> = ({ value }) => {
-  return <PortableText value={value} components={components} />;
+export const Body: React.FC<BodyProps> = ({ value, preview = false }) => {
+  const resolvedComponents = React.useMemo(
+    () => ({
+      ...components,
+      marks: {
+        ...components.marks,
+        internalLink: createInternalLink(preview),
+      },
+    }),
+    [preview],
+  );
+
+  return <PortableText value={value} components={resolvedComponents} />;
 };
 
 export default Body;

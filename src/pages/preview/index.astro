@@ -22,11 +22,13 @@ const [personalProjects, clientProjects] = await Promise.all([
         projects={personalProjects}
         title="Personal Projects"
         columns={3}
+        preview
       />
       <ProjectsList
         projects={clientProjects}
         title="Client Work"
         columns={4}
+        preview
       />
     </div>
   </ContainerHome>
