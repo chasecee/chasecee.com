@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "sanity dev",
+    "build": "sanity build",
     "deploy": "sanity deploy"
   },
   "dependencies": {
