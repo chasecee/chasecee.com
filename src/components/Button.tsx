@@ -1,6 +1,4 @@
 import React from "react";
-import { clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
 import type { ButtonProps } from "@/types/UI";
 
 const layoutStyles =
@@ -9,7 +7,7 @@ const layoutStyles =
 const chromaStyles =
   "ring-[.125rem] ring-black/30 bg-black/5 dark:bg-white/5 dark:ring-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-current focus-visible:ring-opacity-60 dark:focus-visible:ring-current dark:focus-visible:ring-opacity-80";
 
-const baseStyles = clsx(layoutStyles, chromaStyles);
+const baseStyles = `${layoutStyles} ${chromaStyles}`;
 
 const Button = React.forwardRef<HTMLAnchorElement, ButtonProps>(
   ({ href, className = "", target, rel, children, ...rest }, ref) => {
@@ -22,7 +20,7 @@ const Button = React.forwardRef<HTMLAnchorElement, ButtonProps>(
         href={href}
         target={target}
         rel={computedRel}
-        className={twMerge(baseStyles, className)}
+        className={className ? `${baseStyles} ${className}` : baseStyles}
         {...rest}
       >
         {children}
