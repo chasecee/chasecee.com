@@ -53,6 +53,10 @@ function resolveProductionUrl(
 
 const presentationMainDocuments = defineDocuments([
   {
+    route: "/",
+    filter: `_type == "page" && slug.current == "home"`,
+  },
+  {
     route: "/projects/:slug",
     filter: `_type == "project" && slug.current == $slug`,
     params: ({ params }) => ({ slug: params.slug }),
@@ -89,11 +93,12 @@ const presentationLocations = {
     },
     resolve: (doc) => {
       if (!doc?.slug) return null;
+      const href = doc.slug === "home" ? "/" : `/${doc.slug}`;
       return {
         locations: [
           {
             title: doc.title || "Page",
-            href: `/${doc.slug}`,
+            href,
           },
         ],
       };
