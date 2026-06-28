@@ -3,7 +3,7 @@ export const GLSL_FLOAT_PRECISION = "lowp";
 export function createContext(
   canvas: OffscreenCanvas,
 ): WebGL2RenderingContext | null {
-  const gl = canvas.getContext("webgl2", { alpha: true, antialias: true });
+  const gl = canvas.getContext("webgl2", { alpha: false, antialias: true });
   if (!gl) {
   }
   return gl;
@@ -89,14 +89,11 @@ void main() {
   vec2 coord = gl_PointCoord - vec2(0.5);
   float distance = length(coord);
 
-  float smooth_width = fwidth(distance);
-  float alpha = 1.0 - smoothstep(0.5 - smooth_width, 0.5, distance);
-
-  if (alpha < 0.01) {
+  if (distance > 0.5) {
     discard;
   }
 
-  out_color = vec4(v_color.rgb, v_color.a * alpha);
+  out_color = vec4(v_color.rgb, 1.0);
 }
 `;
 
@@ -145,20 +142,12 @@ void main() {
     float sides = float(u_sides);
     vec2 p = v_corner;
     float angle = atan(p.y, p.x) + PI;
-    if (u_sides == 4) {
-      angle += 0.78539816339;
-    }
     float r = length(p);
     float sector = TAU / sides;
     float d = cos(sector * 0.5) / cos(mod(angle, sector) - sector * 0.5);
     dist = r / d;
-    if (u_sides == 3) {
-      dist /= 1.5;
-    }
   }
 
-  float smooth_width = fwidth(dist);
-  float alpha = 1.0 - smoothstep(1.0 - smooth_width, 1.0, dist);
-  if (alpha < 0.01) discard;
-  out_color = vec4(v_color.rgb, alpha);
+  if (dist > 1.0) discard;
+  out_color = vec4(v_color.rgb, 1.0);
 }`;

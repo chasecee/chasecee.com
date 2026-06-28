@@ -103,6 +103,9 @@ type DeepPartial<T> = T extends object
 
 const PIXELS_PER_METER = 50;
 const INV_PIXELS_PER_METER = 1 / PIXELS_PER_METER;
+const MAX_DEVICE_PIXEL_RATIO = 1.5;
+const BG_LIGHT = { r: 245 / 255, g: 245 / 255, b: 245 / 255 };
+const BG_DARK = { r: 23 / 255, g: 23 / 255, b: 23 / 255 };
 
 type PhysicsSettings = typeof config;
 type MobileOverrides = DeepPartial<Omit<PhysicsSettings, "mobileOverrides">>;
@@ -113,11 +116,9 @@ let canvas: OffscreenCanvas | null = null;
 let gl: WebGL2RenderingContext | null = null;
 let world: import("@dimforge/rapier2d").World;
 let rigidBodies: import("@dimforge/rapier2d").RigidBody[] = [];
-let planetBody: import("@dimforge/rapier2d").RigidBody | null = null;
-let planetCollider: import("@dimforge/rapier2d").Collider | null = null;
 let planetShapeSides = 6;
 
-const PLANET_SHAPES = [6, 4, 3, 0];
+const PLANET_SHAPES = [6, 5, 8];
 
 let scrollForce = 0;
 
@@ -125,7 +126,7 @@ let program: WebGLProgram | null = null;
 let projectionMatrix: WebGLUniformLocation | null = null;
 let shapeSidesUniform: WebGLUniformLocation | null = null;
 
-let wallColliderHandles: number[] = [];
+let wallBoundsMeters = { left: 0, right: 0, bottom: 0, top: 0 };
 let vao: WebGLVertexArrayObject | null = null;
 let interleavedVbo: WebGLBuffer | null = null;
 let cornerVbo: WebGLBuffer | null = null;
@@ -143,6 +144,7 @@ let canvasHeight = 0;
 let centerX = 0;
 let centerY = 0;
 let devicePixelRatio = 1;
+let isDarkMode = false;
 
 let frameCount = 0;
 const scratchDir = { x: 0, y: 0 };
@@ -211,12 +213,16 @@ function ensureInterleavedCapacity(minBodies: number) {
   }
 }
 
+function applyClearColor() {
+  if (!gl) return;
+  const bg = isDarkMode ? BG_DARK : BG_LIGHT;
+  gl.clearColor(bg.r, bg.g, bg.b, 1.0);
+}
+
 function setupWebgl() {
   if (!gl) return;
 
-  gl.clearColor(0.0, 0.0, 0.0, 0.0);
-  gl.enable(gl.BLEND);
-  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  applyClearColor();
 
   const vertexShader = WebGL.createShader(
     gl,
@@ -294,54 +300,218 @@ function getPlanetRadiusPixels(settings: PhysicsSettings) {
   return settings.world.centerCircleRadius * Math.min(canvasWidth, canvasHeight);
 }
 
-function getShapeRadiusScale(sides: number) {
-  return sides === 3 ? 1.5 : 1;
+function getOrbitRadiusMeters(settings: PhysicsSettings) {
+  return getPlanetRadiusPixels(settings) * INV_PIXELS_PER_METER;
 }
 
-function createPlanetColliderDesc(
+function updateWallBounds(settings: PhysicsSettings) {
+  const widthMeters = canvasWidth * INV_PIXELS_PER_METER;
+  const heightMeters = canvasHeight * INV_PIXELS_PER_METER;
+  const wallOffset = (settings.world as any).wallOffset ?? 0;
+  wallBoundsMeters = {
+    left: widthMeters * wallOffset,
+    right: widthMeters * (1 - wallOffset),
+    bottom: heightMeters * wallOffset,
+    top: heightMeters * (1 - wallOffset),
+  };
+}
+
+function bodyMassFromRadius(bodyRadiusMeters: number) {
+  return Math.PI * bodyRadiusMeters * bodyRadiusMeters;
+}
+
+function buildPlanetVertsMeters(sides: number, radiusMeters: number) {
+  const verts = new Float32Array(sides * 2);
+  for (let s = 0; s < sides; s++) {
+    const ang = (s * Math.PI * 2) / sides - Math.PI / 2;
+    verts[s * 2] = Math.cos(ang) * radiusMeters;
+    verts[s * 2 + 1] = Math.sin(ang) * radiusMeters;
+  }
+  return verts;
+}
+
+function closestPointOnPolygonBoundary(
+  px: number,
+  py: number,
+  verts: Float32Array,
   sides: number,
-  radiusMeters: number,
-): import("@dimforge/rapier2d").ColliderDesc | null {
-  const scaledRadius = radiusMeters * getShapeRadiusScale(sides);
-  if (sides >= 3) {
-    const verts = new Float32Array(sides * 2);
-    for (let s = 0; s < sides; s++) {
-      const ang = (s * Math.PI * 2) / sides - Math.PI / 2;
-      verts[s * 2] = Math.cos(ang) * scaledRadius;
-      verts[s * 2 + 1] = Math.sin(ang) * scaledRadius;
+) {
+  let bestDistSq = Infinity;
+  let qx = 0;
+  let qy = 0;
+  let nx = 1;
+  let ny = 0;
+
+  for (let i = 0; i < sides; i++) {
+    const ax = verts[i * 2];
+    const ay = verts[i * 2 + 1];
+    const bx = verts[((i + 1) % sides) * 2];
+    const by = verts[((i + 1) % sides) * 2 + 1];
+    const ex = bx - ax;
+    const ey = by - ay;
+    const lenSq = ex * ex + ey * ey;
+    let t =
+      lenSq > 1e-12 ? ((px - ax) * ex + (py - ay) * ey) / lenSq : 0;
+    t = Math.max(0, Math.min(1, t));
+    const cx = ax + ex * t;
+    const cy = ay + ey * t;
+    const dx = px - cx;
+    const dy = py - cy;
+    const distSq = dx * dx + dy * dy;
+    if (distSq < bestDistSq) {
+      bestDistSq = distSq;
+      qx = cx;
+      qy = cy;
+      const len = Math.sqrt(lenSq) || 1;
+      nx = ey / len;
+      ny = -ex / len;
     }
-    const hull = rapier.ColliderDesc.convexHull(verts);
-    return hull ? hull.setFriction(0).setRestitution(0.5) : null;
   }
-  return rapier.ColliderDesc.ball(scaledRadius)
-    .setFriction(0)
-    .setRestitution(0.5);
+
+  return { qx, qy, nx, ny };
 }
 
-function updatePlanetCollider(sides: number) {
-  if (!world || !rapier || !planetBody) return;
-  const planetRadiusPixels = getPlanetRadiusPixels(activeSettings);
-  if (planetRadiusPixels <= 0) return;
+function clampToOrbit(
+  body: import("@dimforge/rapier2d").RigidBody,
+  bodyRadiusMeters: number,
+  orbitRadiusMeters: number,
+  centerXMeters: number,
+  centerYMeters: number,
+  restitution: number,
+) {
+  const pos = body.translation();
+  const lx = pos.x - centerXMeters;
+  const ly = pos.y - centerYMeters;
 
-  if (planetCollider) {
-    world.removeCollider(planetCollider, true);
-    planetCollider = null;
+  let qx = 0;
+  let qy = 0;
+  let nx = 1;
+  let ny = 0;
+
+  if (planetShapeSides <= 0) {
+    const distSq = lx * lx + ly * ly;
+    const minDist = orbitRadiusMeters + bodyRadiusMeters;
+    if (distSq >= minDist * minDist) return pos;
+
+    if (distSq > 1e-12) {
+      const dist = Math.sqrt(distSq);
+      const invDist = 1 / dist;
+      qx = lx * invDist * orbitRadiusMeters;
+      qy = ly * invDist * orbitRadiusMeters;
+      nx = lx * invDist;
+      ny = ly * invDist;
+    } else {
+      qx = orbitRadiusMeters;
+      qy = 0;
+    }
+  } else {
+    const verts = buildPlanetVertsMeters(planetShapeSides, orbitRadiusMeters);
+    const boundary = closestPointOnPolygonBoundary(
+      lx,
+      ly,
+      verts,
+      planetShapeSides,
+    );
+    qx = boundary.qx;
+    qy = boundary.qy;
+    nx = boundary.nx;
+    ny = boundary.ny;
   }
 
-  const desc = createPlanetColliderDesc(
-    sides,
-    planetRadiusPixels / PIXELS_PER_METER,
+  const clearance = (lx - qx) * nx + (ly - qy) * ny;
+  if (clearance >= bodyRadiusMeters) return pos;
+
+  const push = bodyRadiusMeters - clearance;
+  const nlx = lx + nx * push;
+  const nly = ly + ny * push;
+  const nxWorld = centerXMeters + nlx;
+  const nyWorld = centerYMeters + nly;
+
+  body.setTranslation({ x: nxWorld, y: nyWorld }, true);
+
+  const vel = body.linvel();
+  const radialVel = vel.x * nx + vel.y * ny;
+  if (radialVel < 0) {
+    const bounce = 1 + restitution;
+    body.setLinvel(
+      { x: vel.x - radialVel * nx * bounce, y: vel.y - radialVel * ny * bounce },
+      true,
+    );
+  }
+
+  return { x: nxWorld, y: nyWorld };
+}
+
+function clampToWalls(
+  body: import("@dimforge/rapier2d").RigidBody,
+  x: number,
+  y: number,
+  bodyRadiusMeters: number,
+  restitution: number,
+) {
+  const minX = wallBoundsMeters.left + bodyRadiusMeters;
+  const maxX = wallBoundsMeters.right - bodyRadiusMeters;
+  const minY = wallBoundsMeters.bottom + bodyRadiusMeters;
+  const maxY = wallBoundsMeters.top - bodyRadiusMeters;
+
+  let nx = x;
+  let ny = y;
+  let clamped = false;
+  const vel = body.linvel();
+  let vx = vel.x;
+  let vy = vel.y;
+
+  if (nx < minX) {
+    nx = minX;
+    if (vx < 0) vx = -vx * restitution;
+    clamped = true;
+  } else if (nx > maxX) {
+    nx = maxX;
+    if (vx > 0) vx = -vx * restitution;
+    clamped = true;
+  }
+
+  if (ny < minY) {
+    ny = minY;
+    if (vy < 0) vy = -vy * restitution;
+    clamped = true;
+  } else if (ny > maxY) {
+    ny = maxY;
+    if (vy > 0) vy = -vy * restitution;
+    clamped = true;
+  }
+
+  if (!clamped) return { x, y };
+
+  body.setTranslation({ x: nx, y: ny }, true);
+  body.setLinvel({ x: vx, y: vy }, true);
+  return { x: nx, y: ny };
+}
+
+function clampBounds(
+  body: import("@dimforge/rapier2d").RigidBody,
+  bodyRadiusMeters: number,
+  orbitRadiusMeters: number,
+  centerXMeters: number,
+  centerYMeters: number,
+  restitution: number,
+) {
+  const pos = body.translation();
+  clampToWalls(body, pos.x, pos.y, bodyRadiusMeters, restitution);
+  return clampToOrbit(
+    body,
+    bodyRadiusMeters,
+    orbitRadiusMeters,
+    centerXMeters,
+    centerYMeters,
+    restitution,
   );
-  if (desc) {
-    planetCollider = world.createCollider(desc, planetBody);
-  }
 }
 
 function cyclePlanetShape() {
   const currentIndex = PLANET_SHAPES.indexOf(planetShapeSides);
   planetShapeSides =
     PLANET_SHAPES[(currentIndex + 1) % PLANET_SHAPES.length];
-  updatePlanetCollider(planetShapeSides);
 }
 
 function createBodies(settings: PhysicsSettings) {
@@ -350,29 +520,11 @@ function createBodies(settings: PhysicsSettings) {
   }
   rigidBodies.length = 0;
 
-  if (planetBody) {
-    world.removeRigidBody(planetBody);
-    planetBody = null;
-    planetCollider = null;
-  }
-
   bodyCount = Math.max(0, Math.floor(settings.bodies.count));
   ensureInterleavedCapacity(bodyCount);
   const baseRadius = settings.bodies.radius;
   const radiusVariance = settings.bodies.radiusVariance;
   const initialClockwiseVelocity = settings.simulation.initialClockwiseVelocity;
-
-  const center = { x: centerX, y: centerY };
-
-  const planetRadiusPixels = getPlanetRadiusPixels(settings);
-  if (planetRadiusPixels > 0) {
-    const planetBodyDesc = rapier.RigidBodyDesc.fixed().setTranslation(
-      center.x / PIXELS_PER_METER,
-      center.y / PIXELS_PER_METER,
-    );
-    planetBody = world.createRigidBody(planetBodyDesc);
-    updatePlanetCollider(planetShapeSides);
-  }
 
   rigidBodies.length = 0;
 
@@ -417,6 +569,9 @@ function createBodies(settings: PhysicsSettings) {
         const radiusMultiplier = 1.0 + (Math.random() - 0.5) * radiusVariance;
         const finalRadiusPixels = baseRadius * radiusMultiplier;
 
+        const radiusMeters = finalRadiusPixels / PIXELS_PER_METER;
+        const mass = bodyMassFromRadius(radiusMeters);
+
         const rigidBodyDesc = rapier.RigidBodyDesc.dynamic()
           .setTranslation(x / PIXELS_PER_METER, y / PIXELS_PER_METER)
           .setLinearDamping(settings.simulation.damping)
@@ -424,17 +579,10 @@ function createBodies(settings: PhysicsSettings) {
             (settings.simulation as any).angularDamping ??
               settings.simulation.damping,
           )
+          .setAdditionalMass(mass)
           .setCanSleep(true);
 
         const rigidBody = world.createRigidBody(rigidBodyDesc);
-        const radiusMeters = finalRadiusPixels / PIXELS_PER_METER;
-        let colliderDesc = rapier.ColliderDesc.ball(radiusMeters);
-
-        colliderDesc = colliderDesc
-          .setRestitution(settings.bodies.restitution)
-          .setFriction(settings.bodies.friction);
-
-        world.createCollider(colliderDesc, rigidBody);
 
         if (initialClockwiseVelocity !== 0) {
           const distance = Math.sqrt(distSq);
@@ -562,9 +710,7 @@ function update(currentTime: number) {
 
     scrollForce *= settings.interactions.scroll.velocityDamping ?? 0.98;
 
-    const planetRadiusPixels =
-      settings.world.centerCircleRadius * Math.min(canvasWidth, canvasHeight);
-    const planetRadiusMeters = planetRadiusPixels * INV_PIXELS_PER_METER;
+    const orbitRadiusMeters = getOrbitRadiusMeters(settings);
 
     const gravityCoeff = settings.simulation.gravity;
     const tangentialDamping = settings.simulation.tangentialDamping ?? 1.0;
@@ -580,50 +726,45 @@ function update(currentTime: number) {
     if (shouldApplyGravity) {
       for (let i = 0; i < bodyCount; i++) {
         const body = rigidBodies[i];
-        if (!body || body.isSleeping()) continue;
+        if (!body) continue;
 
-        const mass = body.mass();
-        if (mass === 0) continue;
-        const pos = body.translation();
-        scratchDir.x = centerXMeters - pos.x;
-        scratchDir.y = centerYMeters - pos.y;
+        const baseFloat = (i * DYNAMIC_BYTES) >> 2;
+        const bodyRadiusMeters =
+          interleavedFloat32[baseFloat + 3] * INV_PIXELS_PER_METER;
+        const mass = bodyMassFromRadius(bodyRadiusMeters);
+        const posXMeters = interleavedFloat32[baseFloat] * INV_PIXELS_PER_METER;
+        const posYMeters =
+          interleavedFloat32[baseFloat + 1] * INV_PIXELS_PER_METER;
+
+        scratchDir.x = centerXMeters - posXMeters;
+        scratchDir.y = centerYMeters - posYMeters;
         const distSq = scratchDir.x * scratchDir.x + scratchDir.y * scratchDir.y;
         if (distSq < 1e-6) continue;
         const invDist = 1 / Math.sqrt(distSq);
         const dist = 1 / invDist;
-        const radialDist = dist - planetRadiusMeters;
+        const radialDist = dist - orbitRadiusMeters;
         if (radialDist <= 0) continue;
-        const pullNorm = Math.min(radialDist / planetRadiusMeters, 1);
+        const pullNorm = Math.min(radialDist / orbitRadiusMeters, 1);
         let smoothPull = pullNorm * pullNorm * (3 - 2 * pullNorm);
         if (gravityEase !== 1) smoothPull = Math.pow(smoothPull, gravityEase);
-        const F_gravity = gravityCoeff * mass * smoothPull;
-
-        const coeff = invDist * F_gravity;
-        scratchForce.x = scratchDir.x * coeff;
-        scratchForce.y = scratchDir.y * coeff;
-        body.addForce(scratchForce, true);
+        const fGravity = gravityCoeff * mass * smoothPull * invDist;
 
         const vel = body.linvel();
-        const radialVel = (vel.x * scratchDir.x + vel.y * scratchDir.y) * invDist;
+        const radialVel =
+          (vel.x * scratchDir.x + vel.y * scratchDir.y) * invDist;
         const tangVelX = vel.x - radialVel * scratchDir.x * invDist;
         const tangVelY = vel.y - radialVel * scratchDir.y * invDist;
-
-        body.addForce(
-          {
-            x: -tangentialDamping * tangVelX * mass,
-            y: -tangentialDamping * tangVelY * mass,
-          },
-          true,
-        );
-
         const radialDrag = -radialDamping * radialVel * mass;
-        body.addForce(
-          {
-            x: radialDrag * scratchDir.x * invDist,
-            y: radialDrag * scratchDir.y * invDist,
-          },
-          true,
-        );
+
+        scratchForce.x =
+          scratchDir.x * fGravity -
+          tangentialDamping * tangVelX * mass +
+          radialDrag * scratchDir.x * invDist;
+        scratchForce.y =
+          scratchDir.y * fGravity -
+          tangentialDamping * tangVelY * mass +
+          radialDrag * scratchDir.y * invDist;
+        body.addForce(scratchForce, true);
       }
     }
     if (IS_DEV) gravityTime = performance.now() - gravityStart;
@@ -647,6 +788,9 @@ function update(currentTime: number) {
   const maxSpeedSq = hasMaxSpeed ? maxSpeedCfg * maxSpeedCfg : 0;
   const syncStart = IS_DEV ? performance.now() : 0;
   if (didStep) {
+    const orbitRadiusMeters = getOrbitRadiusMeters(settings);
+    const bodyRestitution = settings.bodies.restitution;
+
     for (let i = 0; i < bodyCount; i++) {
       const body = rigidBodies[i];
       if (!body) continue;
@@ -658,13 +802,20 @@ function update(currentTime: number) {
           body.setLinvel({ x: v.x * scale, y: v.y * scale }, true);
         }
       }
-      const pos = body.translation();
-      const rot = body.rotation();
       const baseByte = i * DYNAMIC_BYTES;
       const baseFloat = baseByte >> 2;
+      const bodyRadiusMeters =
+        interleavedFloat32[baseFloat + 3] * INV_PIXELS_PER_METER;
+      const pos = clampBounds(
+        body,
+        bodyRadiusMeters,
+        orbitRadiusMeters,
+        centerXMeters,
+        centerYMeters,
+        bodyRestitution,
+      );
       interleavedFloat32[baseFloat] = pos.x * PIXELS_PER_METER;
       interleavedFloat32[baseFloat + 1] = pos.y * PIXELS_PER_METER;
-      interleavedFloat32[baseFloat + 2] = rot;
     }
   }
   if (IS_DEV) syncTime = performance.now() - syncStart;
@@ -761,6 +912,7 @@ async function handleInit(msg: Extract<MainToWorkerMessage, { type: "INIT" }>) {
     rapier = await initRapier();
     // Persist device type so we don't re-evaluate on every resize
     isMobileDevice = msg.isMobile;
+    isDarkMode = msg.isDark ?? false;
     const gravity = { x: 0.0, y: 0.0 };
     world = new rapier.World(gravity);
 
@@ -815,8 +967,9 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
     return;
   }
 
-  const nextBufferW = Math.floor(msg.width * msg.devicePixelRatio);
-  const nextBufferH = Math.floor(msg.height * msg.devicePixelRatio);
+  const cappedDpr = Math.min(msg.devicePixelRatio, MAX_DEVICE_PIXEL_RATIO);
+  const nextBufferW = Math.floor(msg.width * cappedDpr);
+  const nextBufferH = Math.floor(msg.height * cappedDpr);
   if (canvas && canvas.width === nextBufferW && canvas.height === nextBufferH) {
     return;
   }
@@ -825,7 +978,11 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
   canvasHeight = msg.height;
   centerX = canvasWidth / 2;
   centerY = canvasHeight / 2;
-  devicePixelRatio = msg.devicePixelRatio;
+  if (typeof msg.isDark === "boolean") {
+    isDarkMode = msg.isDark;
+    applyClearColor();
+  }
+  devicePixelRatio = cappedDpr;
 
   const bufferWidth = Math.floor(canvasWidth * devicePixelRatio);
   const bufferHeight = Math.floor(canvasHeight * devicePixelRatio);
@@ -849,99 +1006,24 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
   paletteSteps = activeSettings.rendering.colorSteps ?? 1024;
   paletteLut = buildPalette(activeSettings.rendering.colorLevel, paletteSteps);
   const settings = activeSettings;
+  updateWallBounds(settings);
   const centerXMeters = centerX * INV_PIXELS_PER_METER;
   const centerYMeters = centerY * INV_PIXELS_PER_METER;
+  const orbitRadiusMeters = getOrbitRadiusMeters(settings);
+  const bodyRestitution = settings.bodies.restitution;
 
-  if (planetBody) {
-    const planetRadiusPixels = getPlanetRadiusPixels(settings);
-    const planetRadiusMeters =
-      planetRadiusPixels *
-      INV_PIXELS_PER_METER *
-      getShapeRadiusScale(planetShapeSides);
-
-    planetBody.setTranslation({ x: centerXMeters, y: centerYMeters }, true);
-    updatePlanetCollider(planetShapeSides);
-
-    const planetRadiusMetersSq = planetRadiusMeters * planetRadiusMeters;
-
-    for (const body of rigidBodies) {
-      const pos = body.translation();
-      const dx = pos.x - centerXMeters;
-      const dy = pos.y - centerYMeters;
-      const distSq = dx * dx + dy * dy;
-
-      if (distSq < planetRadiusMetersSq) {
-        const dist = Math.sqrt(distSq);
-        if (dist < 1e-6) {
-          body.setTranslation(
-            { x: centerXMeters + planetRadiusMeters + 0.01, y: centerYMeters },
-            true,
-          );
-        } else {
-          const overlap = planetRadiusMeters - dist;
-          const pushOutX = (dx / dist) * (overlap + 0.01);
-          const pushOutY = (dy / dist) * (overlap + 0.01);
-          body.setTranslation(
-            { x: pos.x + pushOutX, y: pos.y + pushOutY },
-            true,
-          );
-        }
-      }
-    }
+  for (let i = 0; i < bodyCount; i++) {
+    const body = rigidBodies[i];
+    if (!body) continue;
+    clampBounds(
+      body,
+      interleavedFloat32[(i * DYNAMIC_BYTES) >> 2 + 3] * INV_PIXELS_PER_METER,
+      orbitRadiusMeters,
+      centerXMeters,
+      centerYMeters,
+      bodyRestitution,
+    );
   }
-
-  for (const handle of wallColliderHandles) {
-    const collider = world.getCollider(handle);
-    if (collider) {
-      world.removeCollider(collider, false);
-    }
-  }
-  wallColliderHandles = [];
-
-  const wallThicknessPx = (settings.world as any).wallThickness ?? 50.0;
-  const wallThicknessMeters = wallThicknessPx * INV_PIXELS_PER_METER;
-  const widthMeters = canvasWidth * INV_PIXELS_PER_METER;
-  const heightMeters = canvasHeight * INV_PIXELS_PER_METER;
-
-  const wallOffset = (settings.world as any).wallOffset ?? 0;
-  const offsetXMeters = widthMeters * wallOffset;
-  const offsetYMeters = heightMeters * wallOffset;
-
-  const leftX = 0 + offsetXMeters;
-  const rightX = widthMeters - offsetXMeters;
-  const bottomY = 0 + offsetYMeters;
-  const topY = heightMeters - offsetYMeters;
-
-  const halfSpanX = (rightX - leftX) / 2 + wallThicknessMeters;
-  const halfSpanY = (topY - bottomY) / 2 + wallThicknessMeters;
-
-  let wallDesc = rapier.ColliderDesc.cuboid(halfSpanX, wallThicknessMeters / 2)
-    .setTranslation((leftX + rightX) / 2, topY + wallThicknessMeters / 2)
-    .setFriction(0.1)
-    .setSensor(false)
-    .setRestitution(0.0);
-  wallColliderHandles.push(world.createCollider(wallDesc).handle);
-
-  wallDesc = rapier.ColliderDesc.cuboid(halfSpanX, wallThicknessMeters / 2)
-    .setTranslation((leftX + rightX) / 2, bottomY - wallThicknessMeters / 2)
-    .setFriction(0.1)
-    .setSensor(false)
-    .setRestitution(0.0);
-  wallColliderHandles.push(world.createCollider(wallDesc).handle);
-
-  wallDesc = rapier.ColliderDesc.cuboid(wallThicknessMeters / 2, halfSpanY)
-    .setTranslation(leftX - wallThicknessMeters / 2, (bottomY + topY) / 2)
-    .setFriction(0.1)
-    .setSensor(false)
-    .setRestitution(0.0);
-  wallColliderHandles.push(world.createCollider(wallDesc).handle);
-
-  wallDesc = rapier.ColliderDesc.cuboid(wallThicknessMeters / 2, halfSpanY)
-    .setTranslation(rightX + wallThicknessMeters / 2, (bottomY + topY) / 2)
-    .setFriction(0.1)
-    .setSensor(false)
-    .setRestitution(0.0);
-  wallColliderHandles.push(world.createCollider(wallDesc).handle);
 
   const left = 0,
     right = canvasWidth,
@@ -1020,6 +1102,10 @@ self.onmessage = (event: MessageEvent<MainToWorkerMessage>) => {
           lastTime = 0;
           requestAnimationFrame(update);
         }
+        break;
+      case "SET_THEME":
+        isDarkMode = msg.isDark;
+        applyClearColor();
         break;
     }
   } catch (e) {}

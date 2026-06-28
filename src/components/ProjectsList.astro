@@ -4,6 +4,7 @@ import generateColorPalette from "@/src/utils/colorUtils";
 import CustomDashboardCard from "@/src/components/project-cards/CustomDashboardCard";
 import urlFor from "@/sanity/sanity.image";
 import { previewPath } from "@/src/utils/previewPath";
+import { sanitizeProjectSvg } from "@/src/utils/sanitizeProjectSvg";
 
 interface Props {
   projects: Project[];
@@ -114,7 +115,7 @@ const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
                     <div class="view-actor absolute inset-0 transition-transform delay-[25ms] duration-500 group-hover:scale-110 group-hover:duration-300">
                       <div
                         class="svg-parent absolute top-1/2 left-1/2 h-full w-[50%] -translate-x-1/2 -translate-y-1/2 text-white"
-                        set:html={project.svgcode.code}
+                        set:html={sanitizeProjectSvg(project.svgcode.code)}
                       />
                     </div>
                   )}
@@ -211,7 +212,7 @@ const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
                     >
                       <div
                         class="svg-parent absolute origin-center top-1/2 left-1/2 h-1/2 w-2/3 -translate-x-1/2 -translate-y-1/2 text-white"
-                        set:html={project.svgcode.code}
+                        set:html={sanitizeProjectSvg(project.svgcode.code)}
                       />
                     </div>
                   )}

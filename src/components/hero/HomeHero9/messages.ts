@@ -6,6 +6,7 @@ export type InitMainMessage = {
   isMobile: boolean;
   colorLevel?: number;
   devicePixelRatio: number;
+  isDark?: boolean;
 };
 
 export type ResizeMainMessage = {
@@ -13,6 +14,12 @@ export type ResizeMainMessage = {
   width: number;
   height: number;
   devicePixelRatio: number;
+  isDark?: boolean;
+};
+
+export type SetThemeMainMessage = {
+  type: "SET_THEME";
+  isDark: boolean;
 };
 
 export type PointerMainMessage = {
@@ -57,6 +64,7 @@ export type MainToWorkerMessage =
   | ShockMainMessage
   | ScrollForceMainMessage
   | SetPausedMainMessage
+  | SetThemeMainMessage
   | TerminateMainMessage
   | GetStateMainMessage;
 

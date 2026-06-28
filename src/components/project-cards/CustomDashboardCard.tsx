@@ -3,6 +3,7 @@
 import * as React from "react";
 import type { Project } from "@/types/Project";
 import type { ProjectCardProps } from "@/types/UI";
+import { sanitizeProjectSvg } from "@/src/utils/sanitizeProjectSvg";
 
 const { useState, useEffect, useRef } = React;
 
@@ -70,7 +71,7 @@ export default function CustomDashboardCard({
           <div
             className="svg-parent absolute top-1/2 left-1/2 h-full w-[50%] -translate-x-1/2 -translate-y-1/2 text-white"
             dangerouslySetInnerHTML={{
-              __html: project.svgcode.code,
+              __html: sanitizeProjectSvg(project.svgcode.code),
             }}
           />
         </div>

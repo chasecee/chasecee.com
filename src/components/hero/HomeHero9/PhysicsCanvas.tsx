@@ -7,6 +7,7 @@ import { isMobileViewport, isWithinPlanet, prefersReducedMotion, shockwaveDiamet
 import "./shockwave.css";
 
 const IS_DEV = import.meta.env.DEV;
+const MAX_DEVICE_PIXEL_RATIO = 1.5;
 
 export function PhysicsCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -23,6 +24,12 @@ export function PhysicsCanvas() {
     const level = parseInt(cssValue, 10);
     return Number.isNaN(level) ? 4 : level;
   };
+
+  const getPhysicsDevicePixelRatio = () =>
+    Math.min(window.devicePixelRatio || 1, MAX_DEVICE_PIXEL_RATIO);
+
+  const getIsDark = () =>
+    window.matchMedia("(prefers-color-scheme: dark)").matches;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -186,7 +193,8 @@ export function PhysicsCanvas() {
         height: canvas.clientHeight,
         isMobile: window.innerWidth < 768,
         colorLevel: level,
-        devicePixelRatio: window.devicePixelRatio || 1,
+        devicePixelRatio: getPhysicsDevicePixelRatio(),
+        isDark: getIsDark(),
       };
       workerRef.current.postMessage(initMessage, transferList);
     } catch (error) {
@@ -319,7 +327,7 @@ export function PhysicsCanvas() {
       if (!entries || entries.length === 0) return;
       const { width, height } = entries[0].contentRect;
 
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = getPhysicsDevicePixelRatio();
       const bufW = Math.floor(width * dpr);
       const bufH = Math.floor(height * dpr);
       if (bufW === lastBuf.w && bufH === lastBuf.h) return;
@@ -331,6 +339,7 @@ export function PhysicsCanvas() {
         width,
         height,
         devicePixelRatio: dpr,
+        isDark: getIsDark(),
       };
       workerRef.current?.postMessage(resizeMessage);
     });
@@ -379,7 +388,19 @@ export function PhysicsCanvas() {
     window.addEventListener("blur", handleWindowBlur);
     window.addEventListener("focus", handleWindowFocus);
 
+    const themeMedia = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleThemeChange = () => {
+      const themeMessage: Extract<MainToWorkerMessage, { type: "SET_THEME" }> =
+        {
+          type: "SET_THEME",
+          isDark: themeMedia.matches,
+        };
+      workerRef.current?.postMessage(themeMessage);
+    };
+    themeMedia.addEventListener("change", handleThemeChange);
+
     return () => {
+      themeMedia.removeEventListener("change", handleThemeChange);
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
       window.removeEventListener("blur", handleWindowBlur);
@@ -411,7 +432,7 @@ export function PhysicsCanvas() {
       <canvas
         key={instanceKeyRef.current}
         ref={canvasRef}
-        className="h-full w-full"
+        className="h-full w-full bg-neutral-100 dark:bg-neutral-900"
       />
       <div
         ref={shockwaveOverlayRef}
