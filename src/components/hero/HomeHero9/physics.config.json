@@ -11,13 +11,13 @@
     "maxVelocityIterations": 1,
     "initialClockwiseVelocity": 0,
     "tangentialDamping": 0.02,
-    "radialDamping": 0.01,
-    "angularDamping": 0.1,
-    "maxSpeed": 12
+    "radialDamping": 0.005,
+    "angularDamping": 0.05,
+    "maxSpeed": 14
   },
   "bodies": {
-    "count": 11500,
-    "radius":2,
+    "count": 8800,
+    "radius":2.25,
     "radiusVariance": 0.1,
     "friction": 0,
     "restitution": 0.66,
