@@ -16,8 +16,8 @@
     "maxSpeed": 12
   },
   "bodies": {
-    "count": 12500,
-    "radius":2.95,
+    "count": 11500,
+    "radius":2,
     "radiusVariance": 0.1,
     "friction": 0,
     "restitution": 0.66,
