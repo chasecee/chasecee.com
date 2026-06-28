@@ -17,19 +17,20 @@ const { project, direction, preview = false } = Astro.props;
     href={previewPath(`/projects/${project.slug}`, preview)}
     data-sanity-edit-target={preview ? "" : undefined}
     class={`${
-      direction === "prev" ? "flex-row" : "flex-row-reverse"
-    } not-prose group relative flex items-center justify-between gap-4 overflow-hidden rounded-xl bg-gray-500/30 no-underline transition-colors hover:bg-gray-500/10`}
+      direction === "prev" ? "flex-row" : "flex-row-reverse text-right"
+    } not-prose group relative aspect-5/2 flex items-center justify-between gap-4 overflow-hidden rounded-xl  no-underline transition-colors `}
   >
     {
       project.image && (
-        <div class="flex-none">
+        <div class="flex-none absolute inset-0 bg-black">
           <img
-            src={urlFor(project.image).width(150).height(150).dpr(1.5).url()}
+            src={urlFor(project.image).width(350).height(350).dpr(1.5).url()}
             alt={project.name}
-            width={150}
-            height={150}
-            class="w-full flex-none transition-opacity group-hover:opacity-90"
+            width={350}
+            height={350}
+            class="w-full h-full object-cover"
           />
+          <div class="absolute inset-0 bg-black opacity-80 group-hover:opacity-100 transition-opacity duration-300"></div>
         </div>
       )
     }
