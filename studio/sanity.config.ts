@@ -17,7 +17,8 @@ import {
 import { StudioNavbar } from "./components/StudioNavbar";
 
 const SITE_URL = "https://chasecee.com";
-const PREVIEW_URL = process.env.SANITY_STUDIO_PREVIEW_URL || SITE_URL;
+const PREVIEW_URL_BASE = process.env.SANITY_STUDIO_PREVIEW_URL || SITE_URL;
+const PREVIEW_URL = PREVIEW_URL_BASE.replace(/\/$/, "");
 
 const schemasAny = schemas as any;
 const projectSchema = schemasAny.find(
@@ -57,16 +58,16 @@ function resolveProductionUrl(
 
 const presentationMainDocuments = defineDocuments([
   {
-    route: "/",
+    route: "/preview",
     filter: `_type == "page" && slug.current == "home"`,
   },
   {
-    route: "/projects/:slug",
+    route: "/preview/projects/:slug",
     filter: `_type == "project" && slug.current == $slug`,
     params: ({ params }) => ({ slug: params.slug }),
   },
   {
-    route: "/:slug",
+    route: "/preview/:slug",
     filter: `_type == "page" && slug.current == $slug`,
     params: ({ params }) => ({ slug: params.slug }),
   },
@@ -83,8 +84,8 @@ const presentationLocations = {
       return {
         locations: [
           {
-            title: doc.title || "Project",
-            href: `/projects/${doc.slug}`,
+            title: doc.name || "Project",
+            href: `/preview/projects/${doc.slug}`,
           },
         ],
       };
@@ -97,7 +98,8 @@ const presentationLocations = {
     },
     resolve: (doc) => {
       if (!doc?.slug) return null;
-      const href = doc.slug === "home" ? "/" : `/${doc.slug}`;
+      const href =
+        doc.slug === "home" ? "/preview" : `/preview/${doc.slug}`;
       return {
         locations: [
           {
@@ -142,7 +144,7 @@ export default defineConfig({
     colorInput(),
     presentationTool({
       previewUrl: {
-        initial: PREVIEW_URL,
+        initial: `${PREVIEW_URL}/preview`,
         previewMode: {
           enable: "/api/draft-mode/enable",
           disable: "/api/draft-mode/disable",
