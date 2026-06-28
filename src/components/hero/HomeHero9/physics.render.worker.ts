@@ -138,6 +138,24 @@ let interleavedCapacity = 0;
 let isRunning = false;
 let isPaused = false;
 let bodyCount = 0;
+let bodyIsInit: boolean[] = [];
+let isPointerDown = false;
+let lastEmitX = -Infinity;
+let lastEmitY = -Infinity;
+
+type GridLayout = {
+  spacing: number;
+  offsetX: number;
+  offsetY: number;
+  startRadiusSq: number;
+};
+
+let gridLayout: GridLayout = {
+  spacing: 0,
+  offsetX: 0,
+  offsetY: 0,
+  startRadiusSq: 0,
+};
 
 let canvasWidth = 0;
 let canvasHeight = 0;
@@ -182,6 +200,10 @@ function getSettings(isMobile: boolean): PhysicsSettings {
         ...baseConfig.interactions.scroll,
         ...(mobileOverrides.interactions?.scroll || {}),
       },
+      emit: {
+        ...baseConfig.interactions.emit,
+        ...(mobileOverrides.interactions?.emit || {}),
+      },
     },
     rendering: { ...baseConfig.rendering, ...mobileOverrides.rendering },
   };
@@ -199,13 +221,31 @@ function applyIntegrationParams(settings: PhysicsSettings) {
   ip.maxVelocityIterations = sim.maxVelocityIterations ?? 8;
 }
 
+function getEmitHardMax(settings: PhysicsSettings): number {
+  const emit = settings.interactions.emit;
+  return Math.floor(emit?.maxBodies ?? settings.bodies.count);
+}
+
+function getMaxBodyCapacity(settings: PhysicsSettings): number {
+  return Math.max(Math.floor(settings.bodies.count), getEmitHardMax(settings));
+}
+
 function ensureInterleavedCapacity(minBodies: number) {
   const targetCapacity = Math.max(1, Math.floor(minBodies));
   if (targetCapacity <= interleavedCapacity) return;
+
+  const prevCapacity = interleavedCapacity;
+  const prevUint8 = interleavedUint8;
+
   interleavedCapacity = targetCapacity;
   interleavedBuffer = new ArrayBuffer(interleavedCapacity * DYNAMIC_BYTES);
   interleavedFloat32 = new Float32Array(interleavedBuffer);
   interleavedUint8 = new Uint8Array(interleavedBuffer);
+
+  if (prevUint8 && prevCapacity > 0) {
+    interleavedUint8.set(prevUint8.subarray(0, prevCapacity * DYNAMIC_BYTES));
+  }
+
   if (gl && interleavedVbo) {
     gl.bindBuffer(gl.ARRAY_BUFFER, interleavedVbo);
     gl.bufferData(gl.ARRAY_BUFFER, interleavedBuffer.byteLength, gl.STREAM_DRAW);
@@ -248,7 +288,7 @@ function setupWebgl() {
 
   // Allocate GPU storage without initial data; we'll map it on demand.
   interleavedVbo = gl.createBuffer();
-  ensureInterleavedCapacity(activeSettings?.bodies.count ?? 1);
+  ensureInterleavedCapacity(getMaxBodyCapacity(activeSettings));
 
   const cornerData = new Float32Array([-1, -1, -1, 1, 1, -1, 1, 1]);
   cornerVbo = gl.createBuffer();
@@ -514,20 +554,10 @@ function cyclePlanetShape() {
     PLANET_SHAPES[(currentIndex + 1) % PLANET_SHAPES.length];
 }
 
-function createBodies(settings: PhysicsSettings) {
-  for (const body of rigidBodies) {
-    world.removeRigidBody(body);
-  }
-  rigidBodies.length = 0;
-
-  bodyCount = Math.max(0, Math.floor(settings.bodies.count));
-  ensureInterleavedCapacity(bodyCount);
-  const baseRadius = settings.bodies.radius;
-  const radiusVariance = settings.bodies.radiusVariance;
-  const initialClockwiseVelocity = settings.simulation.initialClockwiseVelocity;
-
-  rigidBodies.length = 0;
-
+function computeGridLayout(
+  settings: PhysicsSettings,
+  targetBodyCount: number,
+): GridLayout {
   const startRadiusPixels =
     settings.bodies.startRadius * Math.min(canvasWidth, canvasHeight);
 
@@ -542,12 +572,286 @@ function createBodies(settings: PhysicsSettings) {
   const circleArea = Math.PI * Math.pow(startRadiusPixels, 2);
   const usableArea = Math.max(0, canvasArea - circleArea);
 
-  const targetDensity = bodyCount / usableArea;
-
+  const targetDensity = targetBodyCount / usableArea;
   const totalPointsInCanvas = Math.ceil(targetDensity * canvasArea);
   const spacing = Math.sqrt(canvasArea / totalPointsInCanvas);
-  const cols = Math.floor(usableWidth / spacing);
-  const rows = Math.floor(usableHeight / spacing);
+
+  return {
+    spacing,
+    offsetX,
+    offsetY,
+    startRadiusSq: startRadiusPixels * startRadiusPixels,
+  };
+}
+
+function snapToGrid(x: number, y: number): { x: number; y: number } {
+  const { spacing, offsetX, offsetY } = gridLayout;
+  if (spacing <= 0) return { x, y };
+  const col = Math.round((x - offsetX - spacing * 0.5) / spacing);
+  const row = Math.round((y - offsetY - spacing * 0.5) / spacing);
+  return {
+    x: offsetX + (col + 0.5) * spacing,
+    y: offsetY + (row + 0.5) * spacing,
+  };
+}
+
+function emitGridPatch(centerX: number, centerY: number, size: number) {
+  const { spacing, offsetX, offsetY } = gridLayout;
+  if (spacing <= 0 || size <= 1) return [{ x: centerX, y: centerY }];
+
+  const centerCol = Math.round((centerX - offsetX - spacing * 0.5) / spacing);
+  const centerRow = Math.round((centerY - offsetY - spacing * 0.5) / spacing);
+  const startCol = centerCol - Math.floor((size - 1) / 2);
+  const startRow = centerRow - Math.floor((size - 1) / 2);
+
+  const points: { x: number; y: number }[] = [];
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      points.push({
+        x: offsetX + (startCol + col + 0.5) * spacing,
+        y: offsetY + (startRow + row + 0.5) * spacing,
+      });
+    }
+  }
+  return points;
+}
+
+function applyEmitVelocity(
+  body: import("@dimforge/rapier2d").RigidBody,
+  x: number,
+  y: number,
+  velocity: number,
+) {
+  if (velocity === 0) return;
+  const dx = x - centerX;
+  const dy = y - centerY;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  if (dist > 0) {
+    body.setLinvel({ x: (dx / dist) * velocity, y: (dy / dist) * velocity }, true);
+  }
+}
+
+function writeBodyColor(bodyIndex: number, x: number, y: number) {
+  const dx = x - centerX;
+  const dy = y - centerY;
+  const angle = Math.atan2(dy, dx) + Math.PI;
+  const normalizedPosition = (angle / (Math.PI * 2)) % 1;
+  const idxColor = Math.floor(normalizedPosition * paletteSteps) * BYTES_PER_COLOR;
+  const r = paletteLut[idxColor];
+  const g = paletteLut[idxColor + 1];
+  const b = paletteLut[idxColor + 2];
+  const color = (255 << 24) | (b << 16) | (g << 8) | r;
+  const colorByte = bodyIndex * DYNAMIC_BYTES + 16;
+  interleavedUint8[colorByte] = color & 0xff;
+  interleavedUint8[colorByte + 1] = (color >> 8) & 0xff;
+  interleavedUint8[colorByte + 2] = (color >> 16) & 0xff;
+  interleavedUint8[colorByte + 3] = (color >> 24) & 0xff;
+}
+
+function addBodyAt(
+  x: number,
+  y: number,
+  settings: PhysicsSettings,
+  bodyIndex: number,
+  radiusMul = 1,
+  forEmit = false,
+): import("@dimforge/rapier2d").RigidBody | null {
+  const dx = x - centerX;
+  const dy = y - centerY;
+  const distSq = dx * dx + dy * dy;
+
+  const baseRadius = settings.bodies.radius;
+  const radiusVariance = settings.bodies.radiusVariance;
+  const radiusMultiplier = 1.0 + (Math.random() - 0.5) * radiusVariance;
+  const finalRadiusPixels = baseRadius * radiusMultiplier * radiusMul;
+
+  if (forEmit) {
+    const excludeMode = settings.interactions.emit?.excludeRadius ?? "planet";
+    const excludeRadiusPixels =
+      excludeMode === "start"
+        ? settings.bodies.startRadius * Math.min(canvasWidth, canvasHeight)
+        : getPlanetRadiusPixels(settings);
+    const minDist = excludeRadiusPixels + finalRadiusPixels;
+    if (distSq < minDist * minDist) return null;
+  } else if (distSq <= gridLayout.startRadiusSq) {
+    return null;
+  }
+
+  const radiusMeters = finalRadiusPixels / PIXELS_PER_METER;
+  const mass = bodyMassFromRadius(radiusMeters);
+  const initialClockwiseVelocity = settings.simulation.initialClockwiseVelocity;
+
+  const rigidBodyDesc = rapier.RigidBodyDesc.dynamic()
+    .setTranslation(x / PIXELS_PER_METER, y / PIXELS_PER_METER)
+    .setLinearDamping(settings.simulation.damping)
+    .setAngularDamping(
+      (settings.simulation as any).angularDamping ?? settings.simulation.damping,
+    )
+    .setAdditionalMass(mass)
+    .setCanSleep(true);
+
+  const rigidBody = world.createRigidBody(rigidBodyDesc);
+
+  if (initialClockwiseVelocity !== 0) {
+    const distance = Math.sqrt(distSq);
+    if (distance > 0) {
+      const tangentialVelX = (dy / distance) * initialClockwiseVelocity;
+      const tangentialVelY = (-dx / distance) * initialClockwiseVelocity;
+      rigidBody.setLinvel({ x: tangentialVelX, y: tangentialVelY }, true);
+    }
+  }
+
+  const instFloat = (bodyIndex * DYNAMIC_BYTES) >> 2;
+  interleavedFloat32[instFloat] = x;
+  interleavedFloat32[instFloat + 1] = y;
+  interleavedFloat32[instFloat + 2] = 0;
+  interleavedFloat32[instFloat + 3] = finalRadiusPixels;
+  writeBodyColor(bodyIndex, x, y);
+
+  return rigidBody;
+}
+
+function removeBodyAt(index: number) {
+  const body = rigidBodies[index];
+  if (!body) return;
+
+  world.removeRigidBody(body);
+
+  const lastIndex = bodyCount - 1;
+  if (index !== lastIndex) {
+    rigidBodies[index] = rigidBodies[lastIndex];
+    bodyIsInit[index] = bodyIsInit[lastIndex];
+    const dstByte = index * DYNAMIC_BYTES;
+    const srcByte = lastIndex * DYNAMIC_BYTES;
+    interleavedUint8.set(
+      interleavedUint8.subarray(srcByte, srcByte + DYNAMIC_BYTES),
+      dstByte,
+    );
+  }
+
+  rigidBodies.pop();
+  bodyIsInit.pop();
+  bodyCount--;
+}
+
+function hasInitBodies() {
+  for (let i = 0; i < bodyCount; i++) {
+    if (bodyIsInit[i]) return true;
+  }
+  return false;
+}
+
+function cullOneInitBody() {
+  for (let i = 0; i < bodyCount; i++) {
+    if (!bodyIsInit[i]) continue;
+    removeBodyAt(i);
+    return true;
+  }
+  return false;
+}
+
+function tryEmitAt(x: number, y: number) {
+  const emit = activeSettings.interactions.emit;
+  if (!emit?.enabled) return;
+
+  const hardMax = getEmitHardMax(activeSettings);
+  const cullInit = emit.overflow === "cullInit";
+  if (!cullInit && bodyCount >= hardMax) return;
+  if (cullInit && bodyCount >= hardMax && !hasInitBodies()) return;
+
+  const size = Math.max(1, Math.floor(emit.size ?? 1));
+  let px = x;
+  let py = y;
+  if (emit.snapToGrid !== false || size > 1) {
+    ({ x: px, y: py } = snapToGrid(px, py));
+  }
+
+  const minDist = emit.distance ?? 16;
+  const emitDistSq = (lastEmitX - px) ** 2 + (lastEmitY - py) ** 2;
+  if (emitDistSq < minDist * minDist && lastEmitX !== -Infinity) return;
+
+  const patch = emitGridPatch(px, py, size);
+  const velocity = emit.velocity ?? 0;
+  const radiusMul = emit.radiusMul ?? 1;
+  let spawned = 0;
+
+  ensureInterleavedCapacity(hardMax);
+
+  for (const point of patch) {
+    if (cullInit) {
+      while (bodyCount >= hardMax && cullOneInitBody()) {}
+      if (bodyCount >= hardMax) break;
+    } else if (bodyCount >= hardMax) {
+      break;
+    }
+
+    const body = addBodyAt(
+      point.x,
+      point.y,
+      activeSettings,
+      bodyCount,
+      radiusMul,
+      true,
+    );
+    if (!body) continue;
+
+    applyEmitVelocity(body, point.x, point.y, velocity);
+    rigidBodies.push(body);
+    bodyIsInit.push(false);
+    bodyCount++;
+    spawned++;
+  }
+
+  if (spawned === 0) return;
+
+  lastEmitX = px;
+  lastEmitY = py;
+
+  if (gl && interleavedVbo) {
+    uploadInterleavedData(bodyCount * DYNAMIC_BYTES);
+  }
+}
+
+function handlePointer(msg: Extract<MainToWorkerMessage, { type: "POINTER_DOWN" | "POINTER_MOVE" | "POINTER_UP" }>) {
+  if (isPaused || !canvas) return;
+  const emit = activeSettings.interactions.emit;
+  if (!emit?.enabled) return;
+
+  if (msg.type === "POINTER_DOWN") {
+    isPointerDown = true;
+    tryEmitAt(msg.x, msg.y);
+    return;
+  }
+
+  if (msg.type === "POINTER_UP") {
+    isPointerDown = false;
+    return;
+  }
+
+  if (emit.requireDrag && !isPointerDown) return;
+  tryEmitAt(msg.x, msg.y);
+}
+
+function createBodies(settings: PhysicsSettings) {
+  for (const body of rigidBodies) {
+    world.removeRigidBody(body);
+  }
+  rigidBodies.length = 0;
+  bodyIsInit.length = 0;
+
+  bodyCount = Math.max(0, Math.floor(settings.bodies.count));
+  ensureInterleavedCapacity(getMaxBodyCapacity(settings));
+  gridLayout = computeGridLayout(settings, bodyCount);
+
+  const spacing = gridLayout.spacing;
+  const offsetX = gridLayout.offsetX;
+  const offsetY = gridLayout.offsetY;
+  const cols = Math.floor(
+    Math.max(0, canvasWidth - 2 * offsetX) / spacing,
+  );
+  const rows = Math.floor(
+    Math.max(0, canvasHeight - 2 * offsetY) / spacing,
+  );
 
   let currentBodyIndex = 0;
 
@@ -558,71 +862,19 @@ function createBodies(settings: PhysicsSettings) {
       const x = offsetX + (col + 0.5) * spacing;
       const y = offsetY + (row + 0.5) * spacing;
 
-      const dx = x - centerX;
-      const dy = y - centerY;
-      const distSq = dx * dx + dy * dy;
+      const body = addBodyAt(x, y, settings, currentBodyIndex);
+      if (!body) continue;
 
-      if (distSq > startRadiusPixels * startRadiusPixels) {
-        const angle = Math.atan2(dy, dx) + Math.PI;
-        const normalizedPosition = (angle / (Math.PI * 2)) % 1;
-
-        const radiusMultiplier = 1.0 + (Math.random() - 0.5) * radiusVariance;
-        const finalRadiusPixels = baseRadius * radiusMultiplier;
-
-        const radiusMeters = finalRadiusPixels / PIXELS_PER_METER;
-        const mass = bodyMassFromRadius(radiusMeters);
-
-        const rigidBodyDesc = rapier.RigidBodyDesc.dynamic()
-          .setTranslation(x / PIXELS_PER_METER, y / PIXELS_PER_METER)
-          .setLinearDamping(settings.simulation.damping)
-          .setAngularDamping(
-            (settings.simulation as any).angularDamping ??
-              settings.simulation.damping,
-          )
-          .setAdditionalMass(mass)
-          .setCanSleep(true);
-
-        const rigidBody = world.createRigidBody(rigidBodyDesc);
-
-        if (initialClockwiseVelocity !== 0) {
-          const distance = Math.sqrt(distSq);
-          if (distance > 0) {
-            const tangentialVelX = (dy / distance) * initialClockwiseVelocity;
-            const tangentialVelY = (-dx / distance) * initialClockwiseVelocity;
-            rigidBody.setLinvel({ x: tangentialVelX, y: tangentialVelY }, true);
-          }
-        }
-
-        rigidBodies.push(rigidBody);
-
-        const instByte = currentBodyIndex * DYNAMIC_BYTES;
-        const instFloat = instByte >> 2;
-        interleavedFloat32[instFloat] = x;
-        interleavedFloat32[instFloat + 1] = y;
-        interleavedFloat32[instFloat + 2] = 0;
-        interleavedFloat32[instFloat + 3] = finalRadiusPixels;
-        const idxColor =
-          Math.floor(normalizedPosition * paletteSteps) * BYTES_PER_COLOR;
-        const r = paletteLut[idxColor];
-        const g = paletteLut[idxColor + 1];
-        const b = paletteLut[idxColor + 2];
-
-        const color = (255 << 24) | (b << 16) | (g << 8) | r;
-        interleavedUint8[currentBodyIndex * DYNAMIC_BYTES + 16] = color & 0xff;
-        interleavedUint8[currentBodyIndex * DYNAMIC_BYTES + 17] =
-          (color >> 8) & 0xff;
-        interleavedUint8[currentBodyIndex * DYNAMIC_BYTES + 18] =
-          (color >> 16) & 0xff;
-        interleavedUint8[currentBodyIndex * DYNAMIC_BYTES + 19] =
-          (color >> 24) & 0xff;
-
-        currentBodyIndex++;
-      }
+      rigidBodies.push(body);
+      bodyIsInit.push(true);
+      currentBodyIndex++;
     }
     if (currentBodyIndex >= bodyCount) break;
   }
 
   bodyCount = rigidBodies.length;
+  lastEmitX = -Infinity;
+  lastEmitY = -Infinity;
 
   if (gl && interleavedVbo) {
     uploadInterleavedData(bodyCount * DYNAMIC_BYTES);
@@ -1005,6 +1257,7 @@ function handleResize(msg: Extract<MainToWorkerMessage, { type: "RESIZE" }>) {
     applyIntegrationParams(activeSettings);
   paletteSteps = activeSettings.rendering.colorSteps ?? 1024;
   paletteLut = buildPalette(activeSettings.rendering.colorLevel, paletteSteps);
+  gridLayout = computeGridLayout(activeSettings, bodyCount);
   const settings = activeSettings;
   updateWallBounds(settings);
   const centerXMeters = centerX * INV_PIXELS_PER_METER;
@@ -1092,6 +1345,11 @@ self.onmessage = (event: MessageEvent<MainToWorkerMessage>) => {
         break;
       case "SHOCKWAVE":
         if (!isPaused) handleShockwave(msg);
+        break;
+      case "POINTER_DOWN":
+      case "POINTER_MOVE":
+      case "POINTER_UP":
+        handlePointer(msg);
         break;
       case "SCROLL_FORCE":
         if (!isPaused) scrollForce = msg.force;

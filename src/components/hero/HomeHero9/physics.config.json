@@ -3,7 +3,7 @@
     "timeStep": 16.666,
     "worldStepFrameSkip": 1,
     "gravity": 0.086,
-    "gravityEase": 2,
+    "gravityEase": 2.25,
     "damping": 1,
     "gravityFrameSkip": 1,
     "maxSpeedClampFrameSkip": 2,
@@ -17,9 +17,9 @@
   },
   "bodies": {
     "count": 8800,
-    "radius":2.25,
-    "radiusVariance": 0.1,
-    "friction": 0,
+    "radius":2,
+    "radiusVariance": 0.05,
+    "friction": 0.05,
     "restitution": 0.66,
     "startRadius": 0.4
   },
@@ -30,12 +30,24 @@
   },
   "interactions": {
     "shockwave": {
-      "force": 60,
+      "force": 15,
       "radius": 0.35
     },
     "scroll": {
       "forceMultiplier": -0.2,
       "velocityDamping": 0.8
+    },
+    "emit": {
+      "enabled": false,
+      "requireDrag": false,
+      "distance": 1,
+      "maxBodies": 30000,
+      "overflow": "cullInit",
+      "radiusMul": 1,
+      "size": 1,
+      "snapToGrid": false,
+      "excludeRadius": "planet",
+      "velocity": -1
     }
   },
   "rendering": {
@@ -73,6 +85,9 @@
       "scroll": {
         "forceMultiplier": -0.2,
         "velocityDamping": 0.9
+      },
+      "emit": {
+        "enabled": false
       }
     }
   }

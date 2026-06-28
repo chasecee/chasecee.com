@@ -240,6 +240,28 @@ export function PhysicsCanvas() {
       overlay.appendChild(ring);
     };
 
+    const toCanvasCoords = (clientX: number, clientY: number) => {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: clientX - rect.left,
+        y: canvas.clientHeight - (clientY - rect.top),
+      };
+    };
+
+    const sendPointer = (
+      type: Extract<MainToWorkerMessage, { type: "POINTER_DOWN" | "POINTER_MOVE" | "POINTER_UP" }>["type"],
+      clientX: number,
+      clientY: number,
+    ) => {
+      const { x, y } = toCanvasCoords(clientX, clientY);
+      const msg: Extract<MainToWorkerMessage, { type: "POINTER_DOWN" | "POINTER_MOVE" | "POINTER_UP" }> = {
+        type,
+        x,
+        y,
+      };
+      workerRef.current?.postMessage(msg);
+    };
+
     const sendShockwave = (
       clientX: number,
       clientY: number,
@@ -274,7 +296,7 @@ export function PhysicsCanvas() {
 
     const handlePointerDown = (e: PointerEvent) => {
       isDragging = true;
-
+      sendPointer("POINTER_DOWN", e.clientX, e.clientY);
       sendShockwave(e.clientX, e.clientY, 0.25, true, true);
     };
 
@@ -291,6 +313,7 @@ export function PhysicsCanvas() {
     };
 
     const handlePointerMove = (e: PointerEvent) => {
+      sendPointer("POINTER_MOVE", e.clientX, e.clientY);
       if (!isDragging) return;
       moveClientX = e.clientX;
       moveClientY = e.clientY;
@@ -300,6 +323,9 @@ export function PhysicsCanvas() {
     };
 
     const endDrag = () => {
+      if (isDragging) {
+        sendPointer("POINTER_UP", moveClientX, moveClientY);
+      }
       isDragging = false;
     };
 
