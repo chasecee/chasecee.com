@@ -1,2 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /preview/
+
+Sitemap: https://chasecee.com/sitemap.xml

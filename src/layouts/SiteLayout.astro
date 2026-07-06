@@ -12,11 +12,12 @@ interface Props {
 
 const {
   title = "Work - Chase Cee",
-  description = "Building excellent products front to back.",
+  description = "Chase Cee is a designer and developer in Salt Lake City building excellent web products front to back, from brand and UI design to full-stack engineering.",
   ogImage = "/og/home.png",
 } = Astro.props;
 
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const pathname = Astro.url.pathname.replace(/\/+$/, "") || "/";
+const canonicalURL = new URL(pathname, Astro.site);
 const ogImageURL = new URL(ogImage, Astro.site);
 ---
 
@@ -28,6 +29,8 @@ const ogImageURL = new URL(ogImage, Astro.site);
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalURL} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:site_name" content="Chase Cee" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={ogImageURL} />

@@ -4,6 +4,7 @@ import Container from "@/src/components/Container.astro";
 import { Body } from "@/src/components/Body";
 import SanityVisualEditing from "@/src/components/sanity/SanityVisualEditing";
 import { getPage } from "@/sanity/sanity-utils";
+import { metaDescription } from "@/src/utils/seo";
 
 export const prerender = false;
 
@@ -15,7 +16,10 @@ if (!page) {
 }
 
 const title = `${page.title} - Chase Cee`;
-const description = page.subtitle || `Learn more about ${page.title}`;
+const description = metaDescription(
+  page.subtitle,
+  `${page.title} - Chase Cee, a designer and developer in Salt Lake City building excellent web products front to back.`,
+);
 ---
 
 <SiteLayout {title} {description}>

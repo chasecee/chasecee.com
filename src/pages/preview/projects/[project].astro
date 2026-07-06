@@ -8,6 +8,7 @@ import { LUCIDE_ICONS } from "@/src/components/icons/lucide";
 import SanityVisualEditing from "@/src/components/sanity/SanityVisualEditing";
 import { getProject } from "@/sanity/sanity-utils";
 import urlFor from "@/sanity/sanity.image";
+import { metaDescription } from "@/src/utils/seo";
 
 export const prerender = false;
 
@@ -40,11 +41,15 @@ function shortenUrl(url: string): string {
 }
 
 const projectUrl = typeof project.url === "string" ? project.url : "";
+const description = metaDescription(
+  project.subtitle,
+  `${project.name} is a project designed and built by Chase Cee, a designer and developer in Salt Lake City.`,
+);
 ---
 
 <SiteLayout
   title={`${project.name} - Chase Cee`}
-  description={`Project: ${project.name}`}
+  {description}
   ogImage={`/og/project/${project.slug}.png`}
 >
   <Container>

@@ -64,6 +64,7 @@ export async function getProject(
       name,
       "slug": slug.current,
       "image": image.asset->url,
+      subtitle,
       url,
       archived,
       orderRank,
