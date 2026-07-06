@@ -15,6 +15,10 @@ interface HeaderProps {
 export default function Header({ activePath }: HeaderProps) {
   const logoKapowRef = useRef<HTMLDivElement>(null);
   const explodeTimeoutRef = useRef<number | null>(null);
+  const normalizedActivePath =
+    activePath !== "/" && activePath.endsWith("/")
+      ? activePath.slice(0, -1)
+      : activePath;
   const baseClass = "header_item no-underline transition-colors group ";
   const activeClass = "item_active" + " " + baseClass;
   const inactiveClass = "item_inactive" + " " + baseClass;
@@ -79,13 +83,15 @@ export default function Header({ activePath }: HeaderProps) {
           <div className="header_menu flex flex-row items-center gap-3 sm:gap-5 md:gap-10">
             <a
               href="/"
-              className={activePath === "/" ? activeClass : inactiveClass}
+              className={normalizedActivePath === "/" ? activeClass : inactiveClass}
             >
               Work<div className={barClass}></div>
             </a>
             <a
               href="/about"
-              className={activePath === "/about" ? activeClass : inactiveClass}
+              className={
+                normalizedActivePath === "/about" ? activeClass : inactiveClass
+              }
             >
               About <div className={barClass}></div>
             </a>

@@ -70,18 +70,23 @@ const {
       )
     }
     <footer class="site-footer mt-10 py-10">
-      <p
-        class="footer__text text-uppercase group prose flex flex-row items-center gap-[0.5ch] dark:prose-invert"
-      >
-        Made with
-        <LucideIcon
-          icon={LUCIDE_ICONS.heart}
-          size={24}
-          class="text-2xl transition group-hover:scale-125 group-hover:text-red-400"
-        />
-        by
-        <a href="/about">Chase Cee</a>
-      </p>
+      <div class="prose dark:prose-invert max-w-none">
+        <div class="flex w-full flex-col items-start gap-2 sm:flex-row sm:flex-nowrap sm:items-center sm:justify-between sm:gap-4">
+          <p
+            class="footer__text text-uppercase group m-0 flex flex-row items-center gap-[0.5ch] whitespace-nowrap"
+          >
+            Made with
+            <LucideIcon
+              icon={LUCIDE_ICONS.heart}
+              size={24}
+              class="text-2xl transition group-hover:scale-125 group-hover:text-red-400"
+            />
+            by
+            <a href="/about">Chase Cee</a>
+          </p>
+          <p class="m-0 whitespace-nowrap text-black/50 dark:text-white/50">Copyright © 2011-2099</p>
+        </div>
+      </div>
     </footer>
   </div>
 </div>
