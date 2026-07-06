@@ -96,7 +96,7 @@ export default function Header({ activePath }: HeaderProps) {
               className="logo-kapow-container relative isolate max-w-[100px]"
             >
               <LogoKapowBackground />
-              <div className="relative z-10">
+              <div className="logo-wordmark relative z-10">
                 <ChaseCeeLogo />
               </div>
             </div>
