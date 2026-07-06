@@ -14,68 +14,42 @@ interface HeaderProps {
 
 export default function Header({ activePath }: HeaderProps) {
   const logoKapowRef = useRef<HTMLDivElement>(null);
-  const logoKapowRectRef = useRef<DOMRect | null>(null);
-  const pointerClientRef = useRef({ x: 0, y: 0 });
-  const rafIdRef = useRef<number | null>(null);
-  const lastOffsetRef = useRef({ x: 0, y: 0 });
+  const explodeTimeoutRef = useRef<number | null>(null);
   const baseClass = "header_item no-underline transition-colors group ";
   const activeClass = "item_active" + " " + baseClass;
   const inactiveClass = "item_inactive" + " " + baseClass;
   const barClass =
     "header_item_bar h-[1px] bg-transparent transition-colors opacity-40";
-  const flushKapowPointer = () => {
-    const target = logoKapowRef.current;
-    const rect = logoKapowRectRef.current;
-    if (!target || !rect) return;
-
-    const rawX = pointerClientRef.current.x - rect.left - rect.width / 2;
-    const rawY = pointerClientRef.current.y - rect.top - rect.height / 2;
-    const clampedX = Math.max(Math.min(rawX, rect.width / 2), -rect.width / 2);
-    const clampedY = Math.max(Math.min(rawY, rect.height / 2), -rect.height / 2);
-    const quantizedX = Math.round(clampedX * 10) / 10;
-    const quantizedY = Math.round(clampedY * 10) / 10;
-
-    if (lastOffsetRef.current.x !== quantizedX) {
-      target.style.setProperty("--kapow-offset-x", `${quantizedX.toFixed(1)}px`);
-      lastOffsetRef.current.x = quantizedX;
-    }
-    if (lastOffsetRef.current.y !== quantizedY) {
-      target.style.setProperty("--kapow-offset-y", `${quantizedY.toFixed(1)}px`);
-      lastOffsetRef.current.y = quantizedY;
-    }
-    rafIdRef.current = null;
+  const KAPOW_EXPLODE_DURATION_MS = 440;
+  const clearKapowExplodeTimeout = () => {
+    if (explodeTimeoutRef.current === null) return;
+    window.clearTimeout(explodeTimeoutRef.current);
+    explodeTimeoutRef.current = null;
   };
-  const scheduleKapowPointerFlush = () => {
-    if (rafIdRef.current !== null) return;
-    rafIdRef.current = requestAnimationFrame(flushKapowPointer);
-  };
-  const handleKapowPointerEnter = () => {
+  const triggerKapowExplode = () => {
     const target = logoKapowRef.current;
     if (!target) return;
-    logoKapowRectRef.current = target.getBoundingClientRect();
+    clearKapowExplodeTimeout();
+    target.classList.remove("logo-kapow-exploding");
+    void target.offsetWidth;
+    target.classList.add("logo-kapow-exploding");
+    explodeTimeoutRef.current = window.setTimeout(() => {
+      const activeTarget = logoKapowRef.current;
+      if (activeTarget) {
+        activeTarget.classList.remove("logo-kapow-exploding");
+      }
+      explodeTimeoutRef.current = null;
+    }, KAPOW_EXPLODE_DURATION_MS);
   };
-  const handleKapowPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
-    pointerClientRef.current.x = event.clientX;
-    pointerClientRef.current.y = event.clientY;
-    scheduleKapowPointerFlush();
-  };
-  const handleKapowPointerLeave = () => {
-    const target = logoKapowRef.current;
-    if (!target) return;
-    if (rafIdRef.current !== null) {
-      cancelAnimationFrame(rafIdRef.current);
-      rafIdRef.current = null;
-    }
-    logoKapowRectRef.current = null;
-    lastOffsetRef.current = { x: 0, y: 0 };
-    target.style.setProperty("--kapow-offset-x", "0px");
-    target.style.setProperty("--kapow-offset-y", "0px");
+  const handleLogoClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (event.defaultPrevented) return;
+    if (event.button !== 0) return;
+    if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+    triggerKapowExplode();
   };
   useEffect(() => {
     return () => {
-      if (rafIdRef.current !== null) {
-        cancelAnimationFrame(rafIdRef.current);
-      }
+      clearKapowExplodeTimeout();
     };
   }, []);
 
@@ -84,15 +58,13 @@ export default function Header({ activePath }: HeaderProps) {
       <header className="header container flex items-center rounded-xl border border-neutral-100/30 bg-neutral-100/10 px-4 py-2 backdrop-blur-md sm:px-6 dark:border-neutral-900/30 dark:bg-neutral-900/20">
         <div className="flex w-1/3 shrink justify-start">
           <a
+            onClick={handleLogoClick}
             className="header__title group flex flex-row items-center gap-2"
             href="/"
           >
             <div className="sr-only">Chase Cee Logo</div>
             <div
               ref={logoKapowRef}
-              onPointerEnter={handleKapowPointerEnter}
-              onPointerMove={handleKapowPointerMove}
-              onPointerLeave={handleKapowPointerLeave}
               className="logo-kapow-container relative isolate max-w-[100px]"
             >
               <LogoKapowBackground />

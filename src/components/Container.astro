@@ -20,7 +20,11 @@ const {
 
 <div class={`root min-h-screen w-full ${className} pt-24 lg:pt-32`}>
   <div class="container">
-    <Header client:load activePath={Astro.url.pathname} />
+    <Header
+      client:load
+      transition:persist="site-header"
+      activePath={Astro.url.pathname}
+    />
     <main>
       <slot />
     </main>

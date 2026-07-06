@@ -14,7 +14,11 @@ const { className = "" } = Astro.props;
 
 <div class={`root min-h-screen w-full ${className} px-0 md:mt-0`}>
   <div class="relative z-0 container">
-    <Header client:load activePath={Astro.url.pathname} />
+    <Header
+      client:load
+      transition:persist="site-header"
+      activePath={Astro.url.pathname}
+    />
     <main>
       <slot />
     </main>
