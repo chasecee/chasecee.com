@@ -214,11 +214,6 @@
   filter: none;
 }
 
-.logo-wordmark-outline {
-  fill: none;
-  stroke: transparent;
-}
-
 .logo-wordmark-fill {
   fill: currentColor;
 }
@@ -226,12 +221,6 @@
 .header__title:hover .logo-wordmark {
   animation: logo-wordmark-flash 400ms ease-in-out infinite;
   filter: none;
-}
-
-.header__title:hover .logo-wordmark .logo-wordmark-outline {
-  stroke: var(--logo-bg);
-  stroke-width: 1px;
-  stroke-linejoin: miter;
 }
 
 .header__title:active .logo-wordmark {

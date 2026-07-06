@@ -13,10 +13,6 @@ const SvgComponent = (props: React.SVGProps<SVGSVGElement>) => (
     {...props}
   >
     <path
-      className="logo-wordmark-outline"
-      d={LOGO_WORDMARK_PATH}
-    />
-    <path
       className="logo-wordmark-fill"
       d={LOGO_WORDMARK_PATH}
     />
