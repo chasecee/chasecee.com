@@ -83,6 +83,7 @@ const project = {
             },
           ],
         },
+        { type: "embed" },
         {
           name: "media",
           type: "object",

@@ -17,6 +17,7 @@ const page = {
       of: [
         { type: "block" },
         { type: "skills" },
+        { type: "embed" },
         {
           type: "image",
           options: {

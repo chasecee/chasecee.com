@@ -10,6 +10,11 @@ interface Props {
 }
 
 const { project, direction, preview = false } = Astro.props;
+const projectSlug =
+  typeof project.slug === "string" ? project.slug : project.slug?.current;
+const featuredImageTransitionName = projectSlug
+  ? `project-featured-image-${projectSlug}`
+  : undefined;
 ---
 
 <div class={`${direction}-post grow`}>
@@ -29,6 +34,7 @@ const { project, direction, preview = false } = Astro.props;
             width={350}
             height={350}
             class="w-full h-full object-cover"
+            transition:name={featuredImageTransitionName}
           />
           <div class="absolute inset-0 bg-black opacity-80 group-hover:opacity-100 transition-opacity duration-300"></div>
         </div>

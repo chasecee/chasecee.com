@@ -90,6 +90,10 @@
   }
 }
 @layer components {
+  .prose {
+    font-size: var(--prose-font-size);
+  }
+
   @keyframes border-animation {
     0% {
       border-style: dotted;
@@ -121,6 +125,7 @@
 
 
 :root {
+  --prose-font-size: 1.125rem;
   --physics-color-level: 8;
   --logo-bg: #f5f5f5;
   --logo-fg: #f5f5f5;

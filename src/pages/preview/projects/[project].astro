@@ -41,6 +41,7 @@ function shortenUrl(url: string): string {
 }
 
 const projectUrl = typeof project.url === "string" ? project.url : "";
+const featuredImageTransitionName = `project-featured-image-${projectSlug}`;
 const description = metaDescription(
   project.subtitle,
   `${project.name} is a project designed and built by Chase Cee, a designer and developer in Salt Lake City.`,
@@ -90,6 +91,7 @@ const description = metaDescription(
             width={722}
             height={452}
             class="rounded-xl object-cover"
+            transition:name={featuredImageTransitionName}
           />
         )
       }

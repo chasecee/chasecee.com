@@ -76,7 +76,7 @@ export default function Header({ activePath }: HeaderProps) {
         </div>
 
         <div className="flex w-1/3 justify-center">
-          <div className="header_menu flex flex-row items-center gap-3 sm:gap-5">
+          <div className="header_menu flex flex-row items-center gap-3 sm:gap-5 md:gap-10">
             <a
               href="/"
               className={activePath === "/" ? activeClass : inactiveClass}

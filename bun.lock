@@ -9,7 +9,7 @@
         "@astrojs/react": "^6.0.0",
         "@astrojs/vercel": "^11.0.0",
         "@dimforge/rapier2d": "0.19.3",
-        "@fontsource/dm-sans": "^5.2.8",
+        "@fontsource/figtree": "^5.2.10",
         "@portabletext/react": "^6.2.0",
         "@sanity/client": "^7.23.0",
         "@sanity/image-url": "^2.1.1",
@@ -209,7 +209,7 @@
 
     "@floating-ui/utils": ["@floating-ui/utils@0.2.11", "", {}, "sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg=="],
 
-    "@fontsource/dm-sans": ["@fontsource/dm-sans@5.2.8", "", {}, "sha512-tlovG42m9ESG28WiHpLq3F5umAlm64rv0RkqTbYowRn70e9OlRr5a3yTJhrhrY+k5lftR/OFJjPzOLQzk8EfCA=="],
+    "@fontsource/figtree": ["@fontsource/figtree@5.2.10", "", {}, "sha512-nlO06N1qad88ySqzi/a2xwDBkamfZ4MFilP8la5dDyRY36ED0UYTs2hhtwJf8fM52+Nn7dQO2r27reKaXOyOIg=="],
 
     "@img/colour": ["@img/colour@1.1.0", "", {}, "sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ=="],
 

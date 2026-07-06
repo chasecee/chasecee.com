@@ -84,6 +84,9 @@ const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
           typeof project.slug === "string"
             ? project.slug
             : project.slug?.current;
+        const featuredImageTransitionName = slugname
+          ? `project-featured-image-${slugname}`
+          : undefined;
         const displayType = project.displayType || "popup";
         const colorPalette = project.color?.hex
           ? generateColorPalette(project.color.hex)
@@ -108,6 +111,7 @@ const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
                     width={473}
                     height={473}
                     class="absolute inset-0 h-full w-full rounded-xl object-cover"
+                    transition:name={featuredImageTransitionName}
                     loading="eager"
                     fetchpriority="high"
                   />
@@ -152,6 +156,7 @@ const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
                       width={cardImageMaxWidth}
                       height={cardImageMaxWidth}
                       class="absolute inset-0 h-full w-full rounded-xl object-cover"
+                      transition:name={featuredImageTransitionName}
                       loading={index === 0 ? "eager" : "lazy"}
                       fetchpriority={index === 0 ? "high" : "auto"}
                       decoding="async"

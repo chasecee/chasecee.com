@@ -73,6 +73,25 @@ const components: PortableTextComponents = {
     link: ExternalLink,
   },
   types: {
+    embed: ({ value }) => {
+      const { url, title, aspectRatio } = value as {
+        url?: string;
+        title?: string;
+        aspectRatio?: string;
+      };
+      if (!url) return null;
+
+      return (
+        <iframe
+          src={url}
+          title={title || "Embedded content"}
+          style={{ aspectRatio: aspectRatio || "16/9" }}
+          className="w-full border-0 md:mx-[-2em] md:w-[calc(100%+4em)]"
+          loading="lazy"
+          allowFullScreen
+        />
+      );
+    },
     image: ({ value }) => {
       if (!value) return null;
 
@@ -108,7 +127,7 @@ const components: PortableTextComponents = {
           alt={(img?.alt as string) || ""}
           width={width}
           height={height}
-          className="mx-auto rounded-lg"
+          className="mx-auto max-w-full md:mx-[-2em] md:max-w-[calc(100%+4em)]"
         />
       );
     },
