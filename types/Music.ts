@@ -9,13 +9,18 @@ export type MusicEmbed = {
   _type: "embed";
   url: string;
   title?: string;
-  aspectRatio?: "16/9" | "4/3" | "1/1";
+  ratio?: {
+    desktop?: string;
+    mobile?: string;
+  };
+  aspectRatio?: string;
 };
 
 export type MusicGalleryImage = {
   _key?: string;
   url?: string;
   alt?: string;
+  caption?: string;
 };
 
 export type Music = {

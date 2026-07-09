@@ -5,16 +5,11 @@ import { Body } from "@/src/components/Body";
 import ProjectLink from "@/src/components/ProjectLink.astro";
 import LucideIcon from "@/src/components/icons/LucideIcon.astro";
 import { LUCIDE_ICONS } from "@/src/components/icons/lucide";
-import { getProject, getProjects } from "@/sanity/sanity-utils";
+import { getProject } from "@/sanity/sanity-utils";
 import urlFor from "@/sanity/sanity.image";
 import { metaDescription } from "@/src/utils/seo";
 
-export const prerender = true;
-
-export async function getStaticPaths() {
-  const projects = await getProjects();
-  return projects.map((p) => ({ params: { project: p.slug } }));
-}
+export const prerender = false;
 
 const { project: slug } = Astro.params;
 const projectSlug = typeof slug === "string" ? slug : "";
@@ -23,7 +18,9 @@ if (!projectSlug) {
   return Astro.redirect("/404");
 }
 
-const { project, nextProject, prevProject } = await getProject(projectSlug);
+const { project, nextProject, prevProject } = await getProject(projectSlug, {
+  preview: Astro.locals.draftMode,
+});
 
 if (!project) {
   return Astro.redirect("/404");
@@ -57,7 +54,7 @@ const description = metaDescription(
   ogImage={`/og/project/${project.slug}.png`}
 >
   
-    <header class="not-prose relative mb-0 md:aspect-[16/9] aspect-square py-20 flex flex-col justify-end w-full">
+    <header class="not-prose relative mb-0 md:aspect-[16/9] aspect-square max-h-[50vh] py-20 flex flex-col justify-end w-full">
       {
         project.image && (
             <img
@@ -108,7 +105,7 @@ const description = metaDescription(
       </div>
     </header>
     <Container>
-    <div class="prose dark:prose-invert mx-auto">
+    <div class="prose mx-auto">
       {
         project.content && (
           <div>

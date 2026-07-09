@@ -3,6 +3,7 @@ import SiteLayout from "@/src/layouts/SiteLayout.astro";
 import Container from "@/src/components/Container.astro";
 import { getMusicBySlug } from "@/sanity/sanity-utils";
 import { withSanityImageParams } from "@/src/utils/sanityImageParams";
+import { stegaClean } from "@sanity/client/stega";
 
 export const prerender = false;
 
@@ -13,11 +14,23 @@ if (!musicSlug) {
   return Astro.redirect("/404");
 }
 
-const item = await getMusicBySlug(musicSlug);
+const item = await getMusicBySlug(musicSlug, {
+  preview: Astro.locals.draftMode,
+});
 
 if (!item) {
   return Astro.redirect("/404");
 }
+
+const normalizeAspectRatio = (value: string | undefined) => {
+  if (!value) return "16 / 9";
+  const cleaned = stegaClean(value).trim();
+  const compact = cleaned.replace(/\s+/g, "");
+  const slash = compact.includes("/") ? compact : compact.replace(":", "/");
+  if (!/^\d+(\.\d+)?\/\d+(\.\d+)?$/.test(slash)) return "16 / 9";
+  const [width, height] = slash.split("/");
+  return `${width} / ${height}`;
+};
 ---
 
 <SiteLayout
@@ -26,7 +39,7 @@ if (!item) {
   ogImage="/og/home.png"
 >
   <Container>
-    <div class="prose dark:prose-invert mx-auto mt-10">
+    <div class="prose mx-auto mt-10">
       <h1>{item.bandName}</h1>
       <h2>{item.albumName}</h2>
 
@@ -51,19 +64,26 @@ if (!item) {
           <section class="not-prose mt-8 grid gap-4 sm:grid-cols-2">
             {item.gallery.map((image) =>
               image.url ? (
-                <img
-                  src={withSanityImageParams(image.url, {
-                    w: 1400,
-                    fit: "max",
-                    auto: "format",
-                  })}
-                  alt={image.alt || `${item.bandName} gallery image`}
-                  width={1000}
-                  height={1000}
-                  class="w-full rounded-xl object-cover"
-                  loading="lazy"
-                  decoding="async"
-                />
+                <figure class="m-0">
+                  <img
+                    src={withSanityImageParams(image.url, {
+                      w: 1400,
+                      fit: "max",
+                      auto: "format",
+                    })}
+                    alt={image.alt || `${item.bandName} gallery image`}
+                    width={1000}
+                    height={1000}
+                    class="w-full rounded-xl object-cover"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  {image.caption ? (
+                    <figcaption class="mt-2 text-sm opacity-70">
+                      {image.caption}
+                    </figcaption>
+                  ) : null}
+                </figure>
               ) : null,
             )}
           </section>
@@ -90,15 +110,30 @@ if (!item) {
       {
         item.embeds && item.embeds.length > 0 && (
           <section class="not-prose mt-10 flex flex-col gap-6">
-            {item.embeds.map((embed) => (
-              <iframe
-                src={embed.url}
-                title={embed.title || `${item.albumName} embed`}
-                loading="lazy"
-                class="w-full rounded-xl border border-black/10 dark:border-white/10"
-                style={{ aspectRatio: embed.aspectRatio || "16/9" }}
-              />
-            ))}
+            {item.embeds.map((embed) => {
+              const desktopAspectRatio =
+                typeof embed.ratio?.desktop === "string"
+                  ? embed.ratio.desktop
+                  : embed.aspectRatio;
+              const mobileAspectRatio =
+                typeof embed.ratio?.mobile === "string"
+                  ? embed.ratio.mobile
+                  : typeof embed.ratio?.desktop === "string"
+                    ? embed.ratio.desktop
+                    : embed.aspectRatio;
+              return (
+                <iframe
+                  src={stegaClean(embed.url).trim()}
+                  title={stegaClean(embed.title || `${item.albumName} embed`).trim()}
+                  loading="lazy"
+                  class="embed-frame w-full rounded-xl border border-black/10 dark:border-white/10"
+                  style={{
+                    "--embed-ar-desktop": normalizeAspectRatio(desktopAspectRatio),
+                    "--embed-ar-mobile": normalizeAspectRatio(mobileAspectRatio),
+                  }}
+                />
+              );
+            })}
           </section>
         )
       }

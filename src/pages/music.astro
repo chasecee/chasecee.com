@@ -6,7 +6,7 @@ import { getMusic } from "@/sanity/sanity-utils";
 
 export const prerender = false;
 
-const music = await getMusic();
+const music = await getMusic({ preview: Astro.locals.draftMode });
 ---
 
 <SiteLayout
@@ -15,8 +15,10 @@ const music = await getMusic();
   ogImage="/og/home.png"
 >
   <Container>
-    <div class="prose dark:prose-invert mx-auto mt-10 max-w-none">
-      <h1>Music</h1>
+    <div class="">
+      <div class="prose">
+        <h1>Music</h1>
+      </div>
       <div class="not-prose">
         <MusicList items={music} />
       </div>

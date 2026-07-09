@@ -9,10 +9,10 @@ interface Props {
 const { items } = Astro.props;
 ---
 
-<div class="flex flex-nowrap gap-8 overflow-x-auto pb-10">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 flex-nowrap gap-10 overflow-x-auto pb-10">
   {
     items.map((item) => (
-      <article class="w-full shrink-0 md:w-1/4">
+      <article class="w-full shrink-0">
         <a
           href={`/music/${typeof item.slug === "string" ? item.slug : item.slug?.current}`}
           class="group block text-black no-underline dark:text-white"

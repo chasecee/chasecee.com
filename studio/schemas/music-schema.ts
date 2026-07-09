@@ -1,37 +1,27 @@
-import GalleryManagerInput from "../components/GalleryManagerInput";
-
-const detailsFieldset = {
-  name: "details",
-  title: "Details",
-  options: { collapsible: true, collapsed: true },
-};
+import GalleryInput from "../components/GalleryInput";
 
 const music = {
   name: "music",
   title: "Music",
   type: "document",
-  fieldsets: [detailsFieldset],
   fields: [
     {
       name: "bandName",
       title: "Band Name",
       type: "string",
       validation: (Rule: any) => Rule.required(),
-      fieldset: "details",
     },
     {
       name: "albumName",
       title: "Album Name",
       type: "string",
       validation: (Rule: any) => Rule.required(),
-      fieldset: "details",
     },
     {
       name: "releaseYear",
       title: "Release Year",
       type: "number",
       validation: (Rule: any) => Rule.required().integer().min(1800).max(3000),
-      fieldset: "details",
     },
     {
       name: "slug",
@@ -42,14 +32,12 @@ const music = {
           [doc.bandName, doc.albumName].filter(Boolean).join("-"),
       },
       validation: (Rule: any) => Rule.required(),
-      fieldset: "details",
     },
     {
       name: "albumArt",
       title: "Album Art",
       type: "image",
       options: { hotspot: true },
-      fieldset: "details",
       fields: [
         {
           name: "alt",
@@ -62,22 +50,54 @@ const music = {
       name: "gallery",
       title: "Band Art / Photography Gallery",
       type: "array",
-      components: { input: GalleryManagerInput },
+      components: { input: GalleryInput },
+      options: {
+        layout: "grid",
+        sortable: true,
+        modal: { type: "dialog", width: 1 },
+        disableActions: ["add"],
+      },
       of: [
         {
           name: "galleryImage",
+          title: "Gallery Image",
           type: "image",
           options: { hotspot: true },
           fields: [
             {
               name: "alt",
-              title: "Alt",
+              title: "Alt text",
+              type: "string",
+              validation: (Rule: any) => Rule.required(),
+            },
+            {
+              name: "caption",
+              title: "Caption",
               type: "string",
             },
           ],
+          preview: {
+            select: {
+              media: "asset",
+              title: "alt",
+              subtitle: "caption",
+            },
+            prepare: ({
+              media,
+              title,
+              subtitle,
+            }: {
+              media?: unknown;
+              title?: string;
+              subtitle?: string;
+            }) => ({
+              media,
+              title: title || "Untitled image",
+              subtitle,
+            }),
+          },
         },
       ],
-      fieldset: "details",
     },
     {
       name: "links",
@@ -108,14 +128,12 @@ const music = {
           },
         },
       ],
-      fieldset: "details",
     },
     {
       name: "embeds",
       title: "Embeds",
       type: "array",
       of: [{ type: "embed" }],
-      fieldset: "details",
     },
   ],
   preview: {

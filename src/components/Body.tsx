@@ -1,4 +1,4 @@
-import React from "react";
+import React, { type CSSProperties } from "react";
 import urlFor from "@/sanity/sanity.image";
 import { PortableText } from "@portabletext/react";
 import type {
@@ -12,34 +12,48 @@ import type {
   ArbitraryTypedObject,
 } from "@portabletext/types";
 import type { InternalLinkValue, ExternalLinkValue } from "@/types/Content";
-import { previewPath } from "@/src/utils/previewPath";
+import { stegaClean } from "@sanity/client/stega";
 
-function createInternalLink(preview: boolean) {
-  const InternalLink: React.FC<
-    PortableTextMarkComponentProps<InternalLinkValue>
-  > = ({ value, children }) => {
-    if (!value) return <>{children}</>;
+type EmbedRatio = {
+  desktop?: string;
+  mobile?: string;
+};
 
-    const { slug, refType } = value;
-    let href: string;
-    switch (refType) {
-      case "project":
-        href = slug ? previewPath(`/projects/${slug}`, preview) : "#";
-        break;
-      case "page":
-        href = slug
-          ? previewPath(slug === "home" ? "/" : `/${slug}`, preview)
-          : "#";
-        break;
-      default:
-        href = "#";
-    }
-
-    return <a href={href}>{children}</a>;
-  };
-
-  return InternalLink;
+function normalizeAspectRatio(value: string | undefined): string {
+  if (!value) return "16 / 9";
+  const cleaned = stegaClean(value).trim();
+  const compact = cleaned.replace(/\s+/g, "");
+  const slash = compact.includes("/") ? compact : compact.replace(":", "/");
+  if (!/^\d+(\.\d+)?\/\d+(\.\d+)?$/.test(slash)) return "16 / 9";
+  const [width, height] = slash.split("/");
+  return `${width} / ${height}`;
 }
+
+type EmbedStyle = CSSProperties & {
+  "--embed-ar-desktop"?: string;
+  "--embed-ar-mobile"?: string;
+};
+
+const InternalLink: React.FC<
+  PortableTextMarkComponentProps<InternalLinkValue>
+> = ({ value, children }) => {
+  if (!value) return <>{children}</>;
+
+  const { slug, refType } = value;
+  let href: string;
+  switch (refType) {
+    case "project":
+      href = slug ? `/projects/${slug}` : "#";
+      break;
+    case "page":
+      href = slug ? (slug === "home" ? "/" : `/${slug}`) : "#";
+      break;
+    default:
+      href = "#";
+  }
+
+  return <a href={href}>{children}</a>;
+};
 
 const ExternalLink: React.FC<
   PortableTextMarkComponentProps<ExternalLinkValue>
@@ -69,24 +83,40 @@ const ExternalLink: React.FC<
 
 const components: PortableTextComponents = {
   marks: {
-    internalLink: createInternalLink(false),
+    internalLink: InternalLink,
     link: ExternalLink,
   },
   types: {
     embed: ({ value }) => {
-      const { url, title, aspectRatio } = value as {
+      const { url, title, aspectRatio, ratio } = value as {
         url?: string;
         title?: string;
         aspectRatio?: string;
+        ratio?: EmbedRatio;
       };
-      if (!url) return null;
+      const embedUrl = typeof url === "string" ? stegaClean(url).trim() : "";
+      if (!embedUrl) return null;
+      const embedTitle =
+        typeof title === "string" ? stegaClean(title).trim() : "";
+      const desktopAspectRatio =
+        typeof ratio?.desktop === "string" ? ratio.desktop : aspectRatio;
+      const mobileAspectRatio =
+        typeof ratio?.mobile === "string"
+          ? ratio.mobile
+          : typeof ratio?.desktop === "string"
+            ? ratio.desktop
+            : aspectRatio;
+      const embedStyle: EmbedStyle = {
+        "--embed-ar-desktop": normalizeAspectRatio(desktopAspectRatio),
+        "--embed-ar-mobile": normalizeAspectRatio(mobileAspectRatio),
+      };
 
       return (
         <iframe
-          src={url}
-          title={title || "Embedded content"}
-          style={{ aspectRatio: aspectRatio || "16/9" }}
-          className="w-full border-0 md:mx-[-2em] md:w-[calc(100%+4em)]"
+          src={embedUrl}
+          title={embedTitle || "Embedded content"}
+          style={embedStyle}
+          className="embed-frame w-full border-0"
           loading="lazy"
           allowFullScreen
         />
@@ -116,15 +146,19 @@ const components: PortableTextComponents = {
 
       width = width ?? 800;
       height = height ?? 600;
+      const imageSrc = stegaClean(
+        urlFor(value)
+          .width(width)
+          .height(height)
+          .fit("max")
+          .url(),
+      );
+      const imageAlt = stegaClean((img?.alt as string) || "");
 
       return (
         <img
-          src={urlFor(value)
-            .width(width)
-            .height(height)
-            .fit("max")
-            .url()}
-          alt={(img?.alt as string) || ""}
+          src={imageSrc}
+          alt={imageAlt}
           width={width}
           height={height}
           className="mx-auto max-w-full md:mx-[-2em] md:max-w-[calc(100%+4em)]"
@@ -136,22 +170,10 @@ const components: PortableTextComponents = {
 
 interface BodyProps {
   value: (PortableTextBlock | ArbitraryTypedObject)[];
-  preview?: boolean;
 }
 
-export const Body: React.FC<BodyProps> = ({ value, preview = false }) => {
-  const resolvedComponents = React.useMemo(
-    () => ({
-      ...components,
-      marks: {
-        ...components.marks,
-        internalLink: createInternalLink(preview),
-      },
-    }),
-    [preview],
-  );
-
-  return <PortableText value={value} components={resolvedComponents} />;
+export const Body: React.FC<BodyProps> = ({ value }) => {
+  return <PortableText value={value} components={components} />;
 };
 
 export default Body;

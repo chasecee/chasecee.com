@@ -1,4 +1,4 @@
-import { defineConfig } from "astro/config";
+import { defineConfig, fontProviders } from "astro/config";
 import react from "@astrojs/react";
 import vercel from "@astrojs/vercel";
 import tailwindcss from "@tailwindcss/vite";
@@ -9,6 +9,16 @@ export default defineConfig({
   site: "https://chasecee.com",
   output: "server",
   adapter: vercel(),
+  fonts: [
+    {
+      name: "Rubik",
+      cssVariable: "--font-rubik",
+      provider: fontProviders.fontsource(),
+      weights: ["300 900"],
+      styles: ["normal"],
+      subsets: ["latin"],
+    },
+  ],
   build: {
     inlineStylesheets: "always",
   },

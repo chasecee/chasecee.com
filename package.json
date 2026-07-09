@@ -21,7 +21,6 @@
     "@astrojs/react": "^6.0.0",
     "@astrojs/vercel": "^11.0.0",
     "@dimforge/rapier2d": "0.19.3",
-    "@fontsource/figtree": "^5.2.10",
     "@portabletext/react": "^6.2.0",
     "@sanity/client": "^7.23.0",
     "@sanity/image-url": "^2.1.1",
@@ -40,7 +39,6 @@
     "vite-plugin-wasm": "^3.6.0"
   },
   "devDependencies": {
-    "@tailwindcss/typography": "^0.5.20",
     "rollup": "^4.62.2"
   },
   "resolutions": {

@@ -1,3 +1,10 @@
+import AspectRatioInput from "../components/AspectRatioInput";
+
+const isValidRatio = (value?: string) => {
+  if (!value) return true;
+  return /^\d+(\.\d+)?\s*[:/]\s*\d+(\.\d+)?$/.test(value.trim());
+};
+
 const embed = {
   name: "embed",
   type: "object",
@@ -16,17 +23,42 @@ const embed = {
       description: "Accessible title for the iframe.",
     },
     {
+      name: "ratio",
+      title: "Aspect Ratio",
+      type: "object",
+      components: { input: AspectRatioInput },
+      fields: [
+        {
+          name: "desktop",
+          title: "Desktop",
+          type: "string",
+          initialValue: "16/9",
+          validation: (Rule: any) =>
+            Rule.custom((value: string | undefined) =>
+              isValidRatio(value) ? true : "Use format like 16/9 or 16:9",
+            ),
+        },
+        {
+          name: "mobile",
+          title: "Mobile",
+          type: "string",
+          validation: (Rule: any) =>
+            Rule.custom((value: string | undefined) =>
+              isValidRatio(value) ? true : "Use format like 4/3 or 4:3",
+            ),
+        },
+      ],
+      initialValue: { desktop: "16/9" },
+    },
+    {
       name: "aspectRatio",
       type: "string",
-      title: "Aspect ratio",
-      options: {
-        list: [
-          { title: "16:9", value: "16/9" },
-          { title: "4:3", value: "4/3" },
-          { title: "1:1", value: "1/1" },
-        ],
+      title: "Legacy Aspect Ratio",
+      hidden: true,
+      readOnly: true,
+      deprecated: {
+        reason: "Use ratio.desktop and ratio.mobile instead.",
       },
-      initialValue: "16/9",
     },
   ],
   preview: {

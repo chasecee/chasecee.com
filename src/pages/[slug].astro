@@ -2,19 +2,15 @@
 import SiteLayout from "@/src/layouts/SiteLayout.astro";
 import Container from "@/src/components/Container.astro";
 import { Body } from "@/src/components/Body";
-import { getPage, getPages } from "@/sanity/sanity-utils";
+import { getPage } from "@/sanity/sanity-utils";
 import { metaDescription } from "@/src/utils/seo";
 import type { ImageBlock } from "@/types/Content";
+import { stegaClean } from "@sanity/client/stega";
 
-export const prerender = true;
-
-export async function getStaticPaths() {
-  const pages = await getPages();
-  return pages.map((page) => ({ params: { slug: page.slug } }));
-}
+export const prerender = false;
 
 const { slug } = Astro.params;
-const page = await getPage(slug!);
+const page = await getPage(slug!, { preview: Astro.locals.draftMode });
 
 if (!page) {
   return Astro.redirect("/404");
@@ -37,17 +33,25 @@ const contentWithoutHero = heroImage
   : page.content;
 const heroTitle = page.subtitle ?? page.title;
 const heroImageTransitionName = `page-hero-image-${page.slug}`;
+const heroImageSrc =
+  heroImage && typeof heroImage.imageUrl === "string"
+    ? stegaClean(heroImage.imageUrl).trim()
+    : "";
+const heroImageAlt =
+  heroImage && typeof heroImage.alt === "string"
+    ? stegaClean(heroImage.alt).trim()
+    : page.title;
 ---
 
 <SiteLayout {title} {description}>
   <Container className="pt-24" showCTA={true}>
-    <div class="prose dark:prose-invert mx-auto">
+    <div class="prose mx-auto">
       <header class="not-prose relative mb-10 min-h-52 overflow-hidden rounded-xl bg-neutral-900 sm:min-h-64">
         {
           heroImage && (
             <img
-              src={heroImage.imageUrl}
-              alt={heroImage.alt || page.title}
+              src={heroImageSrc}
+              alt={heroImageAlt || page.title}
               class="absolute inset-0 h-full w-full scale-105 object-cover transition-transform duration-700 ease-out"
               transition:name={heroImageTransitionName}
             />

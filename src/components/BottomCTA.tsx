@@ -18,7 +18,7 @@ export default function BottomCTA() {
           className="m-0 w-40 rounded-full sm:w-60"
         />
         <div className="flex flex-col items-center justify-center gap-8 md:items-start">
-          <div className="prose dark:prose-invert md:max-w-[400px]">
+          <div className="prose md:max-w-[400px]">
             <p className="m-0 text-2xl leading-tight font-semibold">
               Performance by design.
             </p>

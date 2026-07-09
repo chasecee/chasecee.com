@@ -3,17 +3,15 @@ import type { Project } from "@/types/Project";
 import generateColorPalette from "@/src/utils/colorUtils";
 import CustomDashboardCard from "@/src/components/project-cards/CustomDashboardCard";
 import urlFor from "@/sanity/sanity.image";
-import { previewPath } from "@/src/utils/previewPath";
 import { sanitizeProjectSvg } from "@/src/utils/sanitizeProjectSvg";
 
 interface Props {
   projects: Project[];
   title?: string;
   columns?: number;
-  preview?: boolean;
 }
 
-const { projects, title, columns = 4, preview = false } = Astro.props;
+const { projects, title, columns = 4 } = Astro.props;
 
 const getColumnClass = (cols: number): string => {
   switch (cols) {
@@ -95,13 +93,17 @@ const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
           ? generateColorPalette(project.color.hex)
           : null;
         const projectImage = project.image;
-        const toCssRatio = (value: string) =>
-          value.includes("/")
-            ? value
-                .split("/")
-                .map((part) => part.trim())
-                .join(" / ")
-            : value;
+        const toCssRatio = (value: string) => {
+          const compact = value.replace(/\s+/g, "");
+          const normalized = compact.includes("/")
+            ? compact
+            : compact.includes(":")
+              ? compact.replace(":", "/")
+              : compact;
+          if (!/^\d+(\.\d+)?\/\d+(\.\d+)?$/.test(normalized)) return "1 / 1";
+          const [width, height] = normalized.split("/");
+          return `${width} / ${height}`;
+        };
         const desktopRatio = toCssRatio(
           project.aspectRatio?.desktop || "1/1",
         );
@@ -128,10 +130,9 @@ const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
               class={`project-item ${getColumnClass(columns)} w-[80%] flex-shrink-0 project-${index + 1} project-${slugname}`}
             >
               <a
-                href={previewPath(`/projects/${slugname}`, preview)}
+                href={`/projects/${slugname}`}
                 title={`See my work on ${project.name}`}
                 class="group"
-                data-sanity-edit-target={preview ? "" : undefined}
               >
                 <div
                   class="project-embed relative w-full"
@@ -157,10 +158,9 @@ const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
             class={`project-item ${getColumnClass(columns)} w-[80%] flex-shrink-0 project-${index + 1} project-${slugname}`}
           >
             <a
-              href={previewPath(`/projects/${slugname}`, preview)}
+              href={`/projects/${slugname}`}
               title={`See my work on ${project.name}`}
               class="group"
-              data-sanity-edit-target={preview ? "" : undefined}
             >
               {slugname === "loop-player" ? (
                 <div class="relative h-0 overflow-hidden rounded-xl pt-[100%]">

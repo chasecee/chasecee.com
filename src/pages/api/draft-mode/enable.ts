@@ -32,22 +32,19 @@ export const GET: APIRoute = async ({ request, cookies, redirect }) => {
   const url = new URL(request.url);
   const perspective =
     url.searchParams.get(urlSearchParamPreviewPerspective) || "drafts";
-  const redirectPath = normalizeRedirectPath(validation.redirectTo);
-  const target = redirectPath.startsWith("/preview")
-    ? redirectPath
-    : `/preview${redirectPath === "/" ? "" : redirectPath}`;
+  const target = normalizeRedirectPath(validation.redirectTo);
   const secure = url.protocol === "https:";
 
   cookies.set(SANITY_PREVIEW_COOKIE, "true", {
     path: "/",
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: secure ? "none" : "lax",
     secure,
   });
   cookies.set(perspectiveCookieName, perspective, {
     path: "/",
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: secure ? "none" : "lax",
     secure,
   });
 

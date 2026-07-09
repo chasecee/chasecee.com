@@ -1,15 +1,13 @@
 ---
 import urlFor from "@/sanity/sanity.image";
 import type { Project } from "@/types/Project";
-import { previewPath } from "@/src/utils/previewPath";
 
 interface Props {
   project: Project;
   direction: "next" | "prev";
-  preview?: boolean;
 }
 
-const { project, direction, preview = false } = Astro.props;
+const { project, direction } = Astro.props;
 const projectSlug =
   typeof project.slug === "string" ? project.slug : project.slug?.current;
 const featuredImageTransitionName = projectSlug
@@ -22,8 +20,7 @@ const overlayTransitionName = projectSlug
 
 <div class={`${direction}-post grow`}>
   <a
-    href={previewPath(`/projects/${project.slug}`, preview)}
-    data-sanity-edit-target={preview ? "" : undefined}
+    href={`/projects/${project.slug}`}
     class={`${
       direction === "prev" ? "flex-row" : "flex-row-reverse text-right"
     } not-prose group relative aspect-5/2 flex items-center justify-between gap-4 overflow-hidden rounded-xl  no-underline transition-colors `}

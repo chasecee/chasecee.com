@@ -1,0 +1,100 @@
+:root {
+  --prose-size: 1.25rem;
+  --prose-leading: 1.65;
+  --prose-measure: 52ch;
+  --prose-weight-normal: 300;
+  --prose-weight-bold: 700;
+  --prose-gap: 2em;
+  --prose-h1: 2.35em;
+  --prose-h2: 1.7em;
+  --prose-h3: 1.35em;
+  --prose-h4: 1.1em;
+  --prose-heading-weight: 700;
+  --prose-heading-track: -0.02em;
+  --prose-link: var(--color-indigo-600);
+  --prose-link-hover: var(--color-indigo-500);
+  --prose-blockquote-border: rgb(0 0 0 / 0.2);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --prose-link: var(--color-indigo-500);
+    --prose-link-hover: var(--color-indigo-400);
+    --prose-blockquote-border: rgb(255 255 255 / 0.25);
+  }
+}
+
+.prose {
+  max-width: var(--prose-measure);
+  font-size: var(--prose-size);
+  line-height: var(--prose-leading);
+  font-weight: var(--prose-weight-normal);
+  :where(p, ul, ol, blockquote, img) {
+    margin-block: var(--prose-gap);
+  }
+
+  :where(p) {
+    text-wrap: pretty;
+  }
+
+  :where(h1, h2, h3, h4) {
+    margin-top: calc(var(--prose-gap) * 1.45);
+    margin-bottom: calc(var(--prose-gap) * 0.5);
+    font-weight: var(--prose-heading-weight);
+    letter-spacing: var(--prose-heading-track);
+    line-height: 1.2;
+  }
+
+  :where(h1) {
+    font-size: var(--prose-h1);
+  }
+
+  :where(h2) {
+    font-size: var(--prose-h2);
+  }
+
+  :where(h3) {
+    font-size: var(--prose-h3);
+  }
+
+  :where(h4) {
+    font-size: var(--prose-h4);
+  }
+
+  :where(ul, ol) {
+    padding-inline-start: 1.3em;
+  }
+
+  :where(li + li) {
+    margin-top: 0.375em;
+  }
+
+  a:not(.not-prose) {
+    color: var(--prose-link);
+    text-decoration-line: underline;
+    text-underline-offset: 0.125em;
+
+    &:hover {
+      color: var(--prose-link-hover);
+      text-underline-offset: 0.25em;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--prose-link);
+      outline-offset: 2px;
+    }
+
+    &:active {
+      transform: translateY(1px);
+    }
+  }
+
+  :where(blockquote) {
+    border-inline-start: 0.2em solid var(--prose-blockquote-border);
+    padding-inline-start: 0.9em;
+  }
+
+  :where(strong) {
+    font-weight: 600;
+  }
+}

@@ -1,22 +1,47 @@
-import { LinkIcon, LaunchIcon } from "@sanity/icons";
+import { EditIcon, CogIcon, LinkIcon, LaunchIcon } from "@sanity/icons";
+import { ALL_FIELDS_GROUP } from "sanity";
 import AspectRatioInput from "../components/AspectRatioInput";
-
-const detailsFieldset = {
-  name: "details",
-  title: "Details",
-  options: { collapsible: true, collapsed: true },
-};
 
 const project = {
   name: "project",
   title: "Projects",
   type: "document",
-  fieldsets: [detailsFieldset],
+  groups: [
+    {
+      name: "content",
+      title: "Content",
+      icon: EditIcon,
+      default: true,
+    },
+    {
+      name: "meta",
+      title: "Meta",
+      icon: CogIcon,
+    },
+    {
+      ...ALL_FIELDS_GROUP,
+      hidden: true,
+    },
+  ],
   fields: [
+    {
+      name: "name",
+      title: "Name",
+      type: "string",
+      group: "content",
+    },
+    {
+      name: "slug",
+      title: "Slug",
+      type: "slug",
+      options: { source: "name" },
+      group: "content",
+    },
     {
       name: "content",
       title: "Content",
       type: "array",
+      group: "content",
       of: [
         {
           type: "block",
@@ -100,19 +125,6 @@ const project = {
       ],
     },
     {
-      name: "name",
-      title: "Name",
-      type: "string",
-      fieldset: "details",
-    },
-    {
-      name: "slug",
-      title: "Slug",
-      type: "slug",
-      options: { source: "name" },
-      fieldset: "details",
-    },
-    {
       title: "Project Type",
       name: "type",
       type: "string",
@@ -124,20 +136,20 @@ const project = {
         layout: "radio",
       },
       validation: (Rule: any) => Rule.required(),
-      fieldset: "details",
+      group: "meta",
     },
     {
       name: "subtitle",
       title: "Subtitle",
       type: "string",
-      fieldset: "details",
+      group: "meta",
     },
     {
       name: "image",
       title: "Image",
       type: "image",
       options: { hotspot: true },
-      fieldset: "details",
+      group: "meta",
       fields: [
         {
           name: "alt",
@@ -153,13 +165,13 @@ const project = {
       options: {
         language: "xml",
       },
-      fieldset: "details",
+      group: "meta",
     },
     {
       name: "color",
       title: "Color",
       type: "color",
-      fieldset: "details",
+      group: "meta",
     },
     {
       title: "Display Type",
@@ -174,13 +186,13 @@ const project = {
         layout: "radio",
       },
       initialValue: "popup",
-      fieldset: "details",
+      group: "meta",
     },
     {
       name: "embedUrl",
       title: "Embed URL",
       type: "url",
-      fieldset: "details",
+      group: "meta",
       hidden: ({ parent }: { parent?: { displayType?: string } }) =>
         parent?.displayType !== "embed",
       validation: (Rule: any) =>
@@ -195,7 +207,7 @@ const project = {
       name: "aspectRatio",
       title: "Aspect Ratio",
       type: "object",
-      fieldset: "details",
+      group: "meta",
       hidden: ({ parent }: { parent?: { displayType?: string } }) =>
         parent?.displayType !== "embed",
       components: { input: AspectRatioInput },
@@ -218,13 +230,13 @@ const project = {
       name: "url",
       title: "URL",
       type: "url",
-      fieldset: "details",
+      group: "meta",
     },
     {
       title: "Archived",
       name: "archived",
       type: "boolean",
-      fieldset: "details",
+      group: "meta",
     },
   ],
   preview: {

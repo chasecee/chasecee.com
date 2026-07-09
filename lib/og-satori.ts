@@ -13,23 +13,23 @@ interface OGImageOptions {
 }
 
 async function loadAssets() {
-  const [interRegular, interBold, backgroundImageBuffer] = await Promise.all([
-    readFile(join(process.cwd(), "assets/inter-v19-latin-regular.ttf")),
-    readFile(join(process.cwd(), "assets/inter-v19-latin-800.ttf")),
+  const [rubikRegular, rubikBold, backgroundImageBuffer] = await Promise.all([
+    readFile(join(process.cwd(), "assets/rubik-latin-400.woff")),
+    readFile(join(process.cwd(), "assets/rubik-latin-800.woff")),
     readFile(join(process.cwd(), "assets/bg.png")),
   ]);
 
   return {
     fonts: [
       {
-        name: "Inter",
-        data: interRegular,
+        name: "Rubik",
+        data: rubikRegular,
         weight: 400 as const,
         style: "normal" as const,
       },
       {
-        name: "Inter Bold",
-        data: interBold,
+        name: "Rubik",
+        data: rubikBold,
         weight: 800 as const,
         style: "normal" as const,
       },
@@ -61,7 +61,7 @@ function homeContent() {
             margin: 0,
             marginBottom: 20,
             lineHeight: 1.1,
-            fontFamily: "Inter Bold",
+            fontFamily: "Rubik",
           },
           children: "Let's build.",
         },
@@ -94,7 +94,7 @@ function pageContent(title: string) {
               margin: 0,
               marginBottom: 20,
               lineHeight: 1.1,
-              fontFamily: "Inter Bold",
+              fontFamily: "Rubik",
             },
             children: title,
           },
@@ -108,7 +108,7 @@ function pageContent(title: string) {
               margin: 0,
               fontWeight: 300,
               lineHeight: 1.3,
-              fontFamily: "Inter",
+              fontFamily: "Rubik",
               opacity: 0.9,
             },
             children: "chasecee.com",
@@ -143,7 +143,7 @@ function projectContent(title: string) {
               margin: 0,
               marginBottom: 20,
               lineHeight: 1.1,
-              fontFamily: "Inter Bold",
+              fontFamily: "Rubik",
               maxWidth: "60%",
             },
             children: title,
@@ -158,7 +158,7 @@ function projectContent(title: string) {
               margin: 0,
               fontWeight: 300,
               lineHeight: 1.3,
-              fontFamily: "Inter",
+              fontFamily: "Rubik",
               opacity: 0.8,
             },
             children: "chasecee.com",

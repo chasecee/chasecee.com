@@ -1,9 +1,11 @@
 @import "tailwindcss";
-
-@plugin '@tailwindcss/typography';
+@import "./typography.css";
 
 @theme {
+  --font-sans: var(--font-rubik), ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --transition-delay-400: 400ms;
+  --max-width-prose: var(--prose-measure);
 
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
@@ -47,6 +49,13 @@
 
   iframe.is-loaded {
     opacity: 1;
+  }
+}
+
+@utility embed-frame {
+  aspect-ratio: var(--embed-ar-mobile, var(--embed-ar-desktop, 16 / 9));
+  @media (width >= 768px) {
+    aspect-ratio: var(--embed-ar-desktop, 16 / 9);
   }
 }
 
@@ -113,29 +122,6 @@
   animation: none;
 }
 
-@layer utilities {
-  .prose{
-    a:not(.not-prose) {
-      @apply text-indigo-600 underline underline-offset-2 dark:text-indigo-500;
-      @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600;
-      &:hover {
-        @apply text-indigo-500 underline-offset-4 dark:text-indigo-400;
-      }
-    }
-    p {
-      margin-top: 1.5em;
-      margin-bottom: 1.5em;
-    }
-  }
-  a:active {
-    @apply translate-y-px;
-  }
-  
-}
-@utility prose {
-  font-size: var(--prose-font-size);
-}
-
 @layer components {
   @keyframes border-animation {
     0% {
@@ -168,7 +154,6 @@
 
 
 :root {
-  --prose-font-size: 1.25rem;
   --physics-color-level: 8;
   --logo-bg: #f5f5f5;
   --logo-fg: #f5f5f5;

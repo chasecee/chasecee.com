@@ -33,7 +33,8 @@ const MUSIC_FIELDS = `{
   "gallery": gallery[]{
     _key,
     "url": asset->url,
-    alt
+    alt,
+    caption
   },
   links,
   embeds

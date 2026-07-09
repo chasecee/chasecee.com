@@ -30,9 +30,9 @@ export default function AspectRatioInput(props: ObjectInputProps) {
           </Text>
           <TextInput
             fontSize={1}
-            value={value.desktop ?? "1/1"}
+            value={value.desktop ?? "16/9"}
             readOnly={readOnly}
-            placeholder="1/1"
+            placeholder="16/9"
             onChange={(e) => patch("desktop", e.currentTarget.value)}
           />
         </Stack>

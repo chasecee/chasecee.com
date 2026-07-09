@@ -14,6 +14,7 @@ import {
   defineLocations,
   presentationTool,
 } from "sanity/presentation";
+import { DocumentLayout } from "./components/DocumentLayout";
 import { StudioNavbar } from "./components/StudioNavbar";
 import { resolveProductionUrlAsync, getSiteBaseUrl } from "./lib/resolveProductionUrl";
 
@@ -27,9 +28,10 @@ const pageSchema = schemasAny.find((schema: any) => schema.name === "page");
 const musicSchema = schemasAny.find((schema: any) => schema.name === "music");
 
 if (projectSchema) {
-  projectSchema.fields.push(
-    orderRankField({ type: "project", fieldset: "details" }),
-  );
+  projectSchema.fields.push({
+    ...orderRankField({ type: "project" }),
+    group: "meta",
+  });
   projectSchema.orderings = [orderRankOrdering];
 }
 if (pageSchema) {
@@ -39,24 +41,27 @@ if (pageSchema) {
   pageSchema.orderings = [orderRankOrdering];
 }
 if (musicSchema) {
-  musicSchema.fields.push(
-    orderRankField({ type: "music", fieldset: "details" }),
-  );
+  musicSchema.fields.push(orderRankField({ type: "music" }));
   musicSchema.orderings = [orderRankOrdering];
 }
 
 const presentationMainDocuments = defineDocuments([
   {
-    route: "/preview",
+    route: "/",
     filter: `_type == "page" && slug.current == "home"`,
   },
   {
-    route: "/preview/projects/:slug",
+    route: "/projects/:slug",
     filter: `_type == "project" && slug.current == $slug`,
     params: ({ params }) => ({ slug: params.slug }),
   },
   {
-    route: "/preview/:slug",
+    route: "/music/:slug",
+    filter: `_type == "music" && (slug.current == $slug || _id == $slug)`,
+    params: ({ params }) => ({ slug: params.slug }),
+  },
+  {
+    route: "/:slug",
     filter: `_type == "page" && slug.current == $slug`,
     params: ({ params }) => ({ slug: params.slug }),
   },
@@ -74,7 +79,24 @@ const presentationLocations = {
         locations: [
           {
             title: doc.name || "Project",
-            href: `/preview/projects/${doc.slug}`,
+            href: `/projects/${doc.slug}`,
+          },
+        ],
+      };
+    },
+  }),
+  music: defineLocations({
+    select: {
+      title: "albumName",
+      slug: "slug.current",
+    },
+    resolve: (doc) => {
+      if (!doc?.slug) return null;
+      return {
+        locations: [
+          {
+            title: doc.title || "Music",
+            href: `/music/${doc.slug}`,
           },
         ],
       };
@@ -87,8 +109,7 @@ const presentationLocations = {
     },
     resolve: (doc) => {
       if (!doc?.slug) return null;
-      const href =
-        doc.slug === "home" ? "/preview" : `/preview/${doc.slug}`;
+      const href = doc.slug === "home" ? "/" : `/${doc.slug}`;
       return {
         locations: [
           {
@@ -140,7 +161,7 @@ export default defineConfig({
     colorInput(),
     presentationTool({
       previewUrl: {
-        initial: `${PREVIEW_URL}/preview`,
+        initial: PREVIEW_URL,
         previewMode: {
           enable: "/api/draft-mode/enable",
           disable: "/api/draft-mode/disable",
@@ -159,6 +180,9 @@ export default defineConfig({
   },
   document: {
     productionUrl: resolveProductionUrlAsync,
+    components: {
+      unstable_layout: DocumentLayout,
+    },
   },
   schema: { types: schemas },
   useCdn: true,

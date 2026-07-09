@@ -9,10 +9,7 @@ export const prerender = false;
 
 function normalizeRedirectPath(pathname: string | null): string {
   if (!pathname) return "/";
-  const withSlash = pathname.startsWith("/") ? pathname : `/${pathname}`;
-  if (!withSlash.startsWith("/preview")) return withSlash;
-  const stripped = withSlash.replace(/^\/preview/, "");
-  return stripped.length > 0 ? stripped : "/";
+  return pathname.startsWith("/") ? pathname : `/${pathname}`;
 }
 
 export const GET: APIRoute = async ({ request, cookies, redirect }) => {

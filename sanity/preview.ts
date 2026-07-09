@@ -2,7 +2,10 @@ import { createClient } from "@sanity/client";
 import config from "./config/client-config";
 
 export const SANITY_PREVIEW_COOKIE = "sanity-preview";
-const STUDIO_URL = process.env.SANITY_STUDIO_URL || "https://studio.chasecee.com";
+
+const STUDIO_URL = import.meta.env.DEV
+  ? "http://localhost:3333"
+  : process.env.SANITY_STUDIO_URL || "https://studio.chasecee.com";
 
 export function isPreviewRequest(request?: Request): boolean {
   if (!request) return false;
@@ -15,9 +18,12 @@ export function getSanityClient(preview = false) {
     return createClient(config);
   }
 
-  const token = process.env.SANITY_API_READ_TOKEN;
+  const token =
+    import.meta.env.SANITY_API_READ_TOKEN || process.env.SANITY_API_READ_TOKEN;
   if (!token) {
-    return createClient(config);
+    throw new Error(
+      "SANITY_API_READ_TOKEN is required for draft mode / visual editing.",
+    );
   }
 
   return createClient({
