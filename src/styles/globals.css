@@ -33,6 +33,23 @@
   }
 }
 
+@utility project-embed {
+  aspect-ratio: var(--ar-mobile, var(--ar-desktop, 1 / 1));
+  @media (width >= 768px) {
+    aspect-ratio: var(--ar-desktop, 1 / 1);
+  }
+
+  iframe {
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 500ms ease;
+  }
+
+  iframe.is-loaded {
+    opacity: 1;
+  }
+}
+
 @utility project-item {
   .project-gradient-bg {
     .color-div {
@@ -77,17 +94,43 @@
   @apply transition-transform duration-500;
 }
 
-@layer base {
-  .prose a:not(.not-prose) {
-    @apply text-indigo-600 underline underline-offset-2 dark:text-indigo-500;
-    @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600;
-  }
-  .prose a:not(.not-prose):hover {
-    @apply text-indigo-500 underline-offset-4 dark:text-indigo-400;
+.vt-image {
+  view-transition-class: vt-image;
+}
+::view-transition-group(.vt-image) {
+  animation-duration: 350ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+::view-transition-image-pair(.vt-image) {
+  overflow: hidden;
+  border-radius: 0.75rem;
+}
+::view-transition-old(.vt-image),
+::view-transition-new(.vt-image) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: none;
+}
+
+@layer utilities {
+  .prose{
+    a:not(.not-prose) {
+      @apply text-indigo-600 underline underline-offset-2 dark:text-indigo-500;
+      @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600;
+      &:hover {
+        @apply text-indigo-500 underline-offset-4 dark:text-indigo-400;
+      }
+    }
+    p {
+      margin-top: 1.5em;
+      margin-bottom: 1.5em;
+    }
   }
   a:active {
     @apply translate-y-px;
   }
+  
 }
 @utility prose {
   font-size: var(--prose-font-size);

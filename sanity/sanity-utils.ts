@@ -1,4 +1,5 @@
 import type { Project } from "@/types/Project";
+import type { Music } from "@/types/Music";
 import type { Page } from "@/types/Page";
 import { getSanityClient } from "./preview";
 
@@ -14,8 +15,28 @@ const PROJECT_FIELDS = `{
   subtitle,
   color,
   displayType,
+  embedUrl,
+  aspectRatio,
   url,
   content
+}`;
+
+const MUSIC_FIELDS = `{
+  _id,
+  _createdAt,
+  "slug": coalesce(slug.current, _id),
+  bandName,
+  albumName,
+  releaseYear,
+  "albumArt": albumArt.asset->url,
+  "albumArtAlt": albumArt.alt,
+  "gallery": gallery[]{
+    _key,
+    "url": asset->url,
+    alt
+  },
+  links,
+  embeds
 }`;
 
 type QueryOptions = {
@@ -29,6 +50,22 @@ function getClient(options?: QueryOptions) {
 export async function getProjects(options?: QueryOptions): Promise<Project[]> {
   return getClient(options).fetch(
     `*[_type == "project"] | order(orderRank) ${PROJECT_FIELDS}`,
+  );
+}
+
+export async function getMusic(options?: QueryOptions): Promise<Music[]> {
+  return getClient(options).fetch(
+    `*[_type == "music"] | order(orderRank) ${MUSIC_FIELDS}`,
+  );
+}
+
+export async function getMusicBySlug(
+  slug: string,
+  options?: QueryOptions,
+): Promise<Music | null> {
+  return getClient(options).fetch(
+    `*[_type == "music" && (slug.current == $slug || _id == $slug)][0] ${MUSIC_FIELDS}`,
+    { slug },
   );
 }
 

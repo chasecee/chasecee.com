@@ -1,0 +1,107 @@
+---
+import SiteLayout from "@/src/layouts/SiteLayout.astro";
+import Container from "@/src/components/Container.astro";
+import { getMusicBySlug } from "@/sanity/sanity-utils";
+import { withSanityImageParams } from "@/src/utils/sanityImageParams";
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+const musicSlug = typeof slug === "string" ? slug : "";
+
+if (!musicSlug) {
+  return Astro.redirect("/404");
+}
+
+const item = await getMusicBySlug(musicSlug);
+
+if (!item) {
+  return Astro.redirect("/404");
+}
+---
+
+<SiteLayout
+  title={`${item.bandName} - ${item.albumName} - Chase Cee`}
+  description={`${item.albumName} by ${item.bandName}.`}
+  ogImage="/og/home.png"
+>
+  <Container>
+    <div class="prose dark:prose-invert mx-auto mt-10">
+      <h1>{item.bandName}</h1>
+      <h2>{item.albumName}</h2>
+
+      {
+        item.albumArt && (
+          <img
+            src={withSanityImageParams(item.albumArt, {
+              w: 1600,
+              fit: "max",
+              auto: "format",
+            })}
+            alt={item.albumArtAlt || `${item.albumName} album art`}
+            width={1200}
+            height={1200}
+            class="w-full rounded-xl"
+          />
+        )
+      }
+
+      {
+        item.gallery && item.gallery.length > 0 && (
+          <section class="not-prose mt-8 grid gap-4 sm:grid-cols-2">
+            {item.gallery.map((image) =>
+              image.url ? (
+                <img
+                  src={withSanityImageParams(image.url, {
+                    w: 1400,
+                    fit: "max",
+                    auto: "format",
+                  })}
+                  alt={image.alt || `${item.bandName} gallery image`}
+                  width={1000}
+                  height={1000}
+                  class="w-full rounded-xl object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : null,
+            )}
+          </section>
+        )
+      }
+
+      {
+        item.links && item.links.length > 0 && (
+          <section class="mt-10">
+            <h3>Links</h3>
+            <ul>
+              {item.links.map((link) => (
+                <li>
+                  <a href={link.url} target="_blank" rel="noopener noreferrer">
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+
+      {
+        item.embeds && item.embeds.length > 0 && (
+          <section class="not-prose mt-10 flex flex-col gap-6">
+            {item.embeds.map((embed) => (
+              <iframe
+                src={embed.url}
+                title={embed.title || `${item.albumName} embed`}
+                loading="lazy"
+                class="w-full rounded-xl border border-black/10 dark:border-white/10"
+                style={{ aspectRatio: embed.aspectRatio || "16/9" }}
+              />
+            ))}
+          </section>
+        )
+      }
+    </div>
+  </Container>
+</SiteLayout>

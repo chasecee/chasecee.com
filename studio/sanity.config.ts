@@ -15,16 +15,16 @@ import {
   presentationTool,
 } from "sanity/presentation";
 import { StudioNavbar } from "./components/StudioNavbar";
+import { resolveProductionUrlAsync, getSiteBaseUrl } from "./lib/resolveProductionUrl";
 
-const SITE_URL = "https://chasecee.com";
-const PREVIEW_URL_BASE = process.env.SANITY_STUDIO_PREVIEW_URL || SITE_URL;
-const PREVIEW_URL = PREVIEW_URL_BASE.replace(/\/$/, "");
+const PREVIEW_URL = getSiteBaseUrl();
 
 const schemasAny = schemas as any;
 const projectSchema = schemasAny.find(
   (schema: any) => schema.name === "project",
 );
 const pageSchema = schemasAny.find((schema: any) => schema.name === "page");
+const musicSchema = schemasAny.find((schema: any) => schema.name === "music");
 
 if (projectSchema) {
   projectSchema.fields.push(
@@ -38,22 +38,11 @@ if (pageSchema) {
   );
   pageSchema.orderings = [orderRankOrdering];
 }
-
-function resolveProductionUrl(
-  previousUrl: string | undefined,
-  context: { document?: any; schemaType?: string },
-) {
-  const slug = context.document?.slug?.current;
-
-  if (context.schemaType === "project" && slug) {
-    return `${SITE_URL}/projects/${slug}`;
-  }
-
-  if (context.schemaType === "page" && slug) {
-    return slug === "home" ? SITE_URL : `${SITE_URL}/${slug}`;
-  }
-
-  return previousUrl || SITE_URL;
+if (musicSchema) {
+  musicSchema.fields.push(
+    orderRankField({ type: "music", fieldset: "details" }),
+  );
+  musicSchema.orderings = [orderRankOrdering];
 }
 
 const presentationMainDocuments = defineDocuments([
@@ -137,6 +126,13 @@ export default defineConfig({
               S,
               context,
             }),
+            orderableDocumentListDeskItem({
+              type: "music",
+              title: "Music",
+              icon: ImagesIcon,
+              S,
+              context,
+            }),
           ]);
       },
     }),
@@ -162,7 +158,7 @@ export default defineConfig({
     },
   },
   document: {
-    productionUrl: resolveProductionUrl,
+    productionUrl: resolveProductionUrlAsync,
   },
   schema: { types: schemas },
   useCdn: true,

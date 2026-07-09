@@ -66,10 +66,19 @@ const studioBusy = await isPortInUse(studioPort);
 if (studioBusy) {
   console.log(`Studio already running on port ${studioPort}\n`);
 } else {
-  const studio = run(
+  const studio = spawn(
     "bun",
     ["x", "sanity", "dev", "--port", String(studioPort)],
-    path.join(root, "studio"),
+    {
+      cwd: path.join(root, "studio"),
+      stdio: "inherit",
+      env: {
+        ...process.env,
+        SANITY_STUDIO_PREVIEW_URL:
+          process.env.SANITY_STUDIO_PREVIEW_URL ||
+          `http://localhost:${sitePort}`,
+      },
+    },
   );
   children.push(studio);
 

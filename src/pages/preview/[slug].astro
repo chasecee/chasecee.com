@@ -5,6 +5,7 @@ import { Body } from "@/src/components/Body";
 import SanityVisualEditing from "@/src/components/sanity/SanityVisualEditing";
 import { getPage } from "@/sanity/sanity-utils";
 import { metaDescription } from "@/src/utils/seo";
+import type { ImageBlock } from "@/types/Content";
 
 export const prerender = false;
 
@@ -20,16 +21,43 @@ const description = metaDescription(
   page.subtitle,
   `${page.title} - Chase Cee, a designer and developer in Salt Lake City building excellent web products front to back.`,
 );
+const heroImage =
+  page.content.find(
+    (block): block is ImageBlock =>
+      block._type === "image" &&
+      "imageUrl" in block &&
+      typeof block.imageUrl === "string",
+  ) ?? null;
+const contentWithoutHero = heroImage
+  ? page.content.filter((block) => block !== heroImage)
+  : page.content;
+const heroTitle = page.subtitle ?? page.title;
+const heroImageTransitionName = `page-hero-image-${page.slug}`;
 ---
 
 <SiteLayout {title} {description}>
   <Container className="pt-24" showCTA={true}>
     <div class="prose dark:prose-invert mx-auto">
-      <header>
-        <h1>{page.subtitle ?? page.title}</h1>
+      <header class="not-prose relative mb-10 min-h-52 overflow-hidden rounded-xl bg-neutral-900 sm:min-h-64">
+        {
+          heroImage && (
+            <img
+              src={heroImage.imageUrl}
+              alt={heroImage.alt || page.title}
+              class="absolute inset-0 h-full w-full scale-105 object-cover transition-transform duration-700 ease-out"
+              transition:name={heroImageTransitionName}
+            />
+          )
+        }
+        <div class="absolute inset-0 bg-black/45" />
+        <div class="relative z-10 mx-auto flex min-h-52 w-full items-center px-6 sm:min-h-64 sm:px-8">
+          <div class="w-full max-w-prose">
+            <h1 class="m-0 text-white">{heroTitle}</h1>
+          </div>
+        </div>
       </header>
       <div class="content">
-        <Body value={page.content} preview />
+        <Body value={contentWithoutHero} preview />
       </div>
     </div>
   </Container>

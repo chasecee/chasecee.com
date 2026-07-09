@@ -15,6 +15,9 @@ const projectSlug =
 const featuredImageTransitionName = projectSlug
   ? `project-featured-image-${projectSlug}`
   : undefined;
+const overlayTransitionName = projectSlug
+  ? `project-hero-overlay-${projectSlug}`
+  : undefined;
 ---
 
 <div class={`${direction}-post grow`}>
@@ -33,10 +36,14 @@ const featuredImageTransitionName = projectSlug
             alt={project.name}
             width={350}
             height={350}
-            class="w-full h-full object-cover"
+            class="vt-image w-full h-full object-cover"
             transition:name={featuredImageTransitionName}
           />
-          <div class="absolute inset-0 bg-black opacity-80 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div
+            class="absolute inset-0 bg-black opacity-80 transition-opacity duration-300 group-hover:opacity-100"
+            transition:name={overlayTransitionName}
+          >
+          </div>
         </div>
       )
     }

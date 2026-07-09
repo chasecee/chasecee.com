@@ -1,4 +1,5 @@
 import { LinkIcon, LaunchIcon } from "@sanity/icons";
+import AspectRatioInput from "../components/AspectRatioInput";
 
 const detailsFieldset = {
   name: "details",
@@ -168,11 +169,50 @@ const project = {
         list: [
           { title: "Popup (Default)", value: "popup" },
           { title: "Background", value: "background" },
+          { title: "Embed", value: "embed" },
         ],
         layout: "radio",
       },
       initialValue: "popup",
       fieldset: "details",
+    },
+    {
+      name: "embedUrl",
+      title: "Embed URL",
+      type: "url",
+      fieldset: "details",
+      hidden: ({ parent }: { parent?: { displayType?: string } }) =>
+        parent?.displayType !== "embed",
+      validation: (Rule: any) =>
+        Rule.custom((value: string | undefined, context: any) => {
+          if (context.parent?.displayType === "embed" && !value) {
+            return "Embed URL is required when display type is Embed";
+          }
+          return true;
+        }),
+    },
+    {
+      name: "aspectRatio",
+      title: "Aspect Ratio",
+      type: "object",
+      fieldset: "details",
+      hidden: ({ parent }: { parent?: { displayType?: string } }) =>
+        parent?.displayType !== "embed",
+      components: { input: AspectRatioInput },
+      fields: [
+        {
+          name: "desktop",
+          title: "Desktop",
+          type: "string",
+          initialValue: "1/1",
+        },
+        {
+          name: "mobile",
+          title: "Mobile",
+          type: "string",
+        },
+      ],
+      initialValue: { desktop: "1/1" },
     },
     {
       name: "url",

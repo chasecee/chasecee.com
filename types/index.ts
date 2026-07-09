@@ -1,4 +1,10 @@
 export type { Project } from "./Project";
+export type {
+  Music,
+  MusicLink,
+  MusicEmbed,
+  MusicGalleryImage,
+} from "./Music";
 export type { Page } from "./Page";
 export type { Skill, SkillDotsProps, SkillsListProps } from "./Skills";
 export type {

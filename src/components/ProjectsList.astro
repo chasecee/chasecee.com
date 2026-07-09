@@ -87,11 +87,70 @@ const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
         const featuredImageTransitionName = slugname
           ? `project-featured-image-${slugname}`
           : undefined;
+        const overlayTransitionName = slugname
+          ? `project-hero-overlay-${slugname}`
+          : undefined;
         const displayType = project.displayType || "popup";
         const colorPalette = project.color?.hex
           ? generateColorPalette(project.color.hex)
           : null;
         const projectImage = project.image;
+        const toCssRatio = (value: string) =>
+          value.includes("/")
+            ? value
+                .split("/")
+                .map((part) => part.trim())
+                .join(" / ")
+            : value;
+        const desktopRatio = toCssRatio(
+          project.aspectRatio?.desktop || "1/1",
+        );
+        const mobileRatio = toCssRatio(
+          project.aspectRatio?.mobile || project.aspectRatio?.desktop || "1/1",
+        );
+
+        const projectTitle = (
+          <div class="relative">
+            <span class="mt-3 inline-block text-base">
+              <span class="font-bold">{project.name}</span>
+              {project.subtitle && (
+                <span class="font-light opacity-40">
+                  &nbsp;-&nbsp;{project.subtitle}
+                </span>
+              )}
+            </span>
+          </div>
+        );
+
+        if (displayType === "embed" && project.embedUrl) {
+          return (
+            <div
+              class={`project-item ${getColumnClass(columns)} w-[80%] flex-shrink-0 project-${index + 1} project-${slugname}`}
+            >
+              <a
+                href={previewPath(`/projects/${slugname}`, preview)}
+                title={`See my work on ${project.name}`}
+                class="group"
+                data-sanity-edit-target={preview ? "" : undefined}
+              >
+                <div
+                  class="project-embed relative w-full"
+                  style={`--ar-desktop: ${desktopRatio}; --ar-mobile: ${mobileRatio};`}
+                >
+                  <iframe
+                    src={project.embedUrl}
+                    title={project.name}
+                    class="pointer-events-none absolute inset-0 h-full w-full border-0"
+                    loading="lazy"
+                    tabindex="-1"
+                    data-project-embed
+                  />
+                </div>
+                {projectTitle}
+              </a>
+            </div>
+          );
+        }
 
         return (
           <div
@@ -110,10 +169,14 @@ const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
                     alt="Loop Player product packaging"
                     width={473}
                     height={473}
-                    class="absolute inset-0 h-full w-full rounded-xl object-cover"
+                    class="vt-image absolute inset-0 h-full w-full rounded-xl object-cover"
                     transition:name={featuredImageTransitionName}
                     loading="eager"
                     fetchpriority="high"
+                  />
+                  <div
+                    class="pointer-events-none absolute inset-0 rounded-xl bg-black/45 opacity-0"
+                    transition:name={overlayTransitionName}
                   />
                   {project.svgcode?.code && (
                     <div class="view-actor absolute inset-0 transition-transform delay-[25ms] duration-500 group-hover:scale-110 group-hover:duration-300">
@@ -155,7 +218,7 @@ const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
                       alt={project.name}
                       width={cardImageMaxWidth}
                       height={cardImageMaxWidth}
-                      class="absolute inset-0 h-full w-full rounded-xl object-cover"
+                      class="vt-image absolute inset-0 h-full w-full rounded-xl object-cover"
                       transition:name={featuredImageTransitionName}
                       loading={index === 0 ? "eager" : "lazy"}
                       fetchpriority={index === 0 ? "high" : "auto"}
@@ -168,6 +231,13 @@ const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
                         style={{ backgroundColor: project.color.hex }}
                       />
                     )
+                  )}
+
+                  {displayType === "background" && projectImage && (
+                    <div
+                      class="pointer-events-none absolute inset-0 rounded-xl bg-black/45 opacity-0"
+                      transition:name={overlayTransitionName}
+                    />
                   )}
 
                   {displayType === "popup" && colorPalette && (
@@ -224,16 +294,7 @@ const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
                 </div>
               )}
 
-              <div class="relative">
-                <span class="mt-3 inline-block text-base">
-                  <span class="font-bold">{project.name}</span>
-                  {project.subtitle && (
-                    <span class="font-light opacity-40">
-                      &nbsp;-&nbsp;{project.subtitle}
-                    </span>
-                  )}
-                </span>
-              </div>
+              {projectTitle}
             </a>
           </div>
         );
@@ -241,3 +302,19 @@ const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
     }
   </div>
 </div>
+
+<script>
+  const bindEmbedFades = () => {
+    document
+      .querySelectorAll<HTMLIFrameElement>("[data-project-embed]:not([data-bound])")
+      .forEach((frame) => {
+        frame.dataset.bound = "";
+        frame.addEventListener("load", () => frame.classList.add("is-loaded"), {
+          once: true,
+        });
+      });
+  };
+
+  bindEmbedFades();
+  document.addEventListener("astro:page-load", bindEmbedFades);
+</script>

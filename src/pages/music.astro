@@ -1,0 +1,25 @@
+---
+import SiteLayout from "@/src/layouts/SiteLayout.astro";
+import Container from "@/src/components/Container.astro";
+import MusicList from "@/src/components/MusicList.astro";
+import { getMusic } from "@/sanity/sanity-utils";
+
+export const prerender = false;
+
+const music = await getMusic();
+---
+
+<SiteLayout
+  title="Music - Chase Cee"
+  description="Music, albums, links, and embeds curated by Chase Cee."
+  ogImage="/og/home.png"
+>
+  <Container>
+    <div class="prose dark:prose-invert mx-auto mt-10 max-w-none">
+      <h1>Music</h1>
+      <div class="not-prose">
+        <MusicList items={music} />
+      </div>
+    </div>
+  </Container>
+</SiteLayout>

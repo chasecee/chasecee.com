@@ -42,6 +42,7 @@ function shortenUrl(url: string): string {
 
 const projectUrl = typeof project.url === "string" ? project.url : "";
 const featuredImageTransitionName = `project-featured-image-${projectSlug}`;
+const overlayTransitionName = `project-hero-overlay-${projectSlug}`;
 const description = metaDescription(
   project.subtitle,
   `${project.name} is a project designed and built by Chase Cee, a designer and developer in Salt Lake City.`,
@@ -54,20 +55,33 @@ const description = metaDescription(
   ogImage={`/og/project/${project.slug}.png`}
 >
   <Container>
-    <div class="prose dark:prose-invert mx-auto">
-      <header
-        class="flex flex-col flex-wrap justify-start gap-6 sm:flex-row sm:flex-nowrap sm:items-center sm:justify-between"
-      >
-        <h1 class="mb-0">{project.name}</h1>
-
-        {
-          projectUrl && (
-            <div>
+    <header class="not-prose relative mb-10 min-h-56 w-full overflow-hidden rounded-xl bg-neutral-900 sm:min-h-72">
+      {
+        project.image && (
+          <img
+            src={urlFor(project.image).width(1600).height(640).dpr(1.5).url()}
+            alt={project.name}
+            class="vt-image absolute inset-0 h-full w-full object-cover"
+            transition:name={featuredImageTransitionName}
+            loading="eager"
+            fetchpriority="high"
+          />
+        )
+      }
+      <div
+        class="absolute inset-0 rounded-xl bg-black/45"
+        transition:name={overlayTransitionName}
+      />
+      <div class="relative z-10 mx-auto flex min-h-56 w-full items-center px-6 sm:min-h-72 sm:px-8">
+        <div class="w-full max-w-prose">
+          <h1 class="mb-0 text-white">{project.name}</h1>
+          {
+            projectUrl && (
               <a
                 href={projectUrl}
                 title={project.name}
                 target="_blank"
-                class="not-prose group inline-flex rounded-xl px-3 py-0 pr-2 text-green-500 no-underline opacity-80 hover:opacity-100 dark:text-emerald-400"
+                class="group mt-3 inline-flex rounded-xl px-3 py-0 pr-2 text-emerald-300 no-underline opacity-90 hover:opacity-100"
               >
                 <span class="flex h-[2.1rem] flex-row items-center justify-normal gap-1">
                   {project.archived ? "Archived: " : ""}
@@ -79,22 +93,12 @@ const description = metaDescription(
                   />
                 </span>
               </a>
-            </div>
-          )
-        }
-      </header>
-      {
-        project.image && (
-          <img
-            src={urlFor(project.image).width(722).height(452).dpr(1.5).url()}
-            alt={project.name}
-            width={722}
-            height={452}
-            class="rounded-xl object-cover"
-            transition:name={featuredImageTransitionName}
-          />
-        )
-      }
+            )
+          }
+        </div>
+      </div>
+    </header>
+    <div class="prose dark:prose-invert mx-auto">
       {
         project.content && (
           <div>

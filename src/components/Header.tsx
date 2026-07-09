@@ -19,6 +19,9 @@ export default function Header({ activePath }: HeaderProps) {
     activePath !== "/" && activePath.endsWith("/")
       ? activePath.slice(0, -1)
       : activePath;
+  const isMusicPath =
+    normalizedActivePath === "/music" ||
+    normalizedActivePath.startsWith("/music/");
   const baseClass = "header_item no-underline transition-colors group ";
   const activeClass = "item_active" + " " + baseClass;
   const inactiveClass = "item_inactive" + " " + baseClass;
@@ -58,8 +61,8 @@ export default function Header({ activePath }: HeaderProps) {
   }, []);
 
   return (
-    <div className="fixed top-2 right-2 left-2 z-40 md:top-4 md:right-4 md:left-4">
-      <header className="header container flex items-center rounded-xl border border-neutral-100/30 bg-neutral-100/10 px-4 py-2 backdrop-blur-md sm:px-6 dark:border-neutral-900/30 dark:bg-neutral-900/20">
+    <div className="fixed top-2 inset-x-0 z-40 md:top-4">
+      <header className="header container h-16 flex items-center rounded-xl border border-neutral-100/30 bg-neutral-100/10 py-2 backdrop-blur-md dark:border-neutral-900/30 dark:bg-neutral-900/20">
         <div className="flex w-1/3 shrink justify-start">
           <a
             onClick={handleLogoClick}
@@ -94,6 +97,9 @@ export default function Header({ activePath }: HeaderProps) {
               }
             >
               About <div className={barClass}></div>
+            </a>
+            <a href="/music" className={isMusicPath ? activeClass : inactiveClass}>
+              Music <div className={barClass}></div>
             </a>
           </div>
         </div>

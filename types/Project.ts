@@ -6,6 +6,11 @@ import type {
   InternalLinkField,
 } from "./Content";
 
+export type ProjectAspectRatio = {
+  desktop?: string;
+  mobile?: string;
+};
+
 export type Project = {
   _id: string;
   _createdAt: Date;
@@ -15,7 +20,9 @@ export type Project = {
   image?: string;
   svgcode?: CodeField;
   color?: ColorField;
-  displayType?: "popup" | "background";
+  displayType?: "popup" | "background" | "embed";
+  embedUrl?: string;
+  aspectRatio?: ProjectAspectRatio;
   url?: string;
   type?: "personal" | "client";
   archived?: boolean;
