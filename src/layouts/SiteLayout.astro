@@ -44,9 +44,16 @@ const ogImageURL = new URL(ogImage, Astro.site);
     <ClientRouter />
   </head>
   <body
-    class="font-sans w-full min-h-screen bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-white"
+    class={`font-sans w-full min-h-screen bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-white ${draftMode ? "pt-10" : ""}`}
     transition:animate={fade({ duration: "0.2s" })}
   >
+    {
+      draftMode && (
+        <div class="fixed h-4 inset-x-0 top-0 z-[100] flex items-center justify-center border-b border-amber-400/30 bg-amber-300/95 px-4 text-[.75rem] text-black dark:bg-amber-300">
+          <span>Draft mode active: you are viewing unpublished content</span>
+        </div>
+      )
+    }
     <slot />
     {draftMode && <SanityVisualEditing client:only="react" />}
     <script is:inline src="/_vercel/insights/script.js"></script>

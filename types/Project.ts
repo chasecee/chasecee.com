@@ -13,6 +13,7 @@ export type ProjectAspectRatio = {
 
 export type Project = {
   _id: string;
+  isDraft?: boolean;
   _createdAt: Date;
   name: string;
   slug: string | { current: string };

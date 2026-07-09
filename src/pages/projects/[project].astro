@@ -40,6 +40,7 @@ function shortenUrl(url: string): string {
 }
 
 const projectUrl = typeof project.url === "string" ? project.url : "";
+const draftMode = Astro.locals.draftMode === true;
 const featuredImageTransitionName = `project-featured-image-${projectSlug}`;
 const overlayTransitionName = `project-hero-overlay-${projectSlug}`;
 const description = metaDescription(
@@ -71,6 +72,13 @@ const description = metaDescription(
         class="absolute inset-0 bg-black/45"
         transition:name={overlayTransitionName}
       />
+      {
+        draftMode && project.isDraft && (
+          <span class="absolute top-4 right-4 z-20 inline-flex rounded bg-amber-300 px-2 py-1 text-xs font-bold uppercase tracking-wide text-black">
+            Draft
+          </span>
+        )
+      }
       <div class="relative z-10 ">
         <div class="container">
           <div class="flex flex-col items-start justify-start gap-6">

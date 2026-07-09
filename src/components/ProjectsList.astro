@@ -67,6 +67,7 @@ const getCardImageWidths = (cols: number): number[] => {
 const validProjects = projects.filter(
   (project) => project && project._id && project.name,
 );
+const draftMode = Astro.locals.draftMode === true;
 
 const cardImageWidths = getCardImageWidths(columns);
 const cardImageSizes = getCardImageSizes(columns);
@@ -110,6 +111,10 @@ const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
         const mobileRatio = toCssRatio(
           project.aspectRatio?.mobile || project.aspectRatio?.desktop || "1/1",
         );
+        const showDraftBadge = draftMode && project.isDraft;
+        const draftRingClass = showDraftBadge
+          ? "rounded-2xl p-1 border-2 border-amber-300"
+          : "";
 
         const projectTitle = (
           <div class="relative">
@@ -127,7 +132,7 @@ const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
         if (displayType === "embed" && project.embedUrl) {
           return (
             <div
-              class={`project-item ${getColumnClass(columns)} w-[80%] flex-shrink-0 project-${index + 1} project-${slugname}`}
+              class={`project-item ${getColumnClass(columns)} w-[80%] flex-shrink-0 project-${index + 1} project-${slugname} ${draftRingClass}`}
             >
               <a
                 href={`/projects/${slugname}`}
@@ -135,9 +140,14 @@ const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
                 class="group"
               >
                 <div
-                  class="project-embed relative w-full"
+                  class="project-embed relative w-full overflow-hidden rounded-xl"
                   style={`--ar-desktop: ${desktopRatio}; --ar-mobile: ${mobileRatio};`}
                 >
+                  {showDraftBadge && (
+                    <span class="pointer-events-none absolute top-2 right-2 z-20 inline-flex rounded bg-amber-300 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black">
+                      Draft
+                    </span>
+                  )}
                   <iframe
                     src={project.embedUrl}
                     title={project.name}
@@ -155,7 +165,7 @@ const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
 
         return (
           <div
-            class={`project-item ${getColumnClass(columns)} w-[80%] flex-shrink-0 project-${index + 1} project-${slugname}`}
+            class={`project-item ${getColumnClass(columns)} w-[80%] flex-shrink-0 project-${index + 1} project-${slugname} ${draftRingClass}`}
           >
             <a
               href={`/projects/${slugname}`}
@@ -163,7 +173,14 @@ const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
               class="group"
             >
               {slugname === "loop-player" ? (
-                <div class="relative h-0 overflow-hidden rounded-xl pt-[100%]">
+                <div
+                  class="relative h-0 overflow-hidden rounded-xl pt-[100%]"
+                >
+                  {showDraftBadge && (
+                    <span class="pointer-events-none absolute top-2 right-2 z-20 inline-flex rounded bg-amber-300 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black">
+                      Draft
+                    </span>
+                  )}
                   <img
                     src="/img/loop-box.webp"
                     alt="Loop Player product packaging"
@@ -188,13 +205,27 @@ const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
                   )}
                 </div>
               ) : slugname === "custom-dashboard" ? (
-                <CustomDashboardCard
-                  client:visible
-                  project={project}
-                  index={index}
-                />
+                <div class="relative overflow-hidden rounded-xl">
+                  {showDraftBadge && (
+                    <span class="pointer-events-none absolute top-2 right-2 z-20 inline-flex rounded bg-amber-300 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black">
+                      Draft
+                    </span>
+                  )}
+                  <CustomDashboardCard
+                    client:visible
+                    project={project}
+                    index={index}
+                  />
+                </div>
               ) : (
-                <div class="relative h-0 overflow-hidden rounded-xl pt-[100%]">
+                <div
+                  class="relative h-0 overflow-hidden rounded-xl pt-[100%]"
+                >
+                  {showDraftBadge && (
+                    <span class="pointer-events-none absolute top-2 right-2 z-20 inline-flex rounded bg-amber-300 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black">
+                      Draft
+                    </span>
+                  )}
                   {displayType === "background" && projectImage ? (
                     <img
                       src={urlFor(projectImage)
@@ -282,7 +313,9 @@ const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
                       class={`view-actor absolute inset-0 transition-transform delay-[25ms] duration-500 ${
                         displayType === "background"
                           ? "group-hover:scale-100 scale-[80%] origin-center group-hover:duration-300"
-                          : "group-hover:-translate-y-[28%] origin-center group-hover:duration-300"
+                          : project.type === "client"
+                            ? "scale-[0.95] group-hover:scale-100 origin-center group-hover:duration-300"
+                            : "group-hover:-translate-y-[28%] origin-center group-hover:duration-300"
                       }`}
                     >
                       <div

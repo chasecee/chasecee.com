@@ -5,6 +5,7 @@ import { getSanityClient } from "./preview";
 
 const PROJECT_FIELDS = `{
   _id,
+  "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),
   _createdAt,
   name,
   "slug": slug.current,
@@ -98,6 +99,7 @@ export async function getProject(
   const project = await client.fetch(
     `*[_type == "project" && slug.current == $slug][0]{
       _id,
+      "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),
       _createdAt,
       name,
       "slug": slug.current,
@@ -127,6 +129,7 @@ export async function getProject(
     const nextProject = await client.fetch(
       `*[_type == "project" && orderRank > $orderRank] | order(orderRank) [0] {
         _id,
+        "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),
         name,
         "slug": slug.current,
         "image": image.asset->url
@@ -137,6 +140,7 @@ export async function getProject(
     const prevProject = await client.fetch(
       `*[_type == "project" && orderRank < $orderRank] | order(orderRank desc) [0] {
         _id,
+        "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),
         name,
         "slug": slug.current,
         "image": image.asset->url

@@ -10,6 +10,11 @@ interface Props {
 const { project, direction } = Astro.props;
 const projectSlug =
   typeof project.slug === "string" ? project.slug : project.slug?.current;
+const draftMode = Astro.locals.draftMode === true;
+const showDraftBadge = draftMode && project.isDraft;
+const draftRingClass = showDraftBadge
+  ? "ring-2 ring-amber-300 ring-offset-2 ring-offset-neutral-100 dark:ring-offset-neutral-900"
+  : "";
 const featuredImageTransitionName = projectSlug
   ? `project-featured-image-${projectSlug}`
   : undefined;
@@ -23,8 +28,13 @@ const overlayTransitionName = projectSlug
     href={`/projects/${project.slug}`}
     class={`${
       direction === "prev" ? "flex-row" : "flex-row-reverse text-right"
-    } not-prose group relative aspect-5/2 flex items-center justify-between gap-4 overflow-hidden rounded-xl  no-underline transition-colors `}
+    } not-prose group relative aspect-5/2 flex items-center justify-between gap-4 overflow-hidden rounded-xl no-underline transition-colors ${draftRingClass}`}
   >
+    {showDraftBadge && (
+      <span class="pointer-events-none absolute top-2 right-2 z-20 inline-flex rounded bg-amber-300 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black">
+        Draft
+      </span>
+    )}
     {
       project.image && (
         <div class="flex-none absolute inset-0 bg-black">
