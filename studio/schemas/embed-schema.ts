@@ -1,4 +1,4 @@
-import AspectRatioInput from "../components/AspectRatioInput";
+import { AspectRatioInput } from "../plugins/aspect-ratio";
 
 const isValidRatio = (value?: string) => {
   if (!value) return true;

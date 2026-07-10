@@ -15,10 +15,13 @@ import {
   defineLocations,
   presentationTool,
 } from "sanity/presentation";
-import { DocumentLayout } from "./components/DocumentLayout";
-import { StudioNavbar } from "./components/StudioNavbar";
-import { withPublishShortcut } from "./components/withPublishShortcut";
+import {
+  DocumentLayout,
+  StudioNavbar,
+  withPublishShortcut,
+} from "./plugins/preview-navbar";
 import { resolveProductionUrlAsync, getSiteBaseUrl } from "./lib/resolveProductionUrl";
+import { galleryPlugin } from "./plugins/gallery";
 
 const PREVIEW_URL = getSiteBaseUrl();
 
@@ -162,6 +165,7 @@ export default defineConfig({
     }),
     codeInput(),
     colorInput(),
+    galleryPlugin({}),
     presentationTool({
       name: "edit",
       title: "Edit",

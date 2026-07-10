@@ -1,10 +1,7 @@
 import { createClient, type ClientPerspective } from "@sanity/client";
 import { perspectiveCookieName } from "@sanity/preview-url-secret/constants";
 import config from "./config/client-config";
-
-const STUDIO_URL = import.meta.env.DEV
-  ? "http://localhost:3333"
-  : process.env.SANITY_STUDIO_URL || "https://studio.chasecee.com";
+import { STUDIO_URL } from "./studio-url";
 
 export function isPreviewRequest(request?: Request): boolean {
   if (!request) return false;

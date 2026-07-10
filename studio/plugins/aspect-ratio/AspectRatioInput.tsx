@@ -6,7 +6,7 @@ type AspectValue = {
   mobile?: string;
 };
 
-export default function AspectRatioInput(props: ObjectInputProps) {
+export function AspectRatioInput(props: ObjectInputProps) {
   const value = (props.value as AspectValue | undefined) ?? {};
   const readOnly = Boolean(props.readOnly);
 

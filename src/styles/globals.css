@@ -103,25 +103,6 @@
   @apply transition-transform duration-500;
 }
 
-.vt-image {
-  view-transition-class: vt-image;
-}
-::view-transition-group(.vt-image) {
-  animation-duration: 350ms;
-  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-::view-transition-image-pair(.vt-image) {
-  overflow: hidden;
-  border-radius: 0.75rem;
-}
-::view-transition-old(.vt-image),
-::view-transition-new(.vt-image) {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  animation: none;
-}
-
 @layer components {
   @keyframes border-animation {
     0% {
@@ -366,4 +347,9 @@
     opacity: 1;
   }
 }
-
+.content {
+  svg,img,iframe{
+    max-width: 100%;
+    height: auto;
+  }
+}

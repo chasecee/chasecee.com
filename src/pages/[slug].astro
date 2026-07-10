@@ -42,6 +42,7 @@ const heroImageAlt =
   heroImage && typeof heroImage.alt === "string"
     ? stegaClean(heroImage.alt).trim()
     : page.title;
+const draftMode = Astro.locals.draftMode === true;
 ---
 
 <SiteLayout {title} {description}>
@@ -66,7 +67,7 @@ const heroImageAlt =
         </div>
       </header>
       <div class="content">
-        <Body value={contentWithoutHero} />
+        <Body value={contentWithoutHero} draftMode={draftMode} />
       </div>
     </div>
   </Container>

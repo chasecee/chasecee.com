@@ -1,8 +1,8 @@
 import { LinkIcon } from "@sanity/icons/Link";
 import { LaunchIcon } from "@sanity/icons/Launch";
-import AspectRatioInput from "../components/AspectRatioInput";
+import { AspectRatioInput } from "../plugins/aspect-ratio";
 import { columnsBlock, contentBlocks } from "./blocks";
-import { ColumnsPlugins } from "../components/ColumnsContainerPlugin";
+import { ColumnsPortableTextPlugin } from "../plugins/columns";
 
 const project = {
   name: "project",
@@ -41,7 +41,7 @@ const project = {
       fieldset: "content",
       components: {
         portableText: {
-          plugins: ColumnsPlugins,
+          plugins: ColumnsPortableTextPlugin,
         },
       },
       of: [

@@ -8,19 +8,11 @@ interface Props {
 }
 
 const { project, direction } = Astro.props;
-const projectSlug =
-  typeof project.slug === "string" ? project.slug : project.slug?.current;
 const draftMode = Astro.locals.draftMode === true;
 const showDraftBadge = draftMode && project.isDraft;
 const draftRingClass = showDraftBadge
   ? "ring-2 ring-amber-300 ring-offset-2 ring-offset-neutral-100 dark:ring-offset-neutral-900"
   : "";
-const featuredImageTransitionName = projectSlug
-  ? `project-featured-image-${projectSlug}`
-  : undefined;
-const overlayTransitionName = projectSlug
-  ? `project-hero-overlay-${projectSlug}`
-  : undefined;
 ---
 
 <div class={`${direction}-post grow`}>
@@ -43,13 +35,9 @@ const overlayTransitionName = projectSlug
             alt={project.name}
             width={350}
             height={350}
-            class="vt-image w-full h-full object-cover"
-            transition:name={featuredImageTransitionName}
+            class="w-full h-full object-cover"
           />
-          <div
-            class="absolute inset-0 bg-black opacity-80 transition-opacity duration-300 group-hover:opacity-100"
-            transition:name={overlayTransitionName}
-          >
+          <div class="absolute inset-0 bg-black opacity-80 transition-opacity duration-300 group-hover:opacity-100">
           </div>
         </div>
       )

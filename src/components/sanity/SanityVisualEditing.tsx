@@ -7,10 +7,8 @@ import {
 } from "@sanity/visual-editing/react";
 import { perspectiveCookieName } from "@sanity/preview-url-secret/constants";
 import type { ClientPerspective } from "@sanity/client";
-import { Idiomorph } from "idiomorph";
 import { FieldLabelPlugin } from "./FieldLabelPlugin";
 
-const PREVIEW_ROOT_ID = "sanity-preview-root";
 const overlayPlugins = [FieldLabelPlugin()];
 
 function serializePerspective(perspective: ClientPerspective): string {
@@ -26,98 +24,43 @@ function getCookie(name: string): string | undefined {
 
 function setPerspectiveCookie(perspective: ClientPerspective): boolean {
   const next = serializePerspective(perspective);
-  const current = getCookie(perspectiveCookieName);
-  if (current === next) return false;
+  if (getCookie(perspectiveCookieName) === next) return false;
   const secure = window.location.protocol === "https:";
-  const sameSite = secure ? "None" : "Lax";
-  document.cookie = `${perspectiveCookieName}=${encodeURIComponent(next)}; path=/; SameSite=${sameSite}${secure ? "; Secure" : ""}`;
+  document.cookie = `${perspectiveCookieName}=${encodeURIComponent(next)}; path=/; SameSite=${secure ? "None" : "Lax"}${secure ? "; Secure" : ""}`;
   return true;
 }
 
-function currentUrl() {
+function href() {
   return `${window.location.pathname}${window.location.search}${window.location.hash}`;
 }
 
-function applyHistoryUpdate(
-  update: Pick<HistoryUpdate, "type" | "url">,
-  currentHref: string,
-) {
-  switch (update.type) {
-    case "push":
-      if (currentHref !== update.url) window.location.assign(update.url!);
-      return;
-    case "replace":
-      if (currentHref !== update.url) window.location.replace(update.url!);
-      return;
-    case "pop":
-      window.history.back();
-      return;
+function applyHistoryUpdate(update: Pick<HistoryUpdate, "type" | "url">) {
+  if (update.type === "pop") {
+    window.history.back();
+    return;
   }
+  if (!update.url || update.url === window.location.href) return;
+  if (update.type === "push") window.location.assign(update.url);
+  else window.location.replace(update.url);
 }
 
-function hardReload(): Promise<void> {
-  return new Promise(() => {
-    window.location.reload();
-  });
-}
-
-async function morphPreviewRoot(): Promise<void> {
-  const root = document.getElementById(PREVIEW_ROOT_ID);
-  if (!root) {
-    window.location.reload();
-    return;
-  }
-
-  const response = await fetch(window.location.href, {
-    headers: { Accept: "text/html" },
-    credentials: "same-origin",
-  });
-  if (!response.ok) {
-    window.location.reload();
-    return;
-  }
-
-  const html = await response.text();
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  const next = doc.getElementById(PREVIEW_ROOT_ID);
-  if (!next) {
-    window.location.reload();
-    return;
-  }
-
-  if (doc.title) document.title = doc.title;
-
-  Idiomorph.morph(root, next, {
-    morphStyle: "outerHTML",
-    callbacks: {
-      beforeNodeMorphed(oldNode: Node, newNode: Node) {
-        if (
-          oldNode instanceof HTMLElement &&
-          oldNode.localName === "astro-island" &&
-          newNode instanceof HTMLElement
-        ) {
-          oldNode.replaceWith(newNode.cloneNode(true));
-          return false;
-        }
-      },
-    },
-  });
+function handleRefresh(payload: HistoryRefresh): false | Promise<void> {
+  if (payload.source === "mutation" && payload.livePreviewEnabled) return false;
+  window.location.reload();
+  return new Promise(() => {});
 }
 
 export default function SanityVisualEditing() {
   type Navigate = Parameters<HistoryAdapter["subscribe"]>[0];
   const navigateRef = useRef<Navigate | undefined>(undefined);
   const lastUrlRef = useRef("");
-  const lastRevRef = useRef<string | undefined>(undefined);
-  const morphQueueRef = useRef<Promise<void>>(Promise.resolve());
 
   useEffect(() => {
     const sync = () => {
-      const url = currentUrl();
-      if (url !== lastUrlRef.current) {
-        lastUrlRef.current = url;
-        navigateRef.current?.({ type: "push", title: document.title, url });
-      }
+      const url = href();
+      if (url === lastUrlRef.current) return;
+      lastUrlRef.current = url;
+      navigateRef.current?.({ type: "push", title: document.title, url });
     };
 
     sync();
@@ -147,41 +90,16 @@ export default function SanityVisualEditing() {
     () => ({
       subscribe: (navigate) => {
         navigateRef.current = navigate;
-        const url = currentUrl();
-        lastUrlRef.current = url;
-        navigate({ type: "push", title: document.title, url });
+        lastUrlRef.current = href();
+        navigate({ type: "push", title: document.title, url: lastUrlRef.current });
         return () => {
-          if (navigateRef.current === navigate) {
-            navigateRef.current = undefined;
-          }
+          if (navigateRef.current === navigate) navigateRef.current = undefined;
         };
       },
-      update: (update) => {
-        applyHistoryUpdate(update, window.location.href);
-      },
+      update: applyHistoryUpdate,
     }),
     [],
   );
-
-  const refresh = (payload: HistoryRefresh): false | Promise<void> => {
-    if (payload.source === "manual") {
-      return hardReload();
-    }
-
-    if (payload.source === "mutation") {
-      if (payload.livePreviewEnabled) return false;
-      if (payload.document._rev === lastRevRef.current) {
-        return Promise.resolve();
-      }
-      lastRevRef.current = payload.document._rev;
-      morphQueueRef.current = morphQueueRef.current
-        .catch(() => undefined)
-        .then(morphPreviewRoot);
-      return morphQueueRef.current;
-    }
-
-    return false;
-  };
 
   return (
     <VisualEditing
@@ -189,11 +107,9 @@ export default function SanityVisualEditing() {
       portal
       plugins={overlayPlugins}
       onPerspectiveChange={(perspective) => {
-        if (setPerspectiveCookie(perspective)) {
-          window.location.reload();
-        }
+        if (setPerspectiveCookie(perspective)) window.location.reload();
       }}
-      refresh={refresh}
+      refresh={handleRefresh}
     />
   );
 }

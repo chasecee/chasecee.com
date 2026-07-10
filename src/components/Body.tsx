@@ -1,5 +1,4 @@
-import React, { type CSSProperties } from "react";
-import urlFor from "@/sanity/sanity.image";
+import React, { useMemo } from "react";
 import { PortableText } from "@portabletext/react";
 import type {
   PortableTextComponents,
@@ -12,27 +11,11 @@ import type {
   ArbitraryTypedObject,
 } from "@portabletext/types";
 import type { InternalLinkValue, ExternalLinkValue } from "@/types/Content";
-import { stegaClean } from "@sanity/client/stega";
+import Columns from "./blocks/Columns";
+import Embed from "./blocks/Embed";
+import ImageBlock from "./blocks/ImageBlock";
 
-type EmbedRatio = {
-  desktop?: string;
-  mobile?: string;
-};
-
-function normalizeAspectRatio(value: string | undefined): string {
-  if (!value) return "16 / 9";
-  const cleaned = stegaClean(value).trim();
-  const compact = cleaned.replace(/\s+/g, "");
-  const slash = compact.includes("/") ? compact : compact.replace(":", "/");
-  if (!/^\d+(\.\d+)?\/\d+(\.\d+)?$/.test(slash)) return "16 / 9";
-  const [width, height] = slash.split("/");
-  return `${width} / ${height}`;
-}
-
-type EmbedStyle = CSSProperties & {
-  "--embed-ar-desktop"?: string;
-  "--embed-ar-mobile"?: string;
-};
+type DataAttributeResolver = (key: string | undefined) => string | undefined;
 
 const InternalLink: React.FC<
   PortableTextMarkComponentProps<InternalLinkValue>
@@ -81,115 +64,113 @@ const ExternalLink: React.FC<
   );
 };
 
-const components: PortableTextComponents = {
-  marks: {
-    internalLink: InternalLink,
-    link: ExternalLink,
-  },
-  types: {
-    columns: ({ value }) => {
-      const cols = (value as { columns?: { _key: string; content?: PortableTextBlock[] }[] })
-        .columns;
-      if (!cols?.length) return null;
-      return (
-        <div
-          className="grid gap-8 md:grid-cols-[repeat(var(--cols),minmax(0,1fr))]"
-          style={{ "--cols": cols.length } as CSSProperties}
-        >
-          {cols.map((col) => (
-            <div key={col._key}>
-              <PortableText value={col.content ?? []} components={components} />
-            </div>
-          ))}
-        </div>
-      );
-    },
-    embed: ({ value }) => {
-      const { url, title, aspectRatio, ratio } = value as {
-        url?: string;
-        title?: string;
-        aspectRatio?: string;
-        ratio?: EmbedRatio;
-      };
-      const embedUrl = typeof url === "string" ? stegaClean(url).trim() : "";
-      if (!embedUrl) return null;
-      const embedTitle =
-        typeof title === "string" ? stegaClean(title).trim() : "";
-      const desktopAspectRatio =
-        typeof ratio?.desktop === "string" ? ratio.desktop : aspectRatio;
-      const mobileAspectRatio =
-        typeof ratio?.mobile === "string"
-          ? ratio.mobile
-          : typeof ratio?.desktop === "string"
-            ? ratio.desktop
-            : aspectRatio;
-      const embedStyle: EmbedStyle = {
-        "--embed-ar-desktop": normalizeAspectRatio(desktopAspectRatio),
-        "--embed-ar-mobile": normalizeAspectRatio(mobileAspectRatio),
-      };
+function getKey(value: unknown): string | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const key = (value as { _key?: unknown })._key;
+  return typeof key === "string" ? key : undefined;
+}
 
-      return (
-        <iframe
-          src={embedUrl}
-          title={embedTitle || "Embedded content"}
-          style={embedStyle}
-          className="embed-frame w-full border-0"
-          loading="lazy"
-          allowFullScreen
-        />
-      );
-    },
-    image: ({ value }) => {
-      if (!value) return null;
-
-      const img = value as Record<string, unknown>;
-
-      let width = (img?.asset as { metadata?: { dimensions?: { width?: number } } })?.metadata?.dimensions?.width;
-      let height = (img?.asset as { metadata?: { dimensions?: { height?: number } } })?.metadata?.dimensions?.height;
-
-      const asset = img?.asset as { _ref?: string; _id?: string } | undefined;
-      if ((!width || !height) && (asset?._ref || asset?._id)) {
-        const ref: string = asset._ref || asset._id || "";
-        const parts = ref.split("-");
-        if (parts.length >= 3) {
-          const dims = parts[2];
-          const [w, h] = dims.split("x").map((v) => parseInt(v, 10));
-          if (!isNaN(w) && !isNaN(h)) {
-            width = w;
-            height = h;
-          }
-        }
+function createComponents(
+  draftMode: boolean,
+  getDataAttribute?: DataAttributeResolver,
+): PortableTextComponents {
+  return {
+    block: ({
+      children,
+      value,
+    }: {
+      children?: React.ReactNode;
+      value: PortableTextBlock;
+    }) => {
+      const style =
+        value && typeof value === "object" && "style" in value
+          ? (value.style as string)
+          : "normal";
+      const dataSanity = getDataAttribute?.(getKey(value));
+      if (style === "h1") return <h1 data-sanity={dataSanity}>{children}</h1>;
+      if (style === "h2") return <h2 data-sanity={dataSanity}>{children}</h2>;
+      if (style === "h3") return <h3 data-sanity={dataSanity}>{children}</h3>;
+      if (style === "h4") return <h4 data-sanity={dataSanity}>{children}</h4>;
+      if (style === "blockquote") {
+        return <blockquote data-sanity={dataSanity}>{children}</blockquote>;
       }
-
-      width = width ?? 800;
-      height = height ?? 600;
-      const imageSrc = stegaClean(
-        urlFor(value)
-          .width(width)
-          .height(height)
-          .fit("max")
-          .url(),
-      );
-      const imageAlt = stegaClean((img?.alt as string) || "");
-
-      return (
-        <img
-          src={imageSrc}
-          alt={imageAlt}
-          width={width}
-          height={height}
-          className="mx-auto max-w-full"
-        />
-      );
+      return <p data-sanity={dataSanity}>{children}</p>;
     },
-  },
-};
+    listItem: ({
+      children,
+      value,
+    }: {
+      children?: React.ReactNode;
+      value: PortableTextBlock;
+    }) => (
+      <li data-sanity={getDataAttribute?.(getKey(value))}>{children}</li>
+    ),
+    marks: {
+      internalLink: InternalLink,
+      link: ExternalLink,
+    },
+    types: {
+      columns: ({ value }) => {
+        const { columns, valign } = value as {
+          columns?: { _key: string; content?: PortableTextBlock[] }[];
+          valign?: string;
+        };
+        return (
+          <Columns
+            columns={columns}
+            valign={valign}
+            components={createComponents(draftMode)}
+            dataSanity={getDataAttribute?.(getKey(value))}
+          />
+        );
+      },
+      embed: ({ value }) => {
+        const { url, title, aspectRatio, ratio } = value as {
+          url?: string;
+          title?: string;
+          aspectRatio?: string;
+          ratio?: { desktop?: string; mobile?: string };
+        };
+        return (
+          <Embed
+            url={url}
+            title={title}
+            aspectRatio={aspectRatio}
+            ratio={ratio}
+            draftMode={draftMode}
+            dataSanity={getDataAttribute?.(getKey(value))}
+          />
+        );
+      },
+      image: ({ value }) => {
+        if (!value) return null;
+        return (
+          <ImageBlock
+            value={value as Record<string, unknown>}
+            draftMode={draftMode}
+            dataSanity={getDataAttribute?.(getKey(value))}
+          />
+        );
+      },
+    },
+  };
+}
 
 interface BodyProps {
   value: (PortableTextBlock | ArbitraryTypedObject)[];
+  draftMode?: boolean;
+  getDataAttribute?: DataAttributeResolver;
 }
 
-export const Body: React.FC<BodyProps> = ({ value }) => {
+export const Body: React.FC<BodyProps> = ({
+  value,
+  draftMode = false,
+  getDataAttribute,
+}) => {
+  const components = useMemo(
+    () => createComponents(draftMode, getDataAttribute),
+    [draftMode, getDataAttribute],
+  );
   return <PortableText value={value} components={components} />;
 };
 

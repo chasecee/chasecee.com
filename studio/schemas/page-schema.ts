@@ -1,5 +1,5 @@
 import { columnsBlock, contentBlocks } from "./blocks";
-import { ColumnsPlugins } from "../components/ColumnsContainerPlugin";
+import { ColumnsPortableTextPlugin } from "../plugins/columns";
 
 const page = {
   name: "page",
@@ -20,7 +20,7 @@ const page = {
       of: [{ type: "block" }, columnsBlock, ...contentBlocks],
       components: {
         portableText: {
-          plugins: ColumnsPlugins,
+          plugins: ColumnsPortableTextPlugin,
         },
       },
     },

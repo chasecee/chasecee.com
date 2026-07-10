@@ -3,6 +3,7 @@ import type { Project } from "@/types/Project";
 import type { Music } from "@/types/Music";
 import type { Page } from "@/types/Page";
 import { getSanityClient } from "./preview";
+import { PROJECT_QUERY } from "./queries";
 
 const PROJECT_FIELDS = `{
   _id,
@@ -99,34 +100,7 @@ export async function getProject(
   prevProject?: Project;
 }> {
   const client = getClient(options);
-  const project = await client.fetch(
-    `*[_type == "project" && slug.current == $slug][0]{
-      _id,
-      "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),
-      _createdAt,
-      name,
-      "slug": slug.current,
-      "image": image.asset->url,
-      subtitle,
-      url,
-      archived,
-      orderRank,
-      "content": content[]{
-        ...,
-        markDefs[]{
-          ...,
-          _type == "internalLink" => {
-            "slug": @.reference->slug.current,
-            "refType": @.reference->_type
-          },
-          _type == "link" => {
-            ...,
-          }
-        }
-      }
-    }`,
-    { slug },
-  );
+  const project = await client.fetch(PROJECT_QUERY, { slug });
 
   if (project) {
     const nextProject = await client.fetch(
@@ -155,6 +129,39 @@ export async function getProject(
   }
 
   return {};
+}
+
+export async function getProjectSiblings(
+  orderRank: string,
+  options?: QueryOptions,
+): Promise<{
+  nextProject?: Project;
+  prevProject?: Project;
+}> {
+  const client = getClient(options);
+  const nextProject = await client.fetch(
+    `*[_type == "project" && orderRank > $orderRank] | order(orderRank) [0] {
+      _id,
+      "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),
+      name,
+      "slug": slug.current,
+      "image": image.asset->url
+    }`,
+    { orderRank },
+  );
+
+  const prevProject = await client.fetch(
+    `*[_type == "project" && orderRank < $orderRank] | order(orderRank desc) [0] {
+      _id,
+      "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),
+      name,
+      "slug": slug.current,
+      "image": image.asset->url
+    }`,
+    { orderRank },
+  );
+
+  return { nextProject, prevProject };
 }
 
 export async function getPages(options?: QueryOptions): Promise<Page[]> {

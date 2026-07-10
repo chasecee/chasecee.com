@@ -4,11 +4,11 @@ import type { NavbarProps } from "sanity";
 import {
   getActiveDocument,
   subscribeActiveDocument,
-} from "../lib/activeDocument";
+} from "../../lib/activeDocument";
 import {
   getSiteBaseUrl,
   resolveDocumentUrl,
-} from "../lib/resolveProductionUrl";
+} from "../../lib/resolveProductionUrl";
 
 function SiteLink() {
   const active = useSyncExternalStore(
