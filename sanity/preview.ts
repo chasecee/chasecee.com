@@ -1,7 +1,6 @@
-import { createClient } from "@sanity/client";
+import { createClient, type ClientPerspective } from "@sanity/client";
+import { perspectiveCookieName } from "@sanity/preview-url-secret/constants";
 import config from "./config/client-config";
-
-export const SANITY_PREVIEW_COOKIE = "sanity-preview";
 
 const STUDIO_URL = import.meta.env.DEV
   ? "http://localhost:3333"
@@ -10,10 +9,45 @@ const STUDIO_URL = import.meta.env.DEV
 export function isPreviewRequest(request?: Request): boolean {
   if (!request) return false;
   const cookie = request.headers.get("cookie") || "";
-  return cookie.includes(`${SANITY_PREVIEW_COOKIE}=true`);
+  return cookie.includes(`${perspectiveCookieName}=`);
 }
 
-export function getSanityClient(preview = false) {
+export function parsePerspective(
+  raw: string | undefined,
+): ClientPerspective | undefined {
+  if (!raw) return undefined;
+  const decoded = decodeURIComponent(raw);
+  if (decoded.startsWith("[")) {
+    try {
+      return JSON.parse(decoded) as ClientPerspective;
+    } catch {
+      return undefined;
+    }
+  }
+  return decoded as ClientPerspective;
+}
+
+export function getPerspectiveCookie(
+  cookies: { get: (name: string) => { value: string } | undefined },
+): ClientPerspective {
+  return parsePerspective(cookies.get(perspectiveCookieName)?.value) ?? "drafts";
+}
+
+export function draftFetchOptions(locals: {
+  draftMode: boolean;
+  perspective?: ClientPerspective;
+}) {
+  if (!locals.draftMode) return { preview: false as const };
+  return {
+    preview: true as const,
+    perspective: locals.perspective ?? ("drafts" as const),
+  };
+}
+
+export function getSanityClient(
+  preview = false,
+  perspective: ClientPerspective = "drafts",
+) {
   if (!preview) {
     return createClient(config);
   }
@@ -30,7 +64,7 @@ export function getSanityClient(preview = false) {
     ...config,
     useCdn: false,
     token,
-    perspective: "drafts",
+    perspective,
     stega: {
       enabled: true,
       studioUrl: STUDIO_URL,

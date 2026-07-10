@@ -87,6 +87,23 @@ const components: PortableTextComponents = {
     link: ExternalLink,
   },
   types: {
+    columns: ({ value }) => {
+      const cols = (value as { columns?: { _key: string; content?: PortableTextBlock[] }[] })
+        .columns;
+      if (!cols?.length) return null;
+      return (
+        <div
+          className="grid gap-8 md:grid-cols-[repeat(var(--cols),minmax(0,1fr))]"
+          style={{ "--cols": cols.length } as CSSProperties}
+        >
+          {cols.map((col) => (
+            <div key={col._key}>
+              <PortableText value={col.content ?? []} components={components} />
+            </div>
+          ))}
+        </div>
+      );
+    },
     embed: ({ value }) => {
       const { url, title, aspectRatio, ratio } = value as {
         url?: string;
@@ -161,7 +178,7 @@ const components: PortableTextComponents = {
           alt={imageAlt}
           width={width}
           height={height}
-          className="mx-auto max-w-full md:mx-[-2em] md:max-w-[calc(100%+4em)]"
+          className="mx-auto max-w-full"
         />
       );
     },

@@ -3,7 +3,6 @@ import {
   perspectiveCookieName,
   urlSearchParamPreviewPathname,
 } from "@sanity/preview-url-secret/constants";
-import { SANITY_PREVIEW_COOKIE } from "@/sanity/preview";
 
 export const prerender = false;
 
@@ -19,7 +18,6 @@ export const GET: APIRoute = async ({ request, cookies, redirect }) => {
     url.searchParams.get("redirect");
   const target = normalizeRedirectPath(pathFromQuery);
 
-  cookies.delete(SANITY_PREVIEW_COOKIE, { path: "/" });
   cookies.delete(perspectiveCookieName, { path: "/" });
 
   return redirect(target, 302);

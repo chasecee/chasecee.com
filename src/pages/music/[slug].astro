@@ -4,6 +4,7 @@ import Container from "@/src/components/Container.astro";
 import { getMusicBySlug } from "@/sanity/sanity-utils";
 import { withSanityImageParams } from "@/src/utils/sanityImageParams";
 import { stegaClean } from "@sanity/client/stega";
+import { draftFetchOptions } from "@/sanity/preview";
 
 export const prerender = false;
 
@@ -14,9 +15,7 @@ if (!musicSlug) {
   return Astro.redirect("/404");
 }
 
-const item = await getMusicBySlug(musicSlug, {
-  preview: Astro.locals.draftMode,
-});
+const item = await getMusicBySlug(musicSlug, draftFetchOptions(Astro.locals));
 
 if (!item) {
   return Astro.redirect("/404");
@@ -31,6 +30,8 @@ const normalizeAspectRatio = (value: string | undefined) => {
   const [width, height] = slash.split("/");
   return `${width} / ${height}`;
 };
+const draftMode = Astro.locals.draftMode === true;
+const showDraftBadge = draftMode && item.isDraft;
 ---
 
 <SiteLayout
@@ -40,6 +41,13 @@ const normalizeAspectRatio = (value: string | undefined) => {
 >
   <Container>
     <div class="prose mx-auto mt-10">
+      {
+        showDraftBadge && (
+          <span class="mb-4 inline-flex rounded bg-amber-300 px-2 py-1 text-xs font-bold uppercase tracking-wide text-black">
+            Draft
+          </span>
+        )
+      }
       <h1>{item.bandName}</h1>
       <h2>{item.albumName}</h2>
 
@@ -54,7 +62,7 @@ const normalizeAspectRatio = (value: string | undefined) => {
             alt={item.albumArtAlt || `${item.albumName} album art`}
             width={1200}
             height={1200}
-            class="w-full rounded-xl"
+            class={`w-full rounded-xl ${showDraftBadge ? "ring-2 ring-amber-300 ring-offset-2 ring-offset-neutral-100 dark:ring-offset-neutral-900" : ""}`}
           />
         )
       }

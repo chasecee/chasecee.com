@@ -8,7 +8,8 @@ import {
   orderRankField,
   orderRankOrdering,
 } from "@sanity/orderable-document-list";
-import { ImagesIcon, DocumentsIcon } from "@sanity/icons";
+import { ImagesIcon } from "@sanity/icons/Images";
+import { DocumentsIcon } from "@sanity/icons/Documents";
 import {
   defineDocuments,
   defineLocations,
@@ -16,6 +17,7 @@ import {
 } from "sanity/presentation";
 import { DocumentLayout } from "./components/DocumentLayout";
 import { StudioNavbar } from "./components/StudioNavbar";
+import { withPublishShortcut } from "./components/withPublishShortcut";
 import { resolveProductionUrlAsync, getSiteBaseUrl } from "./lib/resolveProductionUrl";
 
 const PREVIEW_URL = getSiteBaseUrl();
@@ -30,14 +32,15 @@ const musicSchema = schemasAny.find((schema: any) => schema.name === "music");
 if (projectSchema) {
   projectSchema.fields.push({
     ...orderRankField({ type: "project" }),
-    group: "meta",
+    fieldset: "meta",
   });
   projectSchema.orderings = [orderRankOrdering];
 }
 if (pageSchema) {
-  pageSchema.fields.push(
-    orderRankField({ type: "page", fieldset: "details" }),
-  );
+  pageSchema.fields.push({
+    ...orderRankField({ type: "page" }),
+    fieldset: "details",
+  });
   pageSchema.orderings = [orderRankOrdering];
 }
 if (musicSchema) {
@@ -78,7 +81,7 @@ const presentationLocations = {
       return {
         locations: [
           {
-            title: doc.name || "Project",
+            title: doc.title || "Project",
             href: `/projects/${doc.slug}`,
           },
         ],
@@ -160,6 +163,8 @@ export default defineConfig({
     codeInput(),
     colorInput(),
     presentationTool({
+      name: "edit",
+      title: "Edit",
       previewUrl: {
         initial: PREVIEW_URL,
         previewMode: {
@@ -180,6 +185,10 @@ export default defineConfig({
   },
   document: {
     productionUrl: resolveProductionUrlAsync,
+    actions: (prev) =>
+      prev.map((Action) =>
+        Action.action === "publish" ? withPublishShortcut(Action) : Action,
+      ),
     components: {
       unstable_layout: DocumentLayout,
     },

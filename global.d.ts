@@ -23,3 +23,20 @@ declare module "react" {
     }
   }
 }
+
+declare module "idiomorph" {
+  type MorphCallback = (oldNode: Node, newNode: Node) => boolean | void;
+
+  export const Idiomorph: {
+    morph: (
+      oldNode: Element,
+      newContent: Element | string,
+      config?: {
+        morphStyle?: "outerHTML" | "innerHTML";
+        callbacks?: {
+          beforeNodeMorphed?: MorphCallback;
+        };
+      },
+    ) => Node[];
+  };
+}

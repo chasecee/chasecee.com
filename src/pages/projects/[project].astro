@@ -8,6 +8,8 @@ import { LUCIDE_ICONS } from "@/src/components/icons/lucide";
 import { getProject } from "@/sanity/sanity-utils";
 import urlFor from "@/sanity/sanity.image";
 import { metaDescription } from "@/src/utils/seo";
+import { draftFetchOptions } from "@/sanity/preview";
+import { stegaClean } from "@sanity/client/stega";
 
 export const prerender = false;
 
@@ -18,9 +20,10 @@ if (!projectSlug) {
   return Astro.redirect("/404");
 }
 
-const { project, nextProject, prevProject } = await getProject(projectSlug, {
-  preview: Astro.locals.draftMode,
-});
+const { project, nextProject, prevProject } = await getProject(
+  projectSlug,
+  draftFetchOptions(Astro.locals),
+);
 
 if (!project) {
   return Astro.redirect("/404");
@@ -39,28 +42,33 @@ function shortenUrl(url: string): string {
   }
 }
 
-const projectUrl = typeof project.url === "string" ? project.url : "";
+const projectUrl =
+  typeof project.url === "string" ? stegaClean(project.url).trim() : "";
 const draftMode = Astro.locals.draftMode === true;
+const showDraftBadge = draftMode && project.isDraft;
 const featuredImageTransitionName = `project-featured-image-${projectSlug}`;
 const overlayTransitionName = `project-hero-overlay-${projectSlug}`;
+const cleanName = stegaClean(project.name);
 const description = metaDescription(
-  project.subtitle,
-  `${project.name} is a project designed and built by Chase Cee, a designer and developer in Salt Lake City.`,
+  stegaClean(project.subtitle),
+  `${cleanName} is a project designed and built by Chase Cee, a designer and developer in Salt Lake City.`,
 );
 ---
 
 <SiteLayout
-  title={`${project.name} - Chase Cee`}
+  title={`${cleanName} - Chase Cee`}
   {description}
-  ogImage={`/og/project/${project.slug}.png`}
+  ogImage={`/og/project/${stegaClean(project.slug)}.png`}
 >
   
-    <header class="not-prose relative mb-0 md:aspect-[16/9] aspect-square max-h-[50vh] py-20 flex flex-col justify-end w-full">
+    <header
+      class={`not-prose relative mb-0 md:aspect-[16/9] aspect-square max-h-[50vh] py-20 flex flex-col justify-end w-full ${showDraftBadge ? "ring-2 ring-amber-300 ring-inset" : ""}`}
+    >
       {
         project.image && (
             <img
             src={urlFor(project.image).width(1600).height(900).dpr(1.5).url()}
-            alt={project.name}
+            alt={cleanName}
             class="vt-image absolute inset-0 h-full w-full object-cover"
             transition:name={featuredImageTransitionName}
             loading="eager"
@@ -72,13 +80,11 @@ const description = metaDescription(
         class="absolute inset-0 bg-black/45"
         transition:name={overlayTransitionName}
       />
-      {
-        draftMode && project.isDraft && (
-          <span class="absolute top-4 right-4 z-20 inline-flex rounded bg-amber-300 px-2 py-1 text-xs font-bold uppercase tracking-wide text-black">
-            Draft
-          </span>
-        )
-      }
+      {showDraftBadge && (
+        <span class="absolute top-4 right-4 z-20 inline-flex rounded bg-amber-300 px-2 py-1 text-xs font-bold uppercase tracking-wide text-black">
+          Draft
+        </span>
+      )}
       <div class="relative z-10 ">
         <div class="container">
           <div class="flex flex-col items-start justify-start gap-6">
@@ -92,7 +98,7 @@ const description = metaDescription(
             projectUrl && (
               <a
                 href={projectUrl}
-                title={project.name}
+                title={cleanName}
                 target="_blank"
                 class="group inline-flex ring-1 ring-current/50 px-4 rounded text-white no-underline hover:opacity-70"
               >

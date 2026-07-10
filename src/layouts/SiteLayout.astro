@@ -2,6 +2,7 @@
 import { ClientRouter, fade } from "astro:transitions";
 import { Font } from "astro:assets";
 import SanityVisualEditing from "@/src/components/sanity/SanityVisualEditing";
+import DisableDraftMode from "@/src/components/sanity/DisableDraftMode";
 import "../styles/globals.css";
 
 interface Props {
@@ -41,22 +42,23 @@ const ogImageURL = new URL(ogImage, Astro.site);
     <link rel="shortcut icon" href="/icons/site/favicon-96x96.png" />
     <link rel="apple-touch-icon" href="/icons/site/apple-touch-icon.png" />
     <Font cssVariable="--font-rubik" preload />
-    <ClientRouter />
+    {!draftMode && <ClientRouter />}
   </head>
   <body
     class={`font-sans w-full min-h-screen bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-white ${draftMode ? "pt-10" : ""}`}
-    transition:animate={fade({ duration: "0.2s" })}
+    transition:animate={draftMode ? undefined : fade({ duration: "0.2s" })}
   >
     {
       draftMode && (
         <div class="fixed h-4 inset-x-0 top-0 z-[100] flex items-center justify-center border-b border-amber-400/30 bg-amber-300/95 px-4 text-[.75rem] text-black dark:bg-amber-300">
           <span>Draft mode active: you are viewing unpublished content</span>
+          <DisableDraftMode client:only="react" />
         </div>
       )
     }
-    <slot />
+    <div id="sanity-preview-root">
+      <slot />
+    </div>
     {draftMode && <SanityVisualEditing client:only="react" />}
-    <script is:inline src="/_vercel/insights/script.js"></script>
-    <script is:inline src="/_vercel/speed-insights/script.js"></script>
   </body>
 </html>

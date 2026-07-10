@@ -6,11 +6,12 @@ import { getPage } from "@/sanity/sanity-utils";
 import { metaDescription } from "@/src/utils/seo";
 import type { ImageBlock } from "@/types/Content";
 import { stegaClean } from "@sanity/client/stega";
+import { draftFetchOptions } from "@/sanity/preview";
 
 export const prerender = false;
 
 const { slug } = Astro.params;
-const page = await getPage(slug!, { preview: Astro.locals.draftMode });
+const page = await getPage(slug!, draftFetchOptions(Astro.locals));
 
 if (!page) {
   return Astro.redirect("/404");

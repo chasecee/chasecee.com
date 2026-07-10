@@ -25,6 +25,7 @@ export type MusicGalleryImage = {
 
 export type Music = {
   _id: string;
+  isDraft?: boolean;
   _createdAt: Date;
   slug: string | { current: string };
   bandName: string;

@@ -1,14 +1,18 @@
 import { defineMiddleware } from "astro:middleware";
-import { isPreviewRequest } from "@/sanity/preview";
+import { getPerspectiveCookie, isPreviewRequest } from "@/sanity/preview";
 
 export const onRequest = defineMiddleware(async (context, next) => {
   if (context.isPrerendered) {
     context.locals.draftMode = false;
+    context.locals.perspective = undefined;
     return next();
   }
 
   const draftMode = isPreviewRequest(context.request);
   context.locals.draftMode = draftMode;
+  context.locals.perspective = draftMode
+    ? getPerspectiveCookie(context.cookies)
+    : undefined;
 
   const response = await next();
 

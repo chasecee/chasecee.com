@@ -7,43 +7,55 @@ interface Props {
 }
 
 const { items } = Astro.props;
+const draftMode = Astro.locals.draftMode === true;
 ---
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 flex-nowrap gap-10 overflow-x-auto pb-10">
   {
-    items.map((item) => (
-      <article class="w-full shrink-0">
-        <a
-          href={`/music/${typeof item.slug === "string" ? item.slug : item.slug?.current}`}
-          class="group block text-black no-underline dark:text-white"
-        >
-          <div class="relative overflow-hidden aspect-square">
-            {item.albumArt ? (
-              <img
-                src={withSanityImageParams(item.albumArt, {
-                  w: 900,
-                  h: 900,
-                  fit: "crop",
-                  auto: "format",
-                })}
-                alt={item.albumArtAlt || `${item.albumName} by ${item.bandName}`}
-                width={640}
-                height={640}
-                class="absolute inset-0 h-full w-full object-cover"
-                loading="lazy"
-                decoding="async"
-              />
-            ) : null}
-          </div>
-          <span class="mt-3 inline-block text-base">
-            <span class="font-bold">{item.bandName}</span>
-            <span class="font-light opacity-40">
-              &nbsp;-&nbsp;{item.albumName}
-              {typeof item.releaseYear === "number" ? ` (${item.releaseYear})` : ""}
+    items.map((item) => {
+      const showDraftBadge = draftMode && item.isDraft;
+      const draftRingClass = showDraftBadge
+        ? "ring-2 ring-amber-300 ring-offset-2 ring-offset-neutral-100 dark:ring-offset-neutral-900"
+        : "";
+      return (
+        <article class="w-full shrink-0">
+          <a
+            href={`/music/${typeof item.slug === "string" ? item.slug : item.slug?.current}`}
+            class={`group block text-black no-underline dark:text-white ${draftRingClass}`}
+          >
+            <div class="relative overflow-hidden aspect-square">
+              {showDraftBadge && (
+                <span class="pointer-events-none absolute top-2 right-2 z-20 inline-flex rounded bg-amber-300 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black">
+                  Draft
+                </span>
+              )}
+              {item.albumArt ? (
+                <img
+                  src={withSanityImageParams(item.albumArt, {
+                    w: 900,
+                    h: 900,
+                    fit: "crop",
+                    auto: "format",
+                  })}
+                  alt={item.albumArtAlt || `${item.albumName} by ${item.bandName}`}
+                  width={640}
+                  height={640}
+                  class="absolute inset-0 h-full w-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : null}
+            </div>
+            <span class="mt-3 inline-block text-base">
+              <span class="font-bold">{item.bandName}</span>
+              <span class="font-light opacity-40">
+                &nbsp;-&nbsp;{item.albumName}
+                {typeof item.releaseYear === "number" ? ` (${item.releaseYear})` : ""}
+              </span>
             </span>
-          </span>
-        </a>
-      </article>
-    ))
+          </a>
+        </article>
+      );
+    })
   }
 </div>

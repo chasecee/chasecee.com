@@ -1,26 +1,23 @@
-import { EditIcon, CogIcon, LinkIcon, LaunchIcon } from "@sanity/icons";
-import { ALL_FIELDS_GROUP } from "sanity";
+import { LinkIcon } from "@sanity/icons/Link";
+import { LaunchIcon } from "@sanity/icons/Launch";
 import AspectRatioInput from "../components/AspectRatioInput";
+import { columnsBlock, contentBlocks } from "./blocks";
+import { ColumnsPlugins } from "../components/ColumnsContainerPlugin";
 
 const project = {
   name: "project",
   title: "Projects",
   type: "document",
-  groups: [
+  fieldsets: [
     {
       name: "content",
       title: "Content",
-      icon: EditIcon,
-      default: true,
+      options: { collapsible: true, collapsed: false },
     },
     {
       name: "meta",
       title: "Meta",
-      icon: CogIcon,
-    },
-    {
-      ...ALL_FIELDS_GROUP,
-      hidden: true,
+      options: { collapsible: true, collapsed: false },
     },
   ],
   fields: [
@@ -28,20 +25,25 @@ const project = {
       name: "name",
       title: "Name",
       type: "string",
-      group: "content",
+      fieldset: "content",
     },
     {
       name: "slug",
       title: "Slug",
       type: "slug",
       options: { source: "name" },
-      group: "content",
+      fieldset: "content",
     },
     {
       name: "content",
       title: "Content",
       type: "array",
-      group: "content",
+      fieldset: "content",
+      components: {
+        portableText: {
+          plugins: ColumnsPlugins,
+        },
+      },
       of: [
         {
           type: "block",
@@ -83,19 +85,6 @@ const project = {
           },
         },
         {
-          type: "image",
-          options: {
-            hotspot: true,
-          },
-          fields: [
-            {
-              name: "alt",
-              type: "string",
-              title: "Alt Text",
-            },
-          ],
-        },
-        {
           name: "videoFile",
           type: "file",
           title: "Video file",
@@ -109,19 +98,8 @@ const project = {
             },
           ],
         },
-        { type: "embed" },
-        {
-          name: "media",
-          type: "object",
-          title: "Media",
-          fields: [
-            {
-              name: "media",
-              type: "file",
-              title: "Media file",
-            } as { name: string; type: string; title: string; media: any },
-          ],
-        },
+        columnsBlock,
+        ...contentBlocks,
       ],
     },
     {
@@ -136,20 +114,20 @@ const project = {
         layout: "radio",
       },
       validation: (Rule: any) => Rule.required(),
-      group: "meta",
+      fieldset: "meta",
     },
     {
       name: "subtitle",
       title: "Subtitle",
       type: "string",
-      group: "meta",
+      fieldset: "meta",
     },
     {
       name: "image",
       title: "Image",
       type: "image",
       options: { hotspot: true },
-      group: "meta",
+      fieldset: "meta",
       fields: [
         {
           name: "alt",
@@ -165,13 +143,13 @@ const project = {
       options: {
         language: "xml",
       },
-      group: "meta",
+      fieldset: "meta",
     },
     {
       name: "color",
       title: "Color",
       type: "color",
-      group: "meta",
+      fieldset: "meta",
     },
     {
       title: "Display Type",
@@ -186,13 +164,13 @@ const project = {
         layout: "radio",
       },
       initialValue: "popup",
-      group: "meta",
+      fieldset: "meta",
     },
     {
       name: "embedUrl",
       title: "Embed URL",
       type: "url",
-      group: "meta",
+      fieldset: "meta",
       hidden: ({ parent }: { parent?: { displayType?: string } }) =>
         parent?.displayType !== "embed",
       validation: (Rule: any) =>
@@ -207,7 +185,7 @@ const project = {
       name: "aspectRatio",
       title: "Aspect Ratio",
       type: "object",
-      group: "meta",
+      fieldset: "meta",
       hidden: ({ parent }: { parent?: { displayType?: string } }) =>
         parent?.displayType !== "embed",
       components: { input: AspectRatioInput },
@@ -230,13 +208,13 @@ const project = {
       name: "url",
       title: "URL",
       type: "url",
-      group: "meta",
+      fieldset: "meta",
     },
     {
       title: "Archived",
       name: "archived",
       type: "boolean",
-      group: "meta",
+      fieldset: "meta",
     },
   ],
   preview: {

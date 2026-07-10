@@ -1,3 +1,4 @@
+import type { ClientPerspective } from "@sanity/client";
 import type { Project } from "@/types/Project";
 import type { Music } from "@/types/Music";
 import type { Page } from "@/types/Page";
@@ -24,6 +25,7 @@ const PROJECT_FIELDS = `{
 
 const MUSIC_FIELDS = `{
   _id,
+  "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),
   _createdAt,
   "slug": coalesce(slug.current, _id),
   bandName,
@@ -43,10 +45,11 @@ const MUSIC_FIELDS = `{
 
 type QueryOptions = {
   preview?: boolean;
+  perspective?: ClientPerspective;
 };
 
 function getClient(options?: QueryOptions) {
-  return getSanityClient(options?.preview === true);
+  return getSanityClient(options?.preview === true, options?.perspective);
 }
 
 export async function getProjects(options?: QueryOptions): Promise<Project[]> {

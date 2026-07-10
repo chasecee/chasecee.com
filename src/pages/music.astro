@@ -3,10 +3,11 @@ import SiteLayout from "@/src/layouts/SiteLayout.astro";
 import Container from "@/src/components/Container.astro";
 import MusicList from "@/src/components/MusicList.astro";
 import { getMusic } from "@/sanity/sanity-utils";
+import { draftFetchOptions } from "@/sanity/preview";
 
 export const prerender = false;
 
-const music = await getMusic({ preview: Astro.locals.draftMode });
+const music = await getMusic(draftFetchOptions(Astro.locals));
 ---
 
 <SiteLayout

@@ -1,3 +1,6 @@
+import { columnsBlock, contentBlocks } from "./blocks";
+import { ColumnsPlugins } from "../components/ColumnsContainerPlugin";
+
 const page = {
   name: "page",
   title: "Pages",
@@ -14,24 +17,12 @@ const page = {
       name: "content",
       title: "Content",
       type: "array",
-      of: [
-        { type: "block" },
-        { type: "skills" },
-        { type: "embed" },
-        {
-          type: "image",
-          options: {
-            hotspot: true,
-          },
-          fields: [
-            {
-              name: "alt",
-              type: "string",
-              title: "Alt Text",
-            },
-          ],
+      of: [{ type: "block" }, columnsBlock, ...contentBlocks],
+      components: {
+        portableText: {
+          plugins: ColumnsPlugins,
         },
-      ],
+      },
     },
     {
       name: "title",

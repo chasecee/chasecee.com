@@ -4,13 +4,14 @@ import ContainerHome from "@/src/components/ContainerHome.astro";
 import ProjectsList from "@/src/components/ProjectsList.astro";
 import HomeHero9 from "@/src/components/hero/HomeHero9/HomeHero9";
 import { getPersonalProjects, getClientProjects } from "@/sanity/sanity-utils";
+import { draftFetchOptions } from "@/sanity/preview";
 
 export const prerender = false;
 
-const preview = Astro.locals.draftMode;
+const fetchOptions = draftFetchOptions(Astro.locals);
 const [personalProjects, clientProjects] = await Promise.all([
-  getPersonalProjects({ preview }),
-  getClientProjects({ preview }),
+  getPersonalProjects(fetchOptions),
+  getClientProjects(fetchOptions),
 ]);
 ---
 
@@ -20,7 +21,7 @@ const [personalProjects, clientProjects] = await Promise.all([
     <div class="relative z-10 flex flex-col gap-10">
       <ProjectsList
         projects={personalProjects}
-        title="Personal Projects"
+        title="Projects"
         columns={3}
       />
       <ProjectsList

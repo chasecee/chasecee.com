@@ -1,5 +1,5 @@
 import { useRef, useState, type ChangeEvent } from "react";
-import { ImagesIcon } from "@sanity/icons";
+import { ImagesIcon } from "@sanity/icons/Images";
 import { Button, Grid } from "@sanity/ui";
 import {
   type ArrayInputFunctionsProps,

@@ -1,10 +1,7 @@
 import type { APIRoute } from "astro";
 import { validatePreviewUrl } from "@sanity/preview-url-secret";
-import {
-  perspectiveCookieName,
-  urlSearchParamPreviewPerspective,
-} from "@sanity/preview-url-secret/constants";
-import { getSanityClient, SANITY_PREVIEW_COOKIE } from "@/sanity/preview";
+import { perspectiveCookieName } from "@sanity/preview-url-secret/constants";
+import { getSanityClient } from "@/sanity/preview";
 
 export const prerender = false;
 
@@ -30,21 +27,17 @@ export const GET: APIRoute = async ({ request, cookies, redirect }) => {
   }
 
   const url = new URL(request.url);
-  const perspective =
-    url.searchParams.get(urlSearchParamPreviewPerspective) || "drafts";
   const target = normalizeRedirectPath(validation.redirectTo);
   const secure = url.protocol === "https:";
+  const sameSite = secure ? "none" : "lax";
+  const perspective = validation.studioPreviewPerspective || "drafts";
+  const perspectiveValue =
+    typeof perspective === "string" ? perspective : JSON.stringify(perspective);
 
-  cookies.set(SANITY_PREVIEW_COOKIE, "true", {
+  cookies.set(perspectiveCookieName, perspectiveValue, {
     path: "/",
-    httpOnly: true,
-    sameSite: secure ? "none" : "lax",
-    secure,
-  });
-  cookies.set(perspectiveCookieName, perspective, {
-    path: "/",
-    httpOnly: true,
-    sameSite: secure ? "none" : "lax",
+    httpOnly: false,
+    sameSite,
     secure,
   });
 
