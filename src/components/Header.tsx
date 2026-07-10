@@ -113,6 +113,7 @@ export default function Header({ activePath }: HeaderProps) {
                 rel="noopener noreferrer"
                 className="header_item transition-colors hover:opacity-30"
               >
+                <span className="sr-only">GitHub</span>
                 <GithubIcon size={16} />
               </a>
             </Tooltip>
@@ -123,6 +124,7 @@ export default function Header({ activePath }: HeaderProps) {
                 rel="noopener noreferrer"
                 className="header_item transition-colors hover:opacity-30"
               >
+                <span className="sr-only">LinkedIn</span>
                 <LinkedInIcon size={16} />
               </a>
             </Tooltip>
@@ -133,6 +135,7 @@ export default function Header({ activePath }: HeaderProps) {
                 rel="noopener noreferrer"
                 className="header_item transition-colors hover:opacity-30 flex"
               >
+                <span className="sr-only">Resume</span>
                 <LucideIcon icon={LUCIDE_ICONS.fileText} size={16} />
               </a>
             </Tooltip>
