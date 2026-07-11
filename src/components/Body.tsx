@@ -13,6 +13,8 @@ import type {
 import type { InternalLinkValue, ExternalLinkValue } from "@/types/Content";
 import Columns from "./blocks/Columns";
 import Embed from "./blocks/Embed";
+import Spotify from "./blocks/Spotify";
+import Gallery, { type GalleryImageValue } from "./blocks/Gallery";
 import ImageBlock from "./blocks/ImageBlock";
 
 type DataAttributeResolver = (key: string | undefined) => string | undefined;
@@ -125,9 +127,10 @@ function createComponents(
         );
       },
       embed: ({ value }) => {
-        const { url, title, aspectRatio, ratio } = value as {
+        const { url, title, width, aspectRatio, ratio } = value as {
           url?: string;
           title?: string;
+          width?: "content" | "full";
           aspectRatio?: string;
           ratio?: { desktop?: string; mobile?: string };
         };
@@ -135,8 +138,41 @@ function createComponents(
           <Embed
             url={url}
             title={title}
+            width={width}
             aspectRatio={aspectRatio}
             ratio={ratio}
+            draftMode={draftMode}
+            dataSanity={getDataAttribute?.(getKey(value))}
+          />
+        );
+      },
+      spotify: ({ value }) => {
+        const { url, title, size, theme } = value as {
+          url?: string;
+          title?: string;
+          size?: "compact" | "default";
+          theme?: "dark" | "light";
+        };
+        return (
+          <Spotify
+            url={url}
+            title={title}
+            size={size}
+            theme={theme}
+            draftMode={draftMode}
+            dataSanity={getDataAttribute?.(getKey(value))}
+          />
+        );
+      },
+      gallery: ({ value }) => {
+        const { images, columns } = value as {
+          images?: GalleryImageValue[];
+          columns?: number;
+        };
+        return (
+          <Gallery
+            images={images}
+            columns={columns}
             draftMode={draftMode}
             dataSanity={getDataAttribute?.(getKey(value))}
           />

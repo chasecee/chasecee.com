@@ -83,7 +83,7 @@ const music = {
       name: "embeds",
       title: "Embeds",
       type: "array",
-      of: [{ type: "embed" }],
+      of: [{ type: "embed" }, { type: "spotify" }],
     },
   ],
   preview: {

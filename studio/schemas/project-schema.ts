@@ -211,6 +211,13 @@ const project = {
       fieldset: "meta",
     },
     {
+      name: "siteMini",
+      title: "Site Mini",
+      type: "siteMini",
+      fieldset: "meta",
+      description: "Phone-frame site preview shown beside the project header.",
+    },
+    {
       title: "Archived",
       name: "archived",
       type: "boolean",

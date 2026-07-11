@@ -9,6 +9,7 @@ export type MusicEmbed = {
   _type: "embed";
   url: string;
   title?: string;
+  width?: "content" | "full";
   ratio?: {
     desktop?: string;
     mobile?: string;
@@ -16,11 +17,25 @@ export type MusicEmbed = {
   aspectRatio?: string;
 };
 
+export type MusicSpotify = {
+  _key?: string;
+  _type: "spotify";
+  url: string;
+  title?: string;
+  size?: "compact" | "default";
+  theme?: "dark" | "light";
+};
+
 export type MusicGalleryImage = {
   _key?: string;
   url?: string;
   alt?: string;
   caption?: string;
+};
+
+export type MusicGallery = {
+  columns?: number;
+  images?: MusicGalleryImage[];
 };
 
 export type Music = {
@@ -33,7 +48,7 @@ export type Music = {
   releaseYear?: number;
   albumArt?: string;
   albumArtAlt?: string;
-  gallery?: MusicGalleryImage[];
+  gallery?: MusicGallery;
   links?: MusicLink[];
-  embeds?: MusicEmbed[];
+  embeds?: (MusicEmbed | MusicSpotify)[];
 };

@@ -14,6 +14,7 @@ type EmbedStyle = CSSProperties & {
 type EmbedProps = {
   url?: string;
   title?: string;
+  width?: "content" | "full";
   aspectRatio?: string;
   ratio?: EmbedRatio;
   draftMode: boolean;
@@ -23,6 +24,7 @@ type EmbedProps = {
 export default function Embed({
   url,
   title,
+  width = "full",
   aspectRatio,
   ratio,
   draftMode,
@@ -47,14 +49,23 @@ export default function Embed({
   };
 
   return (
-    <iframe
-      src={embedUrl}
-      title={embedTitle || "Embedded content"}
-      style={embedStyle}
-      className="embed-frame w-full border-0"
-      loading="lazy"
-      allowFullScreen
+    <div
+      className={width === "full" ? "prose-wide w-full" : "mx-auto w-full"}
+      style={
+        width === "content"
+          ? ({ maxWidth: "min(var(--prose-measure), 100%)" } as CSSProperties)
+          : undefined
+      }
       data-sanity={dataSanity}
-    />
+    >
+      <iframe
+        src={embedUrl}
+        title={embedTitle || "Embedded content"}
+        style={embedStyle}
+        className="embed-frame w-full border-0"
+        loading="lazy"
+        allowFullScreen
+      />
+    </div>
   );
 }

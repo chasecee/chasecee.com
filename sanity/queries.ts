@@ -10,6 +10,7 @@ export const PROJECT_QUERY = `*[_type == "project" && slug.current == $slug][0]{
   svgcode,
   url,
   archived,
+  siteMini,
   orderRank,
   "content": content[]{
     ...,

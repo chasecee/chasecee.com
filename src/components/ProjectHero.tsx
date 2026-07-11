@@ -18,6 +18,8 @@ type ProjectHeroData = {
 type ProjectHeroProps = {
   project: ProjectHeroData;
   showDraftBadge?: boolean;
+  showUrlLink?: boolean;
+  className?: string;
 };
 
 function shortenUrl(url: string): string {
@@ -36,6 +38,8 @@ function shortenUrl(url: string): string {
 export default function ProjectHero({
   project,
   showDraftBadge = false,
+  showUrlLink = true,
+  className = "",
 }: ProjectHeroProps) {
   const cleanName = stegaClean(project.name);
   const projectUrl =
@@ -51,7 +55,7 @@ export default function ProjectHero({
 
   return (
     <header
-      className={`not-prose relative mb-10 flex flex-col justify-end overflow-hidden p-8 text-white ${showDraftBadge ? "ring-2 ring-amber-300 ring-inset" : ""}`}
+      className={`not-prose relative flex h-full min-h-72 flex-col justify-end overflow-hidden rounded-xl p-8 text-white ${showDraftBadge ? "ring-2 ring-amber-300 ring-inset" : ""} ${className}`}
     >
       <div className="absolute inset-0 bg-black">
         {imageUrl && (
@@ -84,9 +88,9 @@ export default function ProjectHero({
           <div className="mb-0 text-6xl leading-none">{project.name}</div>
         )}
         {project.subtitle && (
-          <p className="mb-0 text-lg">{project.subtitle}</p>
+          <div className="prose"><p className="my-0">{project.subtitle}</p></div>
         )}
-        {projectUrl && (
+        {showUrlLink && projectUrl && (
           <a
             href={projectUrl}
             title={cleanName}

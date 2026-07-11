@@ -2,8 +2,10 @@
 import SiteLayout from "@/src/layouts/SiteLayout.astro";
 import Container from "@/src/components/Container.astro";
 import { Body } from "@/src/components/Body";
+import ImageGalleryLightbox from "@/src/components/gallery/ImageGalleryLightbox.astro";
 import { getPage } from "@/sanity/sanity-utils";
 import { metaDescription } from "@/src/utils/seo";
+import { contentHasBlock } from "@/src/utils/contentHasBlock";
 import type { ImageBlock } from "@/types/Content";
 import { stegaClean } from "@sanity/client/stega";
 import { draftFetchOptions } from "@/sanity/preview";
@@ -43,11 +45,14 @@ const heroImageAlt =
     ? stegaClean(heroImage.alt).trim()
     : page.title;
 const draftMode = Astro.locals.draftMode === true;
+const hasLightbox =
+  draftMode ||
+  contentHasBlock(contentWithoutHero, "gallery");
 ---
 
 <SiteLayout {title} {description}>
   <Container className="pt-24" showCTA={true}>
-    <div class="prose mx-auto">
+    <div class="prose prose-flow">
       <header class="not-prose relative mb-10 min-h-52 overflow-hidden rounded-xl bg-neutral-900 sm:min-h-64">
         {
           heroImage && (
@@ -71,4 +76,5 @@ const draftMode = Astro.locals.draftMode === true;
       </div>
     </div>
   </Container>
+  {hasLightbox && <ImageGalleryLightbox />}
 </SiteLayout>

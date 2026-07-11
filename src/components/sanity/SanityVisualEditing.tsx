@@ -45,7 +45,7 @@ function applyHistoryUpdate(update: Pick<HistoryUpdate, "type" | "url">) {
 }
 
 function handleRefresh(payload: HistoryRefresh): false | Promise<void> {
-  if (payload.source === "mutation" && payload.livePreviewEnabled) return false;
+  if (payload.source === "mutation") return false;
   window.location.reload();
   return new Promise(() => {});
 }

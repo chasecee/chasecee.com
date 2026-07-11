@@ -17,6 +17,8 @@ export const columnsBlock = {
 
 export const contentBlocks = [
   { type: "embed" },
+  { type: "spotify" },
+  { type: "gallery" },
   { type: "skills" },
   imageBlock,
   mediaBlock,

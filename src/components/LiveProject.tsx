@@ -64,6 +64,7 @@ export default function LiveProject({
       project={{ ...project, content: content ?? [] }}
       draftMode
       contentDataAttribute={attr("content")}
+      siteMiniDataAttribute={attr("siteMini")}
       getDataAttribute={(key) =>
         key ? attr(`content[_key=="${key}"]`) : undefined
       }

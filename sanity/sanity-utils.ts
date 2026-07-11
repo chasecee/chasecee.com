@@ -34,11 +34,14 @@ const MUSIC_FIELDS = `{
   releaseYear,
   "albumArt": albumArt.asset->url,
   "albumArtAlt": albumArt.alt,
-  "gallery": gallery[]{
-    _key,
-    "url": asset->url,
-    alt,
-    caption
+  "gallery": {
+    "columns": coalesce(gallery.columns, 2),
+    "images": coalesce(gallery.images, gallery)[]{
+      _key,
+      "url": asset->url,
+      alt,
+      caption
+    }
   },
   links,
   embeds

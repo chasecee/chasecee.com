@@ -4,8 +4,10 @@ import Container from "@/src/components/Container.astro";
 import ProjectLink from "@/src/components/ProjectLink.astro";
 import ProjectView from "@/src/components/ProjectView";
 import LiveProject from "@/src/components/LiveProject";
+import ImageGalleryLightbox from "@/src/components/gallery/ImageGalleryLightbox.astro";
 import { getProjectSiblings } from "@/sanity/sanity-utils";
 import { metaDescription } from "@/src/utils/seo";
+import { contentHasBlock } from "@/src/utils/contentHasBlock";
 import { draftFetchOptions } from "@/sanity/preview";
 import { stegaClean } from "@sanity/client/stega";
 import { loadQuery, getDraftModeProps } from "@/sanity/load-query";
@@ -38,6 +40,10 @@ if (!project) {
 }
 
 const draftMode = Astro.locals.draftMode === true;
+const hasLightbox =
+  draftMode ||
+  contentHasBlock(project.content, "gallery") ||
+  Boolean(project.siteMini?.url);
 const cleanName = stegaClean(project.name);
 const description = metaDescription(
   stegaClean(project.subtitle),
@@ -61,13 +67,13 @@ const { nextProject, prevProject } =
           client:load
           query={PROJECT_QUERY}
           params={{ slug: projectSlug }}
-          initial={initialProject}
+          initial={{ ...initialProject, data: project }}
         />
       ) : (
         <ProjectView project={project} />
       )
     }
-    <div class="prose mx-auto">
+    <div class="prose prose-flow">
       <h3 class="mt-20 mb-4 text-xl">Thanks for reading! Check out more:</h3>
       <div class="not-prose grid gap-4 md:grid-cols-2">
         {prevProject && <ProjectLink project={prevProject} direction="prev" />}
@@ -75,4 +81,5 @@ const { nextProject, prevProject } =
       </div>
     </div>
   </Container>
+  {hasLightbox && <ImageGalleryLightbox />}
 </SiteLayout>

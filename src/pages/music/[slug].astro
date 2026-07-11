@@ -1,9 +1,12 @@
 ---
 import SiteLayout from "@/src/layouts/SiteLayout.astro";
 import Container from "@/src/components/Container.astro";
+import Embed from "@/src/components/blocks/Embed";
+import Spotify from "@/src/components/blocks/Spotify";
+import Gallery from "@/src/components/blocks/Gallery";
+import ImageGalleryLightbox from "@/src/components/gallery/ImageGalleryLightbox.astro";
 import { getMusicBySlug } from "@/sanity/sanity-utils";
 import { withSanityImageParams } from "@/src/utils/sanityImageParams";
-import { stegaClean } from "@sanity/client/stega";
 import { draftFetchOptions } from "@/sanity/preview";
 
 export const prerender = false;
@@ -21,17 +24,9 @@ if (!item) {
   return Astro.redirect("/404");
 }
 
-const normalizeAspectRatio = (value: string | undefined) => {
-  if (!value) return "16 / 9";
-  const cleaned = stegaClean(value).trim();
-  const compact = cleaned.replace(/\s+/g, "");
-  const slash = compact.includes("/") ? compact : compact.replace(":", "/");
-  if (!/^\d+(\.\d+)?\/\d+(\.\d+)?$/.test(slash)) return "16 / 9";
-  const [width, height] = slash.split("/");
-  return `${width} / ${height}`;
-};
 const draftMode = Astro.locals.draftMode === true;
 const showDraftBadge = draftMode && item.isDraft;
+const hasGallery = Boolean(item.gallery?.images?.length);
 ---
 
 <SiteLayout
@@ -40,7 +35,7 @@ const showDraftBadge = draftMode && item.isDraft;
   ogImage="/og/home.png"
 >
   <Container>
-    <div class="prose mx-auto mt-10">
+    <div class="prose prose-flow mt-10">
       {
         showDraftBadge && (
           <span class="mb-4 inline-flex rounded bg-amber-300 px-2 py-1 text-xs font-bold uppercase tracking-wide text-black">
@@ -68,32 +63,22 @@ const showDraftBadge = draftMode && item.isDraft;
       }
 
       {
-        item.gallery && item.gallery.length > 0 && (
-          <section class="not-prose mt-8 grid gap-4 sm:grid-cols-2">
-            {item.gallery.map((image) =>
-              image.url ? (
-                <figure class="m-0">
-                  <img
-                    src={withSanityImageParams(image.url, {
-                      w: 1400,
+        item.gallery?.images && item.gallery.images.length > 0 && (
+          <section class="mt-8">
+            <Gallery
+              images={item.gallery.images.map((image) => ({
+                ...image,
+                url: image.url
+                  ? withSanityImageParams(image.url, {
+                      w: 2400,
                       fit: "max",
                       auto: "format",
-                    })}
-                    alt={image.alt || `${item.bandName} gallery image`}
-                    width={1000}
-                    height={1000}
-                    class="w-full rounded-xl object-cover"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  {image.caption ? (
-                    <figcaption class="mt-2 text-sm opacity-70">
-                      {image.caption}
-                    </figcaption>
-                  ) : null}
-                </figure>
-              ) : null,
-            )}
+                    })
+                  : undefined,
+              }))}
+              columns={item.gallery.columns}
+              draftMode={draftMode}
+            />
           </section>
         )
       }
@@ -118,33 +103,30 @@ const showDraftBadge = draftMode && item.isDraft;
       {
         item.embeds && item.embeds.length > 0 && (
           <section class="not-prose mt-10 flex flex-col gap-6">
-            {item.embeds.map((embed) => {
-              const desktopAspectRatio =
-                typeof embed.ratio?.desktop === "string"
-                  ? embed.ratio.desktop
-                  : embed.aspectRatio;
-              const mobileAspectRatio =
-                typeof embed.ratio?.mobile === "string"
-                  ? embed.ratio.mobile
-                  : typeof embed.ratio?.desktop === "string"
-                    ? embed.ratio.desktop
-                    : embed.aspectRatio;
-              return (
-                <iframe
-                  src={stegaClean(embed.url).trim()}
-                  title={stegaClean(embed.title || `${item.albumName} embed`).trim()}
-                  loading="lazy"
-                  class="embed-frame w-full rounded-xl border border-black/10 dark:border-white/10"
-                  style={{
-                    "--embed-ar-desktop": normalizeAspectRatio(desktopAspectRatio),
-                    "--embed-ar-mobile": normalizeAspectRatio(mobileAspectRatio),
-                  }}
+            {item.embeds.map((embed) =>
+              embed._type === "spotify" ? (
+                <Spotify
+                  url={embed.url}
+                  title={embed.title}
+                  size={embed.size}
+                  theme={embed.theme}
+                  draftMode={draftMode}
                 />
-              );
-            })}
+              ) : (
+                <Embed
+                  url={embed.url}
+                  title={embed.title || `${item.albumName} embed`}
+                  width={embed.width}
+                  aspectRatio={embed.aspectRatio}
+                  ratio={embed.ratio}
+                  draftMode={draftMode}
+                />
+              ),
+            )}
           </section>
         )
       }
     </div>
   </Container>
+  {hasGallery && <ImageGalleryLightbox />}
 </SiteLayout>

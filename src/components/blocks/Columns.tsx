@@ -29,7 +29,7 @@ export default function Columns({
 
   return (
     <div
-      className="grid gap-8 md:grid-cols-[repeat(var(--cols),minmax(0,1fr))]"
+      className="prose-wide grid gap-8 md:grid-cols-[repeat(var(--cols),minmax(0,1fr))]"
       style={{ "--cols": columns.length, alignItems } as CSSProperties}
       data-sanity={dataSanity}
     >

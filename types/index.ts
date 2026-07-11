@@ -3,6 +3,8 @@ export type {
   Music,
   MusicLink,
   MusicEmbed,
+  MusicSpotify,
+  MusicGallery,
   MusicGalleryImage,
 } from "./Music";
 export type { Page } from "./Page";

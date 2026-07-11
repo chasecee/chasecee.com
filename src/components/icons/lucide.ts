@@ -3,6 +3,7 @@ import {
   ExternalLink,
   FileText,
   Heart,
+  Maximize2,
 } from "lucide-static";
 
 export const LUCIDE_ICONS = {
@@ -10,6 +11,7 @@ export const LUCIDE_ICONS = {
   externalLink: ExternalLink,
   fileText: FileText,
   heart: Heart,
+  maximize2: Maximize2,
 } as const;
 
 interface LucideSvgOptions {

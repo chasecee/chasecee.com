@@ -1,4 +1,5 @@
 import { AspectRatioInput } from "../plugins/aspect-ratio";
+import { AutoTitleObjectInput } from "../plugins/auto-title/AutoTitleObjectInput";
 
 const isValidRatio = (value?: string) => {
   if (!value) return true;
@@ -9,6 +10,7 @@ const embed = {
   name: "embed",
   type: "object",
   title: "Embed",
+  components: { input: AutoTitleObjectInput },
   fields: [
     {
       name: "url",
@@ -20,7 +22,22 @@ const embed = {
       name: "title",
       type: "string",
       title: "Title",
-      description: "Accessible title for the iframe.",
+      description: "Auto-filled from oEmbed when available. Editable.",
+    },
+    {
+      name: "width",
+      type: "string",
+      title: "Width",
+      options: {
+        list: [
+          { title: "Content", value: "content" },
+          { title: "Full width", value: "full" },
+        ],
+        layout: "radio",
+        direction: "horizontal",
+      },
+      initialValue: "full",
+      validation: (Rule: any) => Rule.required(),
     },
     {
       name: "ratio",

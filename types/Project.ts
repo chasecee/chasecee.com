@@ -11,6 +11,12 @@ export type ProjectAspectRatio = {
   mobile?: string;
 };
 
+export type ProjectSiteMini = {
+  url?: string;
+  embedUrl?: string;
+  title?: string;
+};
+
 export type Project = {
   _id: string;
   isDraft?: boolean;
@@ -25,6 +31,7 @@ export type Project = {
   embedUrl?: string;
   aspectRatio?: ProjectAspectRatio;
   url?: string;
+  siteMini?: ProjectSiteMini;
   type?: "personal" | "client";
   archived?: boolean;
   content?: (PortableTextBlock | LinkField | InternalLinkField)[];

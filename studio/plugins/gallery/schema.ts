@@ -1,5 +1,6 @@
 import type { ArrayOfObjectsInputProps, ImageValue } from "sanity";
 import { createGalleryInput, type AltFromFilename } from "./GalleryInput";
+import { GalleryBlockPreview } from "./GalleryBlockPreview";
 
 export type GalleryImage = ImageValue & { _key: string; alt?: string };
 
@@ -66,9 +67,30 @@ export const createGallerySchemaTypes = (options: GallerySchemaOptions = {}) => 
     },
   };
 
-  const gallery = {
-    name: galleryName,
-    title: galleryTitle,
+  const columnsField = {
+    name: "columns",
+    title: "Columns",
+    type: "number",
+    options: {
+      list: [
+        { title: "1", value: 1 },
+        { title: "2", value: 2 },
+        { title: "3", value: 3 },
+        { title: "4", value: 4 },
+        { title: "5", value: 5 },
+        { title: "6", value: 6 },
+        { title: "Col per item", value: 0 },
+      ],
+      layout: "radio",
+      direction: "horizontal",
+    },
+    initialValue: 2,
+    validation: (Rule: any) => Rule.required().integer().min(0).max(6),
+  };
+
+  const imagesField = {
+    name: "images",
+    title: "Images",
     type: "array",
     components: { input },
     options: {
@@ -78,7 +100,38 @@ export const createGallerySchemaTypes = (options: GallerySchemaOptions = {}) => 
       disableActions: ["add"],
     },
     of: [{ type: imageTypeName }],
+    validation: (Rule: any) => Rule.min(1),
+  };
+
+  const gallery = {
+    name: galleryName,
+    title: galleryTitle,
+    type: "object",
+    components: { preview: GalleryBlockPreview },
+    fields: [columnsField, imagesField],
+    preview: {
+      select: {
+        images: "images",
+        columns: "columns",
+      },
+      prepare: ({
+        images,
+        columns,
+      }: {
+        images?: unknown[];
+        columns?: number;
+      }) => {
+        const thumbs = Array.isArray(images) ? images.slice(0, 6) : [];
+        return {
+          title: "Gallery",
+          subtitle: `${Array.isArray(images) ? images.length : 0} images · ${columns === 0 ? "per item" : `${columns ?? 2} col`}`,
+          thumbs,
+        };
+      },
+    },
   };
 
   return [galleryImage, gallery];
 };
+
+export { createGalleryInput };
