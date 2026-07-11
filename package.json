@@ -2,49 +2,15 @@
   "name": "cee-app",
   "version": "0.1.0",
   "private": true,
+  "workspaces": ["apps/*"],
   "scripts": {
     "dev": "node scripts/dev.mjs",
-    "build": "astro build",
-    "preview": "astro preview",
-    "studio:dev": "cd studio && bun run dev",
-    "studio:deploy": "cd studio && bun run deploy",
+    "build": "bun run --filter site build",
+    "preview": "bun run --filter site preview",
+    "studio:dev": "bun run --filter admin dev",
+    "studio:deploy": "bun run --filter admin deploy",
+    "site:dev": "bun run --filter site dev",
     "convert-webp": "node scripts/convert-to-webp.mjs"
   },
-  "browserslist": [
-    "chrome >= 91",
-    "firefox >= 90",
-    "safari >= 15",
-    "edge >= 91"
-  ],
-  "dependencies": {
-    "@aarsteinmedia/dotlottie-player": "^6.3.9",
-    "@astrojs/react": "^6.0.0",
-    "@astrojs/vercel": "^11.0.0",
-    "@dimforge/rapier2d": "0.19.3",
-    "@portabletext/react": "^6.2.0",
-    "@sanity/client": "^7.23.0",
-    "@sanity/image-url": "^2.1.1",
-    "@sanity/preview-url-secret": "^4.0.8",
-    "@sanity/react-loader": "^2.0.14",
-    "@sanity/visual-editing": "^5.4.5",
-    "@tailwindcss/vite": "^4.3.1",
-    "astro": "^7.0.3",
-    "idiomorph": "^0.7.4",
-    "lucide-static": "^1.21.0",
-    "photoswipe": "^5.4.4",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "react-parallax-tilt": "^1.7.333",
-    "satori": "^0.26.0",
-    "sharp": "^0.35.2",
-    "tailwindcss": "^4.3.1",
-    "vite-plugin-top-level-await": "^1.6.0",
-    "vite-plugin-wasm": "^3.6.0"
-  },
-  "devDependencies": {
-    "rollup": "^4.62.2"
-  },
-  "resolutions": {
-    "@dimforge/rapier2d": "0.19.2"
-  }
+  "devDependencies": {}
 }

@@ -1,6 +1,6 @@
 # dependencies
 /node_modules
-/studio/node_modules
+/apps/*/node_modules
 /.pnp
 .pnp.js
 
@@ -10,8 +10,11 @@
 # astro
 /dist/
 .astro/
-/studio/dist/
-/studio/.sanity/runtime/
+/apps/site/dist/
+/apps/site/.astro/
+/apps/admin/dist/
+/apps/admin/.sanity/runtime/
+/apps/admin/.sanity/
 
 # legacy
 /.next/

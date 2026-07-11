@@ -7,7 +7,7 @@ import sharp from "sharp";
 const CONFIG = {
   quality: 85,
   keepOriginals: false,
-  sourceDir: "./public",
+  sourceDir: "./apps/site/public",
   recursive: true,
   extensions: [".jpg", ".jpeg", ".JPG", ".JPEG"],
 };

@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { readFileSync } from "node:fs";
 import net from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -6,6 +7,34 @@ import { fileURLToPath } from "node:url";
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const sitePort = process.env.PORT || 4321;
 const studioPort = Number(process.env.SANITY_STUDIO_PORT || 3333);
+
+function loadEnvFile(filePath) {
+  try {
+    const raw = readFileSync(filePath, "utf8");
+    const env = {};
+    for (const line of raw.split("\n")) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+      const idx = trimmed.indexOf("=");
+      if (idx <= 0) continue;
+      const key = trimmed.slice(0, idx).trim();
+      const value = trimmed.slice(idx + 1).trim();
+      if (key) env[key] = value;
+    }
+    return env;
+  } catch {
+    return {};
+  }
+}
+
+const rootEnv = {
+  ...loadEnvFile(path.join(root, ".env")),
+  ...loadEnvFile(path.join(root, ".env.local")),
+};
+const sharedEnv = {
+  ...rootEnv,
+  ...process.env,
+};
 
 function probePort(port, host) {
   return new Promise((resolve) => {
@@ -35,7 +64,7 @@ function run(command, args, cwd) {
   return spawn(command, args, {
     cwd,
     stdio: "inherit",
-    env: process.env,
+    env: sharedEnv,
   });
 }
 
@@ -54,7 +83,7 @@ console.log(`  Site    http://localhost:${sitePort}/`);
 console.log(`  Studio  http://localhost:${studioPort}/`);
 console.log("");
 
-const astro = run("bun", ["x", "astro", "dev"], root);
+const astro = run("bun", ["run", "dev"], path.join(root, "apps/site"));
 children.push(astro);
 
 astro.on("exit", (code, signal) => {
@@ -70,12 +99,11 @@ if (studioBusy) {
     "bun",
     ["x", "sanity", "dev", "--port", String(studioPort)],
     {
-      cwd: path.join(root, "studio"),
+      cwd: path.join(root, "apps/admin"),
       stdio: "inherit",
       env: {
-        ...process.env,
-        SANITY_STUDIO_PREVIEW_URL:
-          process.env.SANITY_STUDIO_PREVIEW_URL ||
+        ...sharedEnv,
+        SANITY_STUDIO_PREVIEW_URL: sharedEnv.SANITY_STUDIO_PREVIEW_URL ||
           `http://localhost:${sitePort}`,
       },
     },
