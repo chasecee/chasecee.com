@@ -5,6 +5,12 @@
 		},
 		{
 			"path": "../sanity-kit"
+		},
+		{
+			"path": "../rockyvelvet.space"
+		},
+		{
+			"path": "../ianrigby.com"
 		}
 	],
 	"settings": {}
