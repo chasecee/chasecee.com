@@ -17,10 +17,11 @@ export interface ContainerProps extends CommonComponentProps {
 
 export interface ButtonProps
   extends Omit<
-    React.AnchorHTMLAttributes<HTMLAnchorElement>,
+    React.AnchorHTMLAttributes<HTMLAnchorElement> &
+      React.ButtonHTMLAttributes<HTMLButtonElement>,
     "href" | "children"
   > {
-  href: string;
+  href?: string;
   className?: string;
   children?: React.ReactNode;
 }

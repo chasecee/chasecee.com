@@ -55,7 +55,7 @@ export default function ProjectHero({
 
   return (
     <header
-      className={`not-prose relative flex h-full min-h-72 flex-col justify-end overflow-hidden rounded-xl p-8 text-white ${showDraftBadge ? "ring-2 ring-amber-300 ring-inset" : ""} ${className}`}
+      className={`not-prose relative flex h-full min-h-72 flex-col justify-end overflow-hidden p-8 text-white ${showDraftBadge ? "ring-2 ring-amber-300 ring-inset" : ""} ${className}`}
     >
       <div className="absolute inset-0 bg-black">
         {imageUrl && (
@@ -80,15 +80,12 @@ export default function ProjectHero({
         <h1 className="sr-only">{project.name}</h1>
         {svgCode ? (
           <div
-            className="content max-w-full text-white lg:max-w-[60ch]"
+            className="content max-w-full text-white lg:max-w-[60ch] m-10"
             aria-hidden="true"
             dangerouslySetInnerHTML={{ __html: svgCode }}
           />
         ) : (
           <div className="mb-0 text-6xl leading-none">{project.name}</div>
-        )}
-        {project.subtitle && (
-          <div className="prose"><p className="my-0">{project.subtitle}</p></div>
         )}
         {projectUrl && (
           <a

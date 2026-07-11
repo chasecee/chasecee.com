@@ -34,5 +34,6 @@ export type Project = {
   siteMini?: ProjectSiteMini;
   type?: "personal" | "client";
   archived?: boolean;
+  leadIn?: PortableTextBlock[];
   content?: (PortableTextBlock | LinkField | InternalLinkField)[];
 };

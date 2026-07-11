@@ -53,6 +53,15 @@ export default function LiveProject({
     return Array.isArray(next) ? reconcileByKey(current, next) : current;
   });
 
+  const leadIn = useOptimistic<
+    ProjectContentItem[] | undefined,
+    SanityDocument<{ leadIn?: ProjectContentItem[] }>
+  >(project.leadIn, (current, action) => {
+    if (action.id !== project._id) return current;
+    const next = action.document.leadIn;
+    return Array.isArray(next) ? reconcileByKey(current, next) : current;
+  });
+
   const attr = createDataAttribute({
     baseUrl: STUDIO_URL,
     id: project._id,
@@ -61,12 +70,16 @@ export default function LiveProject({
 
   return (
     <ProjectView
-      project={{ ...project, content: content ?? [] }}
+      project={{ ...project, content: content ?? [], leadIn: leadIn ?? [] }}
       draftMode
       contentDataAttribute={attr("content")}
+      leadInDataAttribute={attr("leadIn")}
       siteMiniDataAttribute={attr("siteMini")}
       getDataAttribute={(key) =>
         key ? attr(`content[_key=="${key}"]`) : undefined
+      }
+      getLeadInDataAttribute={(key) =>
+        key ? attr(`leadIn[_key=="${key}"]`) : undefined
       }
     />
   );

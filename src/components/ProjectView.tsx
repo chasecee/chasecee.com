@@ -17,6 +17,7 @@ export type ProjectViewData = {
   image?: string;
   svgcode?: { code?: string };
   siteMini?: ProjectSiteMini;
+  leadIn?: (PortableTextBlock | ArbitraryTypedObject)[];
   content?: (PortableTextBlock | ArbitraryTypedObject)[];
 };
 
@@ -24,18 +25,23 @@ type ProjectViewProps = {
   project: ProjectViewData;
   draftMode?: boolean;
   contentDataAttribute?: string;
+  leadInDataAttribute?: string;
   siteMiniDataAttribute?: string;
   getDataAttribute?: (key: string | undefined) => string | undefined;
+  getLeadInDataAttribute?: (key: string | undefined) => string | undefined;
 };
 
 export default function ProjectView({
   project,
   draftMode = false,
   contentDataAttribute,
+  leadInDataAttribute,
   siteMiniDataAttribute,
   getDataAttribute,
+  getLeadInDataAttribute,
 }: ProjectViewProps) {
   const content = project.content ?? [];
+  const leadIn = project.leadIn ?? [];
   const siteMini = project.siteMini;
   const hasSiteMini = Boolean(siteMini?.url);
 
@@ -44,26 +50,43 @@ export default function ProjectView({
       <div
         className={
           hasSiteMini
-            ? "prose-full not-prose mb-10 grid items-stretch gap-6 md:grid-cols-3"
-            : "prose-full not-prose mb-10"
+            ? "prose-full my-8 grid gap-6 md:grid-cols-3"
+            : "prose-full my-8"
         }
       >
-        <div className={hasSiteMini ? "md:col-span-2" : undefined}>
+        <div
+          className={
+            hasSiteMini
+              ? "flex min-w-0 flex-col md:col-span-2"
+              : "flex min-w-0 flex-col"
+          }
+        >
           <ProjectHero
             project={project}
             showDraftBadge={draftMode && project.isDraft === true}
             hasSiteMini={hasSiteMini}
           />
+          {leadIn.length > 0 && (
+            <div className="content" data-sanity={leadInDataAttribute}>
+              <Body
+                value={leadIn}
+                draftMode={draftMode}
+                getDataAttribute={getLeadInDataAttribute}
+              />
+            </div>
+          )}
         </div>
         {hasSiteMini && siteMini && (
-          <div className="hidden items-center justify-center md:col-span-1 md:flex">
-            <SiteMini
-              url={siteMini.url}
-              embedUrl={siteMini.embedUrl}
-              title={siteMini.title}
-              draftMode={draftMode}
-              dataSanity={siteMiniDataAttribute}
-            />
+          <div className="not-prose relative hidden md:col-span-1 md:block">
+            <div className="sticky top-24">
+              <SiteMini
+                url={siteMini.url}
+                embedUrl={siteMini.embedUrl}
+                title={siteMini.title}
+                draftMode={draftMode}
+                dataSanity={siteMiniDataAttribute}
+              />
+            </div>
           </div>
         )}
       </div>

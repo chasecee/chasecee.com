@@ -4,6 +4,73 @@ import { AspectRatioInput } from "../plugins/aspect-ratio";
 import { columnsBlock, contentBlocks } from "./blocks";
 import { ColumnsPortableTextPlugin } from "../plugins/columns";
 
+const textBlock = {
+  type: "block",
+  marks: {
+    annotations: [
+      {
+        name: "link",
+        type: "object",
+        title: "External link",
+        icon: LaunchIcon,
+        fields: [
+          {
+            name: "href",
+            type: "url",
+            title: "URL",
+          },
+          {
+            title: "Open in new tab",
+            name: "blank",
+            type: "boolean",
+          },
+        ],
+      },
+      {
+        name: "internalLink",
+        type: "object",
+        title: "Internal link",
+        icon: LinkIcon,
+        fields: [
+          {
+            name: "reference",
+            type: "reference",
+            title: "Reference",
+            to: [{ type: "project" }, { type: "page" }],
+          },
+        ],
+      },
+    ],
+  },
+};
+
+const projectPortableText = {
+  components: {
+    portableText: {
+      plugins: ColumnsPortableTextPlugin,
+    },
+  },
+  of: [
+    textBlock,
+    {
+      name: "videoFile",
+      type: "file",
+      title: "Video file",
+      accept: ".mp4,.webm",
+      fields: [
+        {
+          name: "alt",
+          type: "string",
+          title: "Alt text",
+          description: "Alternative text for accessibility.",
+        },
+      ],
+    },
+    columnsBlock,
+    ...contentBlocks,
+  ],
+};
+
 const project = {
   name: "project",
   title: "Projects",
@@ -35,72 +102,18 @@ const project = {
       fieldset: "content",
     },
     {
+      name: "leadIn",
+      title: "Lead In",
+      type: "array",
+      fieldset: "content",
+      ...projectPortableText,
+    },
+    {
       name: "content",
       title: "Content",
       type: "array",
       fieldset: "content",
-      components: {
-        portableText: {
-          plugins: ColumnsPortableTextPlugin,
-        },
-      },
-      of: [
-        {
-          type: "block",
-          marks: {
-            annotations: [
-              {
-                name: "link",
-                type: "object",
-                title: "External link",
-                icon: LaunchIcon,
-                fields: [
-                  {
-                    name: "href",
-                    type: "url",
-                    title: "URL",
-                  },
-                  {
-                    title: "Open in new tab",
-                    name: "blank",
-                    type: "boolean",
-                  },
-                ],
-              },
-              {
-                name: "internalLink",
-                type: "object",
-                title: "Internal link",
-                icon: LinkIcon,
-                fields: [
-                  {
-                    name: "reference",
-                    type: "reference",
-                    title: "Reference",
-                    to: [{ type: "project" }, { type: "page" }],
-                  },
-                ],
-              },
-            ],
-          },
-        },
-        {
-          name: "videoFile",
-          type: "file",
-          title: "Video file",
-          accept: ".mp4,.webm",
-          fields: [
-            {
-              name: "alt",
-              type: "string",
-              title: "Alt text",
-              description: "Alternative text for accessibility.",
-            },
-          ],
-        },
-        columnsBlock,
-        ...contentBlocks,
-      ],
+      ...projectPortableText,
     },
     {
       title: "Project Type",

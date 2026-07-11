@@ -1,3 +1,17 @@
+const portableTextFields = `{
+  ...,
+  markDefs[]{
+    ...,
+    _type == "internalLink" => {
+      "slug": @.reference->slug.current,
+      "refType": @.reference->_type
+    },
+    _type == "link" => {
+      ...,
+    }
+  }
+}`;
+
 export const PROJECT_QUERY = `*[_type == "project" && slug.current == $slug][0]{
   _id,
   _type,
@@ -12,17 +26,6 @@ export const PROJECT_QUERY = `*[_type == "project" && slug.current == $slug][0]{
   archived,
   siteMini,
   orderRank,
-  "content": content[]{
-    ...,
-    markDefs[]{
-      ...,
-      _type == "internalLink" => {
-        "slug": @.reference->slug.current,
-        "refType": @.reference->_type
-      },
-      _type == "link" => {
-        ...,
-      }
-    }
-  }
+  "leadIn": leadIn[]${portableTextFields},
+  "content": content[]${portableTextFields}
 }`;

@@ -43,6 +43,7 @@ const draftMode = Astro.locals.draftMode === true;
 const hasLightbox =
   draftMode ||
   contentHasBlock(project.content, "gallery") ||
+  contentHasBlock(project.leadIn, "gallery") ||
   Boolean(project.siteMini?.url);
 const cleanName = stegaClean(project.name);
 const description = metaDescription(

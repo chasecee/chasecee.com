@@ -11,9 +11,6 @@ type SiteMiniProps = {
   dataSanity?: string;
 };
 
-const actionClass =
-  "not-prose group inline-flex cursor-pointer items-center justify-center gap-x-2 rounded-[.25rem] border-0 px-6 py-3 text-base text-black no-underline shadow-xs transition-colors ring-[.125rem] ring-black/30 bg-black/5 dark:bg-white/5 dark:text-white dark:ring-white/30";
-
 function hostnameLabel(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./, "");
@@ -37,10 +34,10 @@ export default function SiteMini({
 
   return (
     <div
-      className="not-prose flex w-full flex-col items-center gap-3"
+      className="not-prose relative flex w-full flex-col items-center gap-3"
       data-sanity={dataSanity}
     >
-      <div className="site-mini">
+      <div className="site-mini rounded ring-1 ring-neutral-500/70">
         <iframe
           src={src}
           title={label}
@@ -48,8 +45,13 @@ export default function SiteMini({
           className="site-mini-frame embed-frame-fixed"
         />
       </div>
-      <div className="flex flex-nowrap justify-center gap-2">
-        <Button href={href} target="_blank" rel="noopener" className="group shrink-0 gap-x-2 px-4 py-2 text-sm">
+      <div className="absolute inset-x-0 bottom-0 z-10 flex flex-nowrap justify-center gap-2 p-4">
+        <Button
+          href={href}
+          target="_blank"
+          rel="noopener"
+          className="group shrink-0 gap-x-2 px-4 py-2"
+        >
           Visit Site
           <LucideIcon
             icon={LUCIDE_ICONS.externalLink}
@@ -57,9 +59,8 @@ export default function SiteMini({
             className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"
           />
         </Button>
-        <button
-          type="button"
-          className={`${actionClass} shrink-0 px-4 py-2 text-sm`}
+        <Button
+          className="group shrink-0 gap-x-2 px-4 py-2"
           data-site-mini-open
           data-src={src}
           data-title={label}
@@ -70,7 +71,7 @@ export default function SiteMini({
             size={14}
             className="transition-transform group-hover:scale-110"
           />
-        </button>
+        </Button>
       </div>
     </div>
   );
