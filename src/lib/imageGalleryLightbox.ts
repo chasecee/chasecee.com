@@ -20,8 +20,8 @@ export const initImageGalleryLightbox = () => {
   if (!document.querySelector("[data-pswp-gallery]")) return;
 
   lightbox = new PhotoSwipeLightbox({
-    gallery: "[data-pswp-gallery]",
-    children: "a",
+    gallery: "body",
+    children: "[data-pswp-gallery] a",
     showHideAnimationType: "zoom",
     pswpModule: () => import("photoswipe"),
     paddingFn: (viewportSize) => {
@@ -35,6 +35,7 @@ export const initImageGalleryLightbox = () => {
     arrowPrevSVG: ARROW_SVG,
     arrowNextSVG: ARROW_SVG,
     loop: false,
+    preload: [1, 2],
   });
 
   lightbox.on("afterInit", () => {
