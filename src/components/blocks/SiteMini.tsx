@@ -37,7 +37,7 @@ export default function SiteMini({
       className="not-prose relative flex w-full flex-col items-center gap-3"
       data-sanity={dataSanity}
     >
-      <div className="site-mini rounded ring-1 ring-neutral-500/70">
+      <div className="site-mini rounded-xl ring-[0.125rem] ring-neutral-500/50">
         <iframe
           src={src}
           title={label}

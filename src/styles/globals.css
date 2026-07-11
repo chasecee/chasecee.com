@@ -93,6 +93,14 @@
     border: 0;
     transform: scale(calc(100cqi / (var(--site-mini-layout-w) * 1px)));
     transform-origin: 0 0;
+    opacity: 0;
+    animation: site-mini-reveal 500ms ease 2s forwards;
+  }
+}
+
+@keyframes site-mini-reveal {
+  to {
+    opacity: 1;
   }
 }
 
