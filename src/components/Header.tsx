@@ -62,7 +62,7 @@ export default function Header({ activePath }: HeaderProps) {
 
   return (
     <div className="sticky top-2 inset-x-0 z-40 md:top-4">
-      <header className="header md:h-16 container h-16 flex items-center rounded-xl ring-[.125rem] ring-neutral-500/50 bg-neutral-100/10 py-2 backdrop-blur-sm dark:ring-neutral-600 dark:bg-neutral-900/20">
+      <header className="header md:h-16 container h-16 flex items-center rounded-xl ring-[.125rem] ring-neutral-500/50 bg-neutral-100/10 py-2 dark:ring-neutral-600 dark:bg-neutral-900/90">
         <div className="flex w-1/3 shrink justify-start">
           <a
             onClick={handleLogoClick}
