@@ -18,7 +18,7 @@ type ProjectHeroData = {
 type ProjectHeroProps = {
   project: ProjectHeroData;
   showDraftBadge?: boolean;
-  showUrlLink?: boolean;
+  hasSiteMini?: boolean;
   className?: string;
 };
 
@@ -38,7 +38,7 @@ function shortenUrl(url: string): string {
 export default function ProjectHero({
   project,
   showDraftBadge = false,
-  showUrlLink = true,
+  hasSiteMini = false,
   className = "",
 }: ProjectHeroProps) {
   const cleanName = stegaClean(project.name);
@@ -90,13 +90,13 @@ export default function ProjectHero({
         {project.subtitle && (
           <div className="prose"><p className="my-0">{project.subtitle}</p></div>
         )}
-        {showUrlLink && projectUrl && (
+        {projectUrl && (
           <a
             href={projectUrl}
             title={cleanName}
             target="_blank"
             rel="noopener"
-            className="group inline-flex rounded px-4 no-underline ring-1 ring-current/50 hover:opacity-70"
+            className={`group inline-flex rounded px-4 no-underline ring-1 ring-current/50 hover:opacity-70 ${hasSiteMini ? "md:hidden" : ""}`}
           >
             <span className="flex h-[2.1rem] flex-row items-center justify-normal gap-1">
               {project.archived ? "Archived: " : ""}

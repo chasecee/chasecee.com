@@ -52,11 +52,11 @@ export default function ProjectView({
           <ProjectHero
             project={project}
             showDraftBadge={draftMode && project.isDraft === true}
-            showUrlLink={!hasSiteMini}
+            hasSiteMini={hasSiteMini}
           />
         </div>
         {hasSiteMini && siteMini && (
-          <div className="flex items-center justify-center md:col-span-1">
+          <div className="hidden items-center justify-center md:col-span-1 md:flex">
             <SiteMini
               url={siteMini.url}
               embedUrl={siteMini.embedUrl}
