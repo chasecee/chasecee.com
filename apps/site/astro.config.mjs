@@ -11,7 +11,6 @@ const monorepoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 
 
 export default defineConfig({
   site: "https://chasecee.com",
-  envDir: monorepoRoot,
   output: "server",
   prefetch: {
     defaultStrategy: 'viewport'
@@ -52,6 +51,7 @@ export default defineConfig({
   },
   integrations: [react()],
   vite: {
+    envDir: monorepoRoot,
     plugins: [tailwindcss()],
     worker: {
       format: "es",
