@@ -1,5 +1,6 @@
 import type { QueryParams, SanityDocument } from "@sanity/client";
 import { useLiveQuery, STUDIO_URL, type QueryResponseInitial } from "@/sanity/live";
+import { reconcileByKey } from "@/sanity/reconcile-by-key";
 import {
   createDataAttribute,
   useOptimistic,
@@ -14,27 +15,6 @@ type LiveProjectProps = {
   params: QueryParams;
   initial: QueryResponseInitial<ProjectViewData>;
 };
-
-function itemKey(value: unknown): string | undefined {
-  if (!value || typeof value !== "object") return undefined;
-  const key = (value as { _key?: unknown })._key;
-  return typeof key === "string" ? key : undefined;
-}
-
-function reconcileByKey(
-  current: ProjectContentItem[] | undefined,
-  next: ProjectContentItem[],
-): ProjectContentItem[] {
-  const byKey = new Map(
-    (current ?? [])
-      .map((item) => [itemKey(item), item] as const)
-      .filter((entry): entry is [string, ProjectContentItem] => !!entry[0]),
-  );
-  return next.map((item) => {
-    const key = itemKey(item);
-    return key ? (byKey.get(key) ?? item) : item;
-  });
-}
 
 export default function LiveProject({
   query,

@@ -38,6 +38,7 @@ const MUSIC_FIELDS = `{
     "columns": coalesce(gallery.columns, 2),
     "images": coalesce(gallery.images, gallery)[]{
       _key,
+      asset,
       "url": asset->url,
       alt,
       caption

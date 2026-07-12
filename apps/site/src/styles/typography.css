@@ -50,6 +50,7 @@
       font-weight: var(--prose-heading-weight);
       letter-spacing: var(--prose-heading-track);
       line-height: 1.2;
+      text-wrap: pretty;
     }
 
     &:where(h1) {

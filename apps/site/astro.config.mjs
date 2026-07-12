@@ -1,3 +1,5 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { defineConfig, fontProviders } from "astro/config";
 import react from "@astrojs/react";
 import vercel from "@astrojs/vercel";
@@ -5,8 +7,11 @@ import tailwindcss from "@tailwindcss/vite";
 import wasm from "vite-plugin-wasm";
 import topLevelAwait from "vite-plugin-top-level-await";
 
+const monorepoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+
 export default defineConfig({
   site: "https://chasecee.com",
+  envDir: monorepoRoot,
   output: "server",
   adapter: vercel({
     isr: {

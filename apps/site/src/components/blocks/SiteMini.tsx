@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import Button from "../Button";
 import LucideIcon from "../icons/LucideIcon";
 import { LUCIDE_ICONS } from "../icons/lucide";
-import { cleanMaybe } from "./utils";
+import { cleanMaybe, cleanResource } from "@chasecee/sanity-kit/astro";
 
 type SiteMiniProps = {
   url?: string;
@@ -39,7 +39,7 @@ export default function SiteMini({
   draftMode,
   dataSanity,
 }: SiteMiniProps) {
-  const href = cleanMaybe(url, draftMode);
+  const href = cleanResource(url);
   const shellRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const drag = useRef<{
@@ -53,7 +53,7 @@ export default function SiteMini({
   const [srcDoc, setSrcDoc] = useState<string | null>(null);
   const [useSrc, setUseSrc] = useState(true);
 
-  const src = href ? cleanMaybe(embedUrl, draftMode) || href : "";
+  const src = href ? cleanResource(embedUrl) || href : "";
   const label = href
     ? cleanMaybe(title, draftMode) || hostnameLabel(href)
     : "Site preview";
