@@ -23,6 +23,7 @@ import {
   getSiteBaseUrl,
   galleryPlugin,
   configureStudioPreviewUrls,
+  kitStudioConfig,
 } from "@chasecee/sanity-kit/studio";
 
 configureStudioPreviewUrls({
@@ -145,6 +146,7 @@ const presentationLocations = {
 };
 
 export default defineConfig({
+  ...kitStudioConfig,
   projectId: "lgevplo8",
   dataset: "production",
   title: "Cee App",

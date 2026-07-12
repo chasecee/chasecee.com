@@ -8,6 +8,6 @@
     "skipLibCheck": true,
     "types": ["sanity"]
   },
-  "include": ["./**/*.ts", "./**/*.tsx"],
+  "include": ["./**/*.ts", "./**/*.tsx", "../../scripts/local-kit.ts"],
   "exclude": ["node_modules", "dist"]
 }
