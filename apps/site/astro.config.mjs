@@ -18,7 +18,7 @@ export default defineConfig({
   adapter: vercel({
     isr: {
       bypassToken: process.env.ISR_BYPASS_TOKEN,
-      exclude: ["/api/revalidate"],
+      exclude: [/^\/api\/.+/],
     },
   }),
   fonts: [
