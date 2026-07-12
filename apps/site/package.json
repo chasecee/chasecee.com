@@ -17,7 +17,7 @@
     "@aarsteinmedia/dotlottie-player": "^6.3.9",
     "@astrojs/react": "^6.0.0",
     "@astrojs/vercel": "^11.0.0",
-    "@chasecee/sanity-kit": "github:chasecee/sanity-kit#v0.2.0",
+    "@chasecee/sanity-kit": "github:chasecee/sanity-kit",
     "@dimforge/rapier2d": "0.19.3",
     "@portabletext/react": "^6.2.0",
     "@sanity/client": "^7.23.0",
