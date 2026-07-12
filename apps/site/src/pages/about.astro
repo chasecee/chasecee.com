@@ -14,11 +14,15 @@ export const prerender = true;
 >
   <Container>
     <div class="prose prose-flow mt-10">
-      <div class="relative mb-10 flex w-full flex-col gap-6">
-        <ProfilePic client:visible />
-        <h1 class="relative z-20 m-0 text-[clamp(2.4rem,10vw,4.3rem)] leading-[0.95]">
-          Hard worker. <br /> Fast learner.
-        </h1>
+      <div class="relative mb-10 grid w-full gap-6 md:grid-cols-3 md:items-center">
+        <div class="max-w-[30rem] md:max-w-none">
+          <ProfilePic client:visible />
+        </div>
+        <div class="not-prose md:col-span-2 md:flex md:items-center md:justify-center">
+          <h1 class="relative z-20 m-0 text-[clamp(2.4rem,10vw,4.3rem)] leading-[0.95]">
+            Hard worker. <br /> Fast learner.
+          </h1>
+        </div>
       </div>
 
       <p class="text-xl">
