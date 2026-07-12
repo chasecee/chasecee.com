@@ -4,7 +4,7 @@ import {
   useOptimistic,
 } from "@sanity/visual-editing/react";
 import { useLiveQuery, STUDIO_URL, type QueryResponseInitial } from "@/sanity/live";
-import { reconcileByKey } from "@/sanity/reconcile-by-key";
+import { createReconcileOptimistic } from "@chasecee/sanity-kit/astro";
 import MusicView, { type MusicViewData } from "@/src/components/MusicView";
 import type { MusicEmbed, MusicSpotify } from "@/types/Music";
 
@@ -23,11 +23,10 @@ export default function LiveMusic({ query, params, initial }: LiveMusicProps) {
   const embeds = useOptimistic<
     MusicEmbedItem[] | undefined,
     SanityDocument<{ embeds?: MusicEmbedItem[] }>
-  >(item.embeds, (current, action) => {
-    if (action.id !== item._id) return current;
-    const next = action.document.embeds;
-    return Array.isArray(next) ? reconcileByKey(current, next) : current;
-  });
+  >(
+    item.embeds,
+    createReconcileOptimistic(item._id, (action) => action.document.embeds),
+  );
 
   const attr = createDataAttribute({
     baseUrl: STUDIO_URL,

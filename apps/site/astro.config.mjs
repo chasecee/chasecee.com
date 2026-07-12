@@ -13,6 +13,9 @@ export default defineConfig({
   site: "https://chasecee.com",
   envDir: monorepoRoot,
   output: "server",
+  prefetch: {
+    defaultStrategy: 'viewport'
+  },
   adapter: vercel({
     isr: {
       bypassToken: process.env.ISR_BYPASS_TOKEN,

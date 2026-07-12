@@ -1,6 +1,6 @@
 import type { QueryParams, SanityDocument } from "@sanity/client";
 import { useLiveQuery, STUDIO_URL, type QueryResponseInitial } from "@/sanity/live";
-import { reconcileByKey } from "@/sanity/reconcile-by-key";
+import { createReconcileOptimistic } from "@chasecee/sanity-kit/astro";
 import {
   createDataAttribute,
   useOptimistic,
@@ -27,20 +27,18 @@ export default function LiveProject({
   const content = useOptimistic<
     ProjectContentItem[] | undefined,
     SanityDocument<{ content?: ProjectContentItem[] }>
-  >(project.content, (current, action) => {
-    if (action.id !== project._id) return current;
-    const next = action.document.content;
-    return Array.isArray(next) ? reconcileByKey(current, next) : current;
-  });
+  >(
+    project.content,
+    createReconcileOptimistic(project._id, (action) => action.document.content),
+  );
 
   const leadIn = useOptimistic<
     ProjectContentItem[] | undefined,
     SanityDocument<{ leadIn?: ProjectContentItem[] }>
-  >(project.leadIn, (current, action) => {
-    if (action.id !== project._id) return current;
-    const next = action.document.leadIn;
-    return Array.isArray(next) ? reconcileByKey(current, next) : current;
-  });
+  >(
+    project.leadIn,
+    createReconcileOptimistic(project._id, (action) => action.document.leadIn),
+  );
 
   const attr = createDataAttribute({
     baseUrl: STUDIO_URL,
