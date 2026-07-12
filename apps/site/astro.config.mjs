@@ -18,10 +18,25 @@ export default defineConfig({
     {
       name: "Rubik",
       cssVariable: "--font-rubik",
-      provider: fontProviders.fontsource(),
-      weights: ["300 900"],
-      styles: ["normal", "italic"],
-      subsets: ["latin"],
+      provider: fontProviders.local(),
+      options: {
+        variants: [
+          {
+            weight: "300 900",
+            style: "normal",
+            src: [
+              "@fontsource-variable/rubik/files/rubik-latin-wght-normal.woff2",
+            ],
+          },
+          {
+            weight: "300 900",
+            style: "italic",
+            src: [
+              "@fontsource-variable/rubik/files/rubik-latin-wght-italic.woff2",
+            ],
+          },
+        ],
+      },
     },
   ],
   build: {
@@ -29,8 +44,11 @@ export default defineConfig({
   },
   integrations: [react()],
   vite: {
-    plugins: [tailwindcss(), wasm(), topLevelAwait()],
-    worker: { format: "es" },
+    plugins: [tailwindcss()],
+    worker: {
+      format: "es",
+      plugins: () => [wasm(), topLevelAwait()],
+    },
     optimizeDeps: { exclude: ["@dimforge/rapier2d"] },
   },
 });
