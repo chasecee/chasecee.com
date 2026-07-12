@@ -7,6 +7,7 @@
     "dev": "node scripts/dev.mjs",
     "build": "bun run --filter site build",
     "preview": "bun run --filter site preview",
+    "sync": "bun update \"@chasecee/sanity-kit@github:chasecee/sanity-kit\" && bun install",
     "studio:dev": "bun run --filter admin dev",
     "studio:deploy": "bun run --filter admin deploy",
     "site:dev": "bun run --filter site dev",
@@ -16,6 +17,7 @@
     "blueprints:destroy": "bunx sanity@latest blueprints destroy"
   },
   "dependencies": {
+    "@chasecee/sanity-kit": "github:chasecee/sanity-kit",
     "@sanity/blueprints": "^0.21.0"
   },
   "devDependencies": {}
