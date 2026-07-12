@@ -7,7 +7,7 @@
     "deploy": "sanity deploy"
   },
   "dependencies": {
-    "@chasecee/sanity-kit": "file:../../../sanity-kit",
+    "@chasecee/sanity-kit": "github:chasecee/sanity-kit",
     "@portabletext/editor": "7.10.7",
     "@sanity/code-input": "^7.2.6",
     "@sanity/color-input": "^6.0.12",
