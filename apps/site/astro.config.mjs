@@ -8,7 +8,12 @@ import topLevelAwait from "vite-plugin-top-level-await";
 export default defineConfig({
   site: "https://chasecee.com",
   output: "server",
-  adapter: vercel(),
+  adapter: vercel({
+    isr: {
+      bypassToken: process.env.ISR_BYPASS_TOKEN,
+      exclude: ["/api/revalidate"],
+    },
+  }),
   fonts: [
     {
       name: "Rubik",

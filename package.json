@@ -10,7 +10,13 @@
     "studio:dev": "bun run --filter admin dev",
     "studio:deploy": "bun run --filter admin deploy",
     "site:dev": "bun run --filter site dev",
-    "convert-webp": "node scripts/convert-to-webp.mjs"
+    "convert-webp": "node scripts/convert-to-webp.mjs",
+    "blueprints:plan": "bunx sanity@latest blueprints plan",
+    "blueprints:deploy": "bunx sanity@latest blueprints deploy",
+    "blueprints:destroy": "bunx sanity@latest blueprints destroy"
+  },
+  "dependencies": {
+    "@sanity/blueprints": "^0.21.0"
   },
   "devDependencies": {}
 }
