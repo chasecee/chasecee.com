@@ -3,7 +3,6 @@
 
 interface ImportMetaEnv {
   readonly SANITY_API_READ_TOKEN?: string;
-  readonly PUBLIC_SANITY_STUDIO_URL?: string;
   readonly ISR_BYPASS_TOKEN?: string;
   readonly REVALIDATE_SECRET?: string;
 }
