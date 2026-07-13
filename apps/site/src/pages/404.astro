@@ -2,7 +2,9 @@
 import SiteLayout from "@/src/layouts/SiteLayout.astro";
 import Container from "@/src/components/Container.astro";
 
-export const prerender = true;
+export const prerender = false;
+
+Astro.response.status = 404;
 ---
 
 <SiteLayout title="Not Found - Chase Cee">

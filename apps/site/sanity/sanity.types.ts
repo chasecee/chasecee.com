@@ -81,6 +81,12 @@ export type Columns = {
       media?: MediaMedia;
       _type: "media";
       _key: string;
+    } | {
+      asset?: SanityFileAssetReference;
+      media?: unknown;
+      alt?: string;
+      _type: "videoFile";
+      _key: string;
     }>;
     _type: "column";
     _key: string;
@@ -169,12 +175,6 @@ export type Project = {
     _type: "block";
     _key: string;
   } | {
-    asset?: SanityFileAssetReference;
-    media?: unknown;
-    alt?: string;
-    _type: "videoFile";
-    _key: string;
-  } | {
     _key: string;
   } & Columns | {
     _key: string;
@@ -193,6 +193,12 @@ export type Project = {
   } | {
     media?: MediaMedia;
     _type: "media";
+    _key: string;
+  } | {
+    asset?: SanityFileAssetReference;
+    media?: unknown;
+    alt?: string;
+    _type: "videoFile";
     _key: string;
   } | {
     _key: string;
@@ -220,12 +226,6 @@ export type Project = {
     _type: "block";
     _key: string;
   } | {
-    asset?: SanityFileAssetReference;
-    media?: unknown;
-    alt?: string;
-    _type: "videoFile";
-    _key: string;
-  } | {
     _key: string;
   } & Columns | {
     _key: string;
@@ -244,6 +244,12 @@ export type Project = {
   } | {
     media?: MediaMedia;
     _type: "media";
+    _key: string;
+  } | {
+    asset?: SanityFileAssetReference;
+    media?: unknown;
+    alt?: string;
+    _type: "videoFile";
     _key: string;
   }>;
   type?: "personal" | "client";
@@ -343,12 +349,6 @@ export type Music = {
     _type: "block";
     _key: string;
   } | {
-    asset?: SanityFileAssetReference;
-    media?: unknown;
-    alt?: string;
-    _type: "videoFile";
-    _key: string;
-  } | {
     _key: string;
   } & Columns | {
     _key: string;
@@ -367,6 +367,12 @@ export type Music = {
   } | {
     media?: MediaMedia;
     _type: "media";
+    _key: string;
+  } | {
+    asset?: SanityFileAssetReference;
+    media?: unknown;
+    alt?: string;
+    _type: "videoFile";
     _key: string;
   }>;
   links?: Array<{
@@ -430,6 +436,12 @@ export type Page = {
   } | {
     media?: MediaMedia;
     _type: "media";
+    _key: string;
+  } | {
+    asset?: SanityFileAssetReference;
+    media?: unknown;
+    alt?: string;
+    _type: "videoFile";
     _key: string;
   }>;
   title?: string;
@@ -660,6 +672,12 @@ export type PROJECT_QUERY_RESULT = {
         media?: MediaMedia;
         _type: "media";
         _key: string;
+      } | {
+        asset?: SanityFileAssetReference;
+        media?: unknown;
+        alt?: string;
+        _type: "videoFile";
+        _key: string;
       }>;
       _type: "column";
       _key: string;
@@ -784,6 +802,12 @@ export type PROJECT_QUERY_RESULT = {
       } | {
         media?: MediaMedia;
         _type: "media";
+        _key: string;
+      } | {
+        asset?: SanityFileAssetReference;
+        media?: unknown;
+        alt?: string;
+        _type: "videoFile";
         _key: string;
       }>;
       _type: "column";
@@ -928,6 +952,12 @@ export type MUSIC_QUERY_RESULT = {
       } | {
         media?: MediaMedia;
         _type: "media";
+        _key: string;
+      } | {
+        asset?: SanityFileAssetReference;
+        media?: unknown;
+        alt?: string;
+        _type: "videoFile";
         _key: string;
       }>;
       _type: "column";
@@ -1321,6 +1351,12 @@ export type MUSIC_BY_SLUG_QUERY_RESULT = {
         media?: MediaMedia;
         _type: "media";
         _key: string;
+      } | {
+        asset?: SanityFileAssetReference;
+        media?: unknown;
+        alt?: string;
+        _type: "videoFile";
+        _key: string;
       }>;
       _type: "column";
       _key: string;
@@ -1388,7 +1424,7 @@ export type PAGES_QUERY_RESULT = Array<{
 
 // Source: ../site/sanity/queries.ts
 // Variable: PAGE_QUERY
-// Query: *[_type == "page" && slug.current == $slug][0]{  _id,  _createdAt,  title,  subtitle,  "slug": slug.current,  content[]{    ...,    _type == "image" => {      "imageUrl": asset->url,      "alt": alt    }  }}
+// Query: *[_type == "page" && slug.current == $slug][0]{  _id,  _createdAt,  title,  subtitle,  "slug": slug.current,  content[]{  ...,  markDefs[]{    ...,    _type == "internalLink" => {      "slug": @.reference->slug.current,      "refType": @.reference->_type    },    _type == "link" => {      ...,    }  }}}
 export type PAGE_QUERY_RESULT = {
   _id: string;
   _createdAt: string;
@@ -1404,11 +1440,11 @@ export type PAGE_QUERY_RESULT = {
     }>;
     style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
     listItem?: "bullet" | "number";
-    markDefs?: Array<{
+    markDefs: Array<{
       href?: string;
       _type: "link";
       _key: string;
-    }>;
+    }> | null;
     level?: number;
     _type: "block";
     _key: string;
@@ -1453,11 +1489,18 @@ export type PAGE_QUERY_RESULT = {
         media?: MediaMedia;
         _type: "media";
         _key: string;
+      } | {
+        asset?: SanityFileAssetReference;
+        media?: unknown;
+        alt?: string;
+        _type: "videoFile";
+        _key: string;
       }>;
       _type: "column";
       _key: string;
     }>;
     valign?: "bottom" | "center" | "top";
+    markDefs: null;
   } | {
     _key: string;
     _type: "embed";
@@ -1466,6 +1509,7 @@ export type PAGE_QUERY_RESULT = {
     width?: "content" | "full";
     ratio?: Ratio;
     aspectRatio?: string;
+    markDefs: null;
   } | {
     _key: string;
     _type: "gallery";
@@ -1473,19 +1517,21 @@ export type PAGE_QUERY_RESULT = {
     images?: Array<{
       _key: string;
     } & GalleryImage>;
+    markDefs: null;
   } | {
     asset?: SanityImageAssetReference;
     media?: unknown;
     hotspot?: SanityImageHotspot;
     crop?: SanityImageCrop;
-    alt: string | null;
+    alt?: string;
     _type: "image";
     _key: string;
-    imageUrl: string | null;
+    markDefs: null;
   } | {
     media?: MediaMedia;
     _type: "media";
     _key: string;
+    markDefs: null;
   } | {
     _key: string;
     _type: "spotify";
@@ -1493,6 +1539,14 @@ export type PAGE_QUERY_RESULT = {
     size?: "compact" | "default";
     theme?: "dark" | "light";
     title?: string;
+    markDefs: null;
+  } | {
+    asset?: SanityFileAssetReference;
+    media?: unknown;
+    alt?: string;
+    _type: "videoFile";
+    _key: string;
+    markDefs: null;
   }> | null;
 } | null;
 

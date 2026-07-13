@@ -20,7 +20,7 @@ const { project: slug } = Astro.params;
 const projectSlug = typeof slug === "string" ? slug : "";
 
 if (!projectSlug) {
-  return Astro.redirect("/404");
+  return Astro.rewrite("/404");
 }
 
 type ProjectPageData = ProjectViewData & {
@@ -35,7 +35,7 @@ const initialProject = await loadQuery<ProjectPageData | null>({
 const project = initialProject.data;
 
 if (!project) {
-  return Astro.redirect("/404");
+  return Astro.rewrite("/404");
 }
 
 const draftMode = Astro.locals.draftMode === true;

@@ -36,7 +36,7 @@
   font-weight: var(--prose-weight-normal);
 
   :not(:where(.not-prose, .not-prose *)) {
-    &:where(p, ul, ol, blockquote, img) {
+    &:where(p, ul, ol, blockquote, img, video) {
       margin-block: var(--prose-gap);
     }
 

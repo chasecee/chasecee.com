@@ -106,11 +106,5 @@ export const PAGE_QUERY = defineQuery(`*[_type == "page" && slug.current == $slu
   title,
   subtitle,
   "slug": slug.current,
-  content[]{
-    ...,
-    _type == "image" => {
-      "imageUrl": asset->url,
-      "alt": alt
-    }
-  }
+  content[]${portableTextFields}
 }`);

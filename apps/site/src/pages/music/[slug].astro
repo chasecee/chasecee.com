@@ -18,7 +18,7 @@ const { slug } = Astro.params;
 const musicSlug = typeof slug === "string" ? slug : "";
 
 if (!musicSlug) {
-  return Astro.redirect("/404");
+  return Astro.rewrite("/404");
 }
 
 const draftMode = Astro.locals.draftMode === true;
@@ -36,7 +36,7 @@ const item = draftMode
   : await getMusicBySlug(musicSlug, draftFetchOptions(Astro.locals));
 
 if (!item) {
-  return Astro.redirect("/404");
+  return Astro.rewrite("/404");
 }
 
 const hasGallery = contentHasBlock(item.content, "gallery");

@@ -5,8 +5,10 @@ import { Body } from "@/src/components/Body";
 import ImageGalleryLightbox from "@/src/components/gallery/ImageGalleryLightbox.astro";
 import { contentHasBlock } from "@chasecee/sanity-kit/astro";
 import { getPage } from "@/sanity/sanity-utils";
+import urlFor from "@/sanity/sanity.image";
 import { metaDescription } from "@/src/utils/seo";
 import type { PAGE_QUERY_RESULT } from "@/sanity/sanity.types";
+import type { SanityImageSource } from "@sanity/image-url";
 import { stegaClean } from "@sanity/client/stega";
 import { draftFetchOptions } from "@/sanity/preview";
 
@@ -19,7 +21,7 @@ const { slug } = Astro.params;
 const page = await getPage(slug!, draftFetchOptions(Astro.locals));
 
 if (!page) {
-  return Astro.redirect("/404");
+  return Astro.rewrite("/404");
 }
 
 const title = `${page.title} - Chase Cee`;
@@ -29,21 +31,16 @@ const description = metaDescription(
 );
 const content = page.content ?? [];
 const heroImage =
-  content.find(
-    (block): block is PageImageBlock =>
-      block._type === "image" &&
-      "imageUrl" in block &&
-      typeof block.imageUrl === "string",
-  ) ?? null;
+  content.find((block): block is PageImageBlock => block._type === "image") ??
+  null;
 const contentWithoutHero = heroImage
   ? content.filter((block) => block !== heroImage)
   : content;
 const heroTitle = page.subtitle ?? page.title;
 const heroImageTransitionName = `page-hero-image-${page.slug}`;
-const heroImageSrc =
-  heroImage && typeof heroImage.imageUrl === "string"
-    ? stegaClean(heroImage.imageUrl).trim()
-    : "";
+const heroImageSrc = heroImage
+  ? urlFor(heroImage as SanityImageSource).width(1600).fit("max").url()
+  : "";
 const heroImageAlt =
   heroImage && typeof heroImage.alt === "string"
     ? stegaClean(heroImage.alt).trim()
@@ -59,7 +56,7 @@ const hasLightbox =
     <div class="prose prose-flow">
       <header class="not-prose relative mb-10 min-h-52 overflow-hidden rounded-xl bg-neutral-900 sm:min-h-64">
         {
-          heroImage && (
+          heroImageSrc && (
             <img
               src={heroImageSrc}
               alt={heroImageAlt || page.title}
