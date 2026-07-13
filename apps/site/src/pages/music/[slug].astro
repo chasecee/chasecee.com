@@ -10,6 +10,7 @@ import { loadQuery, getDraftModeProps } from "@/sanity/load-query";
 import { MUSIC_QUERY } from "@/sanity/queries";
 import { stegaClean } from "@sanity/client/stega";
 import type { MusicViewData } from "@/src/components/MusicView";
+import { contentHasBlock } from "@/src/utils/contentHasBlock";
 
 export const prerender = false;
 
@@ -38,7 +39,7 @@ if (!item) {
   return Astro.redirect("/404");
 }
 
-const hasGallery = Boolean(item.gallery?.images?.length);
+const hasGallery = contentHasBlock(item.content, "gallery");
 const bandName = stegaClean(item.bandName);
 const albumName = stegaClean(item.albumName);
 ---

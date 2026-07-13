@@ -14,7 +14,7 @@
   --prose-link: var(--color-indigo-600);
   --prose-link-hover: var(--color-indigo-500);
   --prose-blockquote-border: rgb(0 0 0 / 0.2);
-  --project-lead-col: 46rem;
+  --project-lead-col: 32rem;
 }
 @media (width >= theme(--breakpoint-lg)) {
   :root {

@@ -1,19 +1,24 @@
 import type { ArbitraryTypedObject, PortableTextBlock } from "@portabletext/types";
-import type { ProjectDetail, ProjectSiteMini } from "@/types/Project";
+import type { ProjectDetail } from "@/types/Project";
 import { Body } from "@/src/components/Body";
 import ProjectHero from "@/src/components/ProjectHero";
 import SiteMini from "@/src/components/blocks/SiteMini";
 
-export type { ProjectSiteMini };
-
 export type ProjectViewData = ProjectDetail;
+
+type SiteMiniBlock = {
+  _type: "siteMini";
+  _key?: string;
+  url?: string;
+  embedUrl?: string;
+  title?: string;
+};
 
 type ProjectViewProps = {
   project: ProjectViewData;
   draftMode?: boolean;
   contentDataAttribute?: string;
   leadInDataAttribute?: string;
-  siteMiniDataAttribute?: string;
   getDataAttribute?: (key: string | undefined) => string | undefined;
   getLeadInDataAttribute?: (key: string | undefined) => string | undefined;
 };
@@ -23,7 +28,6 @@ export default function ProjectView({
   draftMode = false,
   contentDataAttribute,
   leadInDataAttribute,
-  siteMiniDataAttribute,
   getDataAttribute,
   getLeadInDataAttribute,
 }: ProjectViewProps) {
@@ -35,7 +39,21 @@ export default function ProjectView({
     | PortableTextBlock
     | ArbitraryTypedObject
   )[];
-  const siteMini = project.siteMini;
+  const siteMiniIndex = leadIn.findIndex((block) => {
+    if (!block || typeof block !== "object") return false;
+    if ((block as { _type?: string })._type !== "siteMini") return false;
+    const url = (block as { url?: unknown }).url;
+    return typeof url === "string" && url.trim().length > 0;
+  });
+  const siteMini =
+    siteMiniIndex >= 0 ? (leadIn[siteMiniIndex] as SiteMiniBlock) : null;
+  const leadInContent =
+    siteMiniIndex >= 0
+      ? leadIn.filter((_, index) => index !== siteMiniIndex)
+      : leadIn;
+  const siteMiniDataAttribute = siteMini
+    ? getLeadInDataAttribute?.(siteMini._key)
+    : undefined;
   const hasSiteMini = Boolean(siteMini?.url);
 
   return (
@@ -53,10 +71,10 @@ export default function ProjectView({
             showDraftBadge={draftMode && project.isDraft === true}
             hasSiteMini={hasSiteMini}
           />
-          {leadIn.length > 0 && (
+          {leadInContent.length > 0 && (
             <div className="content" data-sanity={leadInDataAttribute}>
               <Body
-                value={leadIn}
+                value={leadInContent}
                 draftMode={draftMode}
                 getDataAttribute={getLeadInDataAttribute}
               />

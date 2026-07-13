@@ -35,6 +35,13 @@ function shortenUrl(url: string): string {
   }
 }
 
+function svgMaskDataUrl(svg: string): string {
+  const maskSvg = svg
+    .replace(/\sfilter="[^"]*"/g, "")
+    .replace(/fill="(?!none)[^"]*"/g, 'fill="#fff"');
+  return `url("data:image/svg+xml;charset=utf-8,${encodeURIComponent(maskSvg)}")`;
+}
+
 export default function ProjectHero({
   project,
   showDraftBadge = false,
@@ -53,12 +60,19 @@ export default function ProjectHero({
     ? urlFor(project.image).width(1600).height(900).dpr(1.5).url()
     : "";
   const hasLogo = Boolean(svgCode);
+  const clippedLogo = Boolean(svgCode && imageUrl);
+  const maskImage = clippedLogo ? svgMaskDataUrl(svgCode) : "";
+  const imageFill = {
+    backgroundImage: `url(${imageUrl})`,
+    backgroundSize: "cover",
+    backgroundPosition: "top left",
+  };
 
   return (
     <header
       className={
         hasLogo
-          ? `not-prose relative flex flex-col max-w-[90%] ${showDraftBadge ? "ring-2 ring-amber-300 ring-inset" : ""} ${className}`
+          ? `not-prose relative flex flex-col max-w-[var(--prose-measure)] mx-auto ${showDraftBadge ? "ring-2 ring-amber-300 ring-inset" : ""} ${className}`
           : `not-prose relative flex h-full min-h-72 flex-col justify-end overflow-hidden p-8 text-white ${showDraftBadge ? "ring-2 ring-amber-300 ring-inset" : ""} ${className}`
       }
     >
@@ -83,11 +97,40 @@ export default function ProjectHero({
           Draft
         </span>
       )}
-      <div className="relative z-10 flex flex-col items-start gap-3">
+      <div className="relative z-10 flex flex-col items-start gap-6">
         <h1 className="sr-only">{cleanName}</h1>
-        {svgCode ? (
+        {clippedLogo ? (
+          <div className="relative w-full max-w-[80%] ">
+            <div
+              className="pointer-events-none select-none opacity-0 [&_svg]:h-auto [&_svg]:w-full"
+              aria-hidden="true"
+              dangerouslySetInnerHTML={{ __html: svgCode }}
+            />
+            <div
+              className="absolute inset-0 opacity-0"
+              aria-hidden="true"
+              style={imageFill}
+            />
+            <div
+              className="absolute inset-0"
+              aria-hidden="true"
+              style={{
+                ...imageFill,
+                WebkitMaskImage: maskImage,
+                maskImage,
+                WebkitMaskSize: "contain",
+                maskSize: "contain",
+                WebkitMaskRepeat: "no-repeat",
+                maskRepeat: "no-repeat",
+                WebkitMaskPosition: "center",
+                maskPosition: "center",
+                maskMode: "alpha",
+              }}
+            />
+          </div>
+        ) : svgCode ? (
           <div
-            className="max-w-full lg:max-w-[60ch]"
+            className="max-w-full"
             aria-hidden="true"
             dangerouslySetInnerHTML={{ __html: svgCode }}
           />
@@ -100,7 +143,7 @@ export default function ProjectHero({
             title={cleanName}
             target="_blank"
             rel="noopener"
-            className={`group inline-flex rounded px-4 no-underline ring-1 ring-current/50 hover:opacity-70 ${hasSiteMini ? "md:hidden" : ""}`}
+            className={`group ${hasSiteMini ? "md:hidden" : ""}`}
           >
             <span className="flex h-[2.1rem] flex-row items-center justify-normal gap-1">
               {project.archived ? "Archived: " : ""}

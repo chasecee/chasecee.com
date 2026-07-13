@@ -43,7 +43,7 @@ const hasLightbox =
   draftMode ||
   contentHasBlock(project.content, "gallery") ||
   contentHasBlock(project.leadIn, "gallery") ||
-  Boolean(project.siteMini?.url);
+  contentHasBlock(project.leadIn, "siteMini");
 const cleanName = stegaClean(project.name);
 const description = metaDescription(
   stegaClean(project.subtitle),

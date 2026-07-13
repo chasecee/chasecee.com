@@ -1,10 +1,8 @@
 import { stegaClean } from "@sanity/client/stega";
-import type { SanityImageSource } from "@sanity/image-url";
-import { Gallery } from "@chasecee/sanity-kit/astro";
 import type { MusicDetail } from "@/types/Music";
-import urlFor from "@/sanity/sanity.image";
-import { withSanityImageParams } from "@/src/utils/sanityImageParams";
+import Body from "@/src/components/Body";
 import MusicPlayers, { isPlatformListenLink } from "@/src/components/MusicPlayers";
+import { withSanityImageParams } from "@/src/utils/sanityImageParams";
 
 export type MusicViewData = MusicDetail;
 
@@ -13,6 +11,8 @@ type MusicViewProps = {
   draftMode?: boolean;
   embedsDataAttribute?: string;
   getEmbedDataAttribute?: (key: string | undefined) => string | undefined;
+  contentDataAttribute?: string;
+  getContentDataAttribute?: (key: string | undefined) => string | undefined;
 };
 
 export default function MusicView({
@@ -20,6 +20,8 @@ export default function MusicView({
   draftMode = false,
   embedsDataAttribute,
   getEmbedDataAttribute,
+  contentDataAttribute,
+  getContentDataAttribute,
 }: MusicViewProps) {
   const showDraftBadge = draftMode && item.isDraft;
   const bandName = draftMode
@@ -30,6 +32,7 @@ export default function MusicView({
     : stegaClean(item.albumName ?? "");
   const embeds = item.embeds ?? [];
   const links = item.links ?? [];
+  const content = item.content ?? [];
   const otherLinks = links.filter((link) => !isPlatformListenLink(link.label));
 
   return (
@@ -80,29 +83,12 @@ export default function MusicView({
         />
       )}
 
-      {item.gallery?.images && item.gallery.images.length > 0 && (
-        <section className="mt-8">
-          <Gallery
-            images={item.gallery.images.map((image) => ({
-              ...image,
-              asset: image.asset ?? undefined,
-              alt: image.alt ?? undefined,
-              caption: image.caption ?? undefined,
-              url: image.url
-                ? withSanityImageParams(image.url, {
-                    w: 2400,
-                    fit: "max",
-                    auto: "format",
-                  })
-                : undefined,
-            }))}
-            columns={item.gallery.columns}
+      {content.length > 0 && (
+        <section className="mt-8" data-sanity={contentDataAttribute}>
+          <Body
+            value={content}
             draftMode={draftMode}
-            buildImageUrl={(source, options) => {
-              const image = urlFor(source as SanityImageSource).width(options.width);
-              if (options.height) image.height(options.height);
-              return image.fit("max").url();
-            }}
+            getDataAttribute={getContentDataAttribute}
           />
         </section>
       )}

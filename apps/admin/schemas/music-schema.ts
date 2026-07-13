@@ -1,3 +1,5 @@
+import { contentPortableText } from "./portable-text";
+
 const music = {
   name: "music",
   title: "Music",
@@ -45,9 +47,10 @@ const music = {
       ],
     },
     {
-      name: "gallery",
-      title: "Band Art / Photography Gallery",
-      type: "gallery",
+      name: "content",
+      title: "Content",
+      type: "array",
+      ...contentPortableText,
     },
     {
       name: "links",

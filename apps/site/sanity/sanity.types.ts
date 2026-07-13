@@ -198,7 +198,9 @@ export type Project = {
     media?: MediaMedia;
     _type: "media";
     _key: string;
-  }>;
+  } | {
+    _key: string;
+  } & SiteMini>;
   content?: Array<{
     children?: Array<{
       marks?: Array<string>;
@@ -269,7 +271,6 @@ export type Project = {
     mobile?: string;
   };
   url?: string;
-  siteMini?: SiteMini;
   archived?: boolean;
   orderRank?: string;
 };
@@ -325,7 +326,57 @@ export type Music = {
     alt?: string;
     _type: "image";
   };
-  gallery?: Gallery;
+  content?: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      blank?: boolean;
+      _type: "link";
+      _key: string;
+    } | {
+      reference?: ProjectReference | PageReference | MusicReference;
+      _type: "internalLink";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  } | {
+    asset?: SanityFileAssetReference;
+    media?: unknown;
+    alt?: string;
+    _type: "videoFile";
+    _key: string;
+  } | {
+    _key: string;
+  } & Columns | {
+    _key: string;
+  } & Embed | {
+    _key: string;
+  } & Spotify | {
+    _key: string;
+  } & Gallery | {
+    _key: string;
+  } & Skills | {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+    _key: string;
+  } | {
+    media?: MediaMedia;
+    _type: "media";
+    _key: string;
+  }>;
   links?: Array<{
     label?: string;
     url?: string;
@@ -337,14 +388,6 @@ export type Music = {
     _key: string;
   } & Spotify>;
   orderRank?: string;
-};
-
-export type Gallery = {
-  _type: "gallery";
-  columns?: 1 | 2 | 3 | 4 | 5 | 6 | 0;
-  images?: Array<{
-    _key: string;
-  } & GalleryImage>;
 };
 
 export type Slug = {
@@ -403,6 +446,14 @@ export type Page = {
   subtitle?: string;
   slug?: Slug;
   orderRank?: string;
+};
+
+export type Gallery = {
+  _type: "gallery";
+  columns?: 1 | 2 | 3 | 4 | 5 | 6 | 0;
+  images?: Array<{
+    _key: string;
+  } & GalleryImage>;
 };
 
 export type GalleryImage = {
@@ -536,11 +587,11 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = Ratio | SanityFileAssetReference | MediaMedia | SanityImageAssetReference | Columns | SiteMini | Spotify | Embed | Skills | ProjectReference | PageReference | MusicReference | Project | Color | Code | SanityImageCrop | SanityImageHotspot | Music | Gallery | Slug | Page | GalleryImage | RgbaColor | HsvaColor | HslaColor | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type AllSanitySchemaTypes = Ratio | SanityFileAssetReference | MediaMedia | SanityImageAssetReference | Columns | SiteMini | Spotify | Embed | Skills | ProjectReference | PageReference | MusicReference | Project | Color | Code | SanityImageCrop | SanityImageHotspot | Music | Slug | Page | Gallery | GalleryImage | RgbaColor | HsvaColor | HslaColor | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 
 // Source: ../site/sanity/queries.ts
 // Variable: PROJECT_QUERY
-// Query: *[_type == "project" && slug.current == $slug][0]{  _id,  _type,  "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),  _createdAt,  name,  "slug": slug.current,  "image": image.asset->url,  subtitle,  svgcode,  url,  archived,  siteMini,  orderRank,  "leadIn": leadIn[]{  ...,  markDefs[]{    ...,    _type == "internalLink" => {      "slug": @.reference->slug.current,      "refType": @.reference->_type    },    _type == "link" => {      ...,    }  }},  "content": content[]{  ...,  markDefs[]{    ...,    _type == "internalLink" => {      "slug": @.reference->slug.current,      "refType": @.reference->_type    },    _type == "link" => {      ...,    }  }}}
+// Query: *[_type == "project" && slug.current == $slug][0]{  _id,  _type,  "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),  _createdAt,  name,  "slug": slug.current,  "image": image.asset->url,  subtitle,  svgcode,  url,  archived,  orderRank,  "leadIn": leadIn[]{  ...,  markDefs[]{    ...,    _type == "internalLink" => {      "slug": @.reference->slug.current,      "refType": @.reference->_type    },    _type == "link" => {      ...,    }  }},  "content": content[]{  ...,  markDefs[]{    ...,    _type == "internalLink" => {      "slug": @.reference->slug.current,      "refType": @.reference->_type    },    _type == "link" => {      ...,    }  }}}
 export type PROJECT_QUERY_RESULT = {
   _id: string;
   _type: "project";
@@ -553,7 +604,6 @@ export type PROJECT_QUERY_RESULT = {
   svgcode: Code | null;
   url: string | null;
   archived: boolean | null;
-  siteMini: SiteMini | null;
   orderRank: string | null;
   leadIn: Array<{
     children?: Array<{
@@ -658,6 +708,13 @@ export type PROJECT_QUERY_RESULT = {
     media?: MediaMedia;
     _type: "media";
     _key: string;
+    markDefs: null;
+  } | {
+    _key: string;
+    _type: "siteMini";
+    url?: string;
+    embedUrl?: string;
+    title?: string;
     markDefs: null;
   } | {
     _key: string;
@@ -809,7 +866,7 @@ export type PROJECT_QUERY_RESULT = {
 
 // Source: ../site/sanity/queries.ts
 // Variable: MUSIC_QUERY
-// Query: *[_type == "music" && (slug.current == $slug || _id == $slug)][0]{  _id,  _type,  "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),  _createdAt,  "slug": coalesce(slug.current, _id),  bandName,  albumName,  releaseYear,  "albumArt": albumArt.asset->url,  "albumArtAlt": albumArt.alt,  "gallery": {    "columns": coalesce(gallery.columns, 2),    "images": coalesce(gallery.images, gallery)[]{      _key,      asset,      "url": asset->url,      alt,      caption    }  },  links,  embeds}
+// Query: *[_type == "music" && (slug.current == $slug || _id == $slug)][0] {  _id,  _type,  "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),  _createdAt,  "slug": coalesce(slug.current, _id),  bandName,  albumName,  releaseYear,  "albumArt": albumArt.asset->url,  "albumArtAlt": albumArt.alt,  links,  embeds,  "content": content[]{  ...,  markDefs[]{    ...,    _type == "internalLink" => {      "slug": @.reference->slug.current,      "refType": @.reference->_type    },    _type == "link" => {      ...,    }  }}}
 export type MUSIC_QUERY_RESULT = {
   _id: string;
   _type: "music";
@@ -821,16 +878,6 @@ export type MUSIC_QUERY_RESULT = {
   releaseYear: number | null;
   albumArt: string | null;
   albumArtAlt: string | null;
-  gallery: {
-    columns: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-    images: Array<{
-      _key: string;
-      asset: SanityImageAssetReference | null;
-      url: string | null;
-      alt: string | null;
-      caption: string | null;
-    }> | null;
-  };
   links: Array<{
     label?: string;
     url?: string;
@@ -841,6 +888,131 @@ export type MUSIC_QUERY_RESULT = {
   } & Embed | {
     _key: string;
   } & Spotify> | null;
+  content: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs: Array<{
+      reference?: MusicReference | PageReference | ProjectReference;
+      _type: "internalLink";
+      _key: string;
+      slug: string | null;
+      refType: "music" | "page" | "project" | null;
+    } | {
+      href?: string;
+      blank?: boolean;
+      _type: "link";
+      _key: string;
+    }> | null;
+    level?: number;
+    _type: "block";
+    _key: string;
+  } | {
+    _key: string;
+    _type: "columns";
+    columns?: Array<{
+      content?: Array<{
+        _key: string;
+      } & Columns | {
+        _key: string;
+      } & Embed | {
+        _key: string;
+      } & Gallery | {
+        _key: string;
+      } & Skills | {
+        _key: string;
+      } & Spotify | {
+        children?: Array<{
+          marks?: Array<string>;
+          text?: string;
+          _type: "span";
+          _key: string;
+        }>;
+        style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+        listItem?: "bullet" | "number";
+        markDefs?: Array<{
+          href?: string;
+          _type: "link";
+          _key: string;
+        }>;
+        level?: number;
+        _type: "block";
+        _key: string;
+      } | {
+        asset?: SanityImageAssetReference;
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        alt?: string;
+        _type: "image";
+        _key: string;
+      } | {
+        media?: MediaMedia;
+        _type: "media";
+        _key: string;
+      }>;
+      _type: "column";
+      _key: string;
+    }>;
+    valign?: "bottom" | "center" | "top";
+    markDefs: null;
+  } | {
+    _key: string;
+    _type: "embed";
+    url?: string;
+    title?: string;
+    width?: "content" | "full";
+    ratio?: Ratio;
+    aspectRatio?: string;
+    markDefs: null;
+  } | {
+    _key: string;
+    _type: "gallery";
+    columns?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+    images?: Array<{
+      _key: string;
+    } & GalleryImage>;
+    markDefs: null;
+  } | {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+    _key: string;
+    markDefs: null;
+  } | {
+    media?: MediaMedia;
+    _type: "media";
+    _key: string;
+    markDefs: null;
+  } | {
+    _key: string;
+    _type: "skills";
+    placeholder?: string;
+    markDefs: null;
+  } | {
+    _key: string;
+    _type: "spotify";
+    url?: string;
+    size?: "compact" | "default";
+    theme?: "dark" | "light";
+    title?: string;
+    markDefs: null;
+  } | {
+    asset?: SanityFileAssetReference;
+    media?: unknown;
+    alt?: string;
+    _type: "videoFile";
+    _key: string;
+    markDefs: null;
+  }> | null;
 } | null;
 
 // Source: ../site/sanity/queries.ts
@@ -1073,7 +1245,7 @@ export type CLIENT_PROJECTS_QUERY_RESULT = Array<{
 
 // Source: ../site/sanity/queries.ts
 // Variable: MUSIC_LIST_QUERY
-// Query: *[_type == "music"] | order(orderRank) {  _id,  _type,  "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),  _createdAt,  "slug": coalesce(slug.current, _id),  bandName,  albumName,  releaseYear,  "albumArt": albumArt.asset->url,  "albumArtAlt": albumArt.alt,  "gallery": {    "columns": coalesce(gallery.columns, 2),    "images": coalesce(gallery.images, gallery)[]{      _key,      asset,      "url": asset->url,      alt,      caption    }  },  links,  embeds}
+// Query: *[_type == "music"] | order(orderRank) {  _id,  _type,  "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),  _createdAt,  "slug": coalesce(slug.current, _id),  bandName,  albumName,  releaseYear,  "albumArt": albumArt.asset->url,  "albumArtAlt": albumArt.alt,  links,  embeds}
 export type MUSIC_LIST_QUERY_RESULT = Array<{
   _id: string;
   _type: "music";
@@ -1085,16 +1257,6 @@ export type MUSIC_LIST_QUERY_RESULT = Array<{
   releaseYear: number | null;
   albumArt: string | null;
   albumArtAlt: string | null;
-  gallery: {
-    columns: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-    images: Array<{
-      _key: string;
-      asset: SanityImageAssetReference | null;
-      url: string | null;
-      alt: string | null;
-      caption: string | null;
-    }> | null;
-  };
   links: Array<{
     label?: string;
     url?: string;
@@ -1109,7 +1271,7 @@ export type MUSIC_LIST_QUERY_RESULT = Array<{
 
 // Source: ../site/sanity/queries.ts
 // Variable: MUSIC_BY_SLUG_QUERY
-// Query: *[_type == "music" && (slug.current == $slug || _id == $slug)][0] {  _id,  _type,  "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),  _createdAt,  "slug": coalesce(slug.current, _id),  bandName,  albumName,  releaseYear,  "albumArt": albumArt.asset->url,  "albumArtAlt": albumArt.alt,  "gallery": {    "columns": coalesce(gallery.columns, 2),    "images": coalesce(gallery.images, gallery)[]{      _key,      asset,      "url": asset->url,      alt,      caption    }  },  links,  embeds}
+// Query: *[_type == "music" && (slug.current == $slug || _id == $slug)][0] {  _id,  _type,  "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),  _createdAt,  "slug": coalesce(slug.current, _id),  bandName,  albumName,  releaseYear,  "albumArt": albumArt.asset->url,  "albumArtAlt": albumArt.alt,  links,  embeds,  "content": content[]{  ...,  markDefs[]{    ...,    _type == "internalLink" => {      "slug": @.reference->slug.current,      "refType": @.reference->_type    },    _type == "link" => {      ...,    }  }}}
 export type MUSIC_BY_SLUG_QUERY_RESULT = {
   _id: string;
   _type: "music";
@@ -1121,16 +1283,6 @@ export type MUSIC_BY_SLUG_QUERY_RESULT = {
   releaseYear: number | null;
   albumArt: string | null;
   albumArtAlt: string | null;
-  gallery: {
-    columns: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-    images: Array<{
-      _key: string;
-      asset: SanityImageAssetReference | null;
-      url: string | null;
-      alt: string | null;
-      caption: string | null;
-    }> | null;
-  };
   links: Array<{
     label?: string;
     url?: string;
@@ -1141,6 +1293,131 @@ export type MUSIC_BY_SLUG_QUERY_RESULT = {
   } & Embed | {
     _key: string;
   } & Spotify> | null;
+  content: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs: Array<{
+      reference?: MusicReference | PageReference | ProjectReference;
+      _type: "internalLink";
+      _key: string;
+      slug: string | null;
+      refType: "music" | "page" | "project" | null;
+    } | {
+      href?: string;
+      blank?: boolean;
+      _type: "link";
+      _key: string;
+    }> | null;
+    level?: number;
+    _type: "block";
+    _key: string;
+  } | {
+    _key: string;
+    _type: "columns";
+    columns?: Array<{
+      content?: Array<{
+        _key: string;
+      } & Columns | {
+        _key: string;
+      } & Embed | {
+        _key: string;
+      } & Gallery | {
+        _key: string;
+      } & Skills | {
+        _key: string;
+      } & Spotify | {
+        children?: Array<{
+          marks?: Array<string>;
+          text?: string;
+          _type: "span";
+          _key: string;
+        }>;
+        style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+        listItem?: "bullet" | "number";
+        markDefs?: Array<{
+          href?: string;
+          _type: "link";
+          _key: string;
+        }>;
+        level?: number;
+        _type: "block";
+        _key: string;
+      } | {
+        asset?: SanityImageAssetReference;
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        alt?: string;
+        _type: "image";
+        _key: string;
+      } | {
+        media?: MediaMedia;
+        _type: "media";
+        _key: string;
+      }>;
+      _type: "column";
+      _key: string;
+    }>;
+    valign?: "bottom" | "center" | "top";
+    markDefs: null;
+  } | {
+    _key: string;
+    _type: "embed";
+    url?: string;
+    title?: string;
+    width?: "content" | "full";
+    ratio?: Ratio;
+    aspectRatio?: string;
+    markDefs: null;
+  } | {
+    _key: string;
+    _type: "gallery";
+    columns?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+    images?: Array<{
+      _key: string;
+    } & GalleryImage>;
+    markDefs: null;
+  } | {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+    _key: string;
+    markDefs: null;
+  } | {
+    media?: MediaMedia;
+    _type: "media";
+    _key: string;
+    markDefs: null;
+  } | {
+    _key: string;
+    _type: "skills";
+    placeholder?: string;
+    markDefs: null;
+  } | {
+    _key: string;
+    _type: "spotify";
+    url?: string;
+    size?: "compact" | "default";
+    theme?: "dark" | "light";
+    title?: string;
+    markDefs: null;
+  } | {
+    asset?: SanityFileAssetReference;
+    media?: unknown;
+    alt?: string;
+    _type: "videoFile";
+    _key: string;
+    markDefs: null;
+  }> | null;
 } | null;
 
 // Source: ../site/sanity/queries.ts
@@ -1268,4 +1545,19 @@ export type PAGE_QUERY_RESULT = {
     title?: string;
   }> | null;
 } | null;
+
+// Query TypeMap
+import "@sanity/client";
+declare module "@sanity/client" {
+  interface SanityQueries {
+    "*[_type == \"project\" && slug.current == $slug][0]{\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  name,\n  \"slug\": slug.current,\n  \"image\": image.asset->url,\n  subtitle,\n  svgcode,\n  url,\n  archived,\n  orderRank,\n  \"leadIn\": leadIn[]{\n  ...,\n  markDefs[]{\n    ...,\n    _type == \"internalLink\" => {\n      \"slug\": @.reference->slug.current,\n      \"refType\": @.reference->_type\n    },\n    _type == \"link\" => {\n      ...,\n    }\n  }\n},\n  \"content\": content[]{\n  ...,\n  markDefs[]{\n    ...,\n    _type == \"internalLink\" => {\n      \"slug\": @.reference->slug.current,\n      \"refType\": @.reference->_type\n    },\n    _type == \"link\" => {\n      ...,\n    }\n  }\n}\n}": PROJECT_QUERY_RESULT;
+    "*[_type == \"music\" && (slug.current == $slug || _id == $slug)][0] {\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  \"slug\": coalesce(slug.current, _id),\n  bandName,\n  albumName,\n  releaseYear,\n  \"albumArt\": albumArt.asset->url,\n  \"albumArtAlt\": albumArt.alt,\n  links,\n  embeds,\n  \"content\": content[]{\n  ...,\n  markDefs[]{\n    ...,\n    _type == \"internalLink\" => {\n      \"slug\": @.reference->slug.current,\n      \"refType\": @.reference->_type\n    },\n    _type == \"link\" => {\n      ...,\n    }\n  }\n}\n}": MUSIC_QUERY_RESULT | MUSIC_BY_SLUG_QUERY_RESULT;
+    "*[_type == \"project\"] | order(orderRank) {\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  name,\n  \"slug\": slug.current,\n  \"image\": image.asset->url,\n  archived,\n  type,\n  svgcode,\n  subtitle,\n  color,\n  displayType,\n  embedUrl,\n  aspectRatio,\n  url,\n  content\n}": PROJECTS_QUERY_RESULT;
+    "*[_type == \"project\" && type == \"personal\"] | order(orderRank) {\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  name,\n  \"slug\": slug.current,\n  \"image\": image.asset->url,\n  archived,\n  type,\n  svgcode,\n  subtitle,\n  color,\n  displayType,\n  embedUrl,\n  aspectRatio,\n  url,\n  content\n}": PERSONAL_PROJECTS_QUERY_RESULT;
+    "*[_type == \"project\" && type == \"client\"] | order(orderRank) {\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  name,\n  \"slug\": slug.current,\n  \"image\": image.asset->url,\n  archived,\n  type,\n  svgcode,\n  subtitle,\n  color,\n  displayType,\n  embedUrl,\n  aspectRatio,\n  url,\n  content\n}": CLIENT_PROJECTS_QUERY_RESULT;
+    "*[_type == \"music\"] | order(orderRank) {\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  \"slug\": coalesce(slug.current, _id),\n  bandName,\n  albumName,\n  releaseYear,\n  \"albumArt\": albumArt.asset->url,\n  \"albumArtAlt\": albumArt.alt,\n  links,\n  embeds\n}": MUSIC_LIST_QUERY_RESULT;
+    "*[_type == \"page\"]{\n  _id,\n  _createdAt,\n  title,\n  \"slug\": slug.current\n}": PAGES_QUERY_RESULT;
+    "*[_type == \"page\" && slug.current == $slug][0]{\n  _id,\n  _createdAt,\n  title,\n  subtitle,\n  \"slug\": slug.current,\n  content[]{\n    ...,\n    _type == \"image\" => {\n      \"imageUrl\": asset->url,\n      \"alt\": alt\n    }\n  }\n}": PAGE_QUERY_RESULT;
+  }
+}
 

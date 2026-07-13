@@ -36,7 +36,7 @@ type YouTubeCandidate = {
 };
 
 const SANITY_QUERY =
-  '*[_type == "music"] | order(orderRank) { _id, _type, _createdAt, _updatedAt, bandName, albumName, releaseYear, slug, links, embeds, albumArt, gallery }';
+  '*[_type == "music"] | order(orderRank) { _id, _type, _createdAt, _updatedAt, bandName, albumName, releaseYear, slug, links, embeds, albumArt, content }';
 const SANITY_URL = `https://lgevplo8.api.sanity.io/v2023-07-12/data/query/production?query=${encodeURIComponent(SANITY_QUERY)}`;
 
 const OUT_DIR = new URL("../docs/music-audit/", import.meta.url);

@@ -25,6 +25,14 @@ export default function LiveMusic({ query, params, initial }: LiveMusicProps) {
     createReconcileOptimistic(item._id, (action) => action.document.embeds),
   );
 
+  const content = useOptimistic<
+    NonNullable<MusicViewData["content"]> | undefined,
+    SanityDocument<{ content?: NonNullable<MusicViewData["content"]> }>
+  >(
+    item.content ?? undefined,
+    createReconcileOptimistic(item._id, (action) => action.document.content),
+  );
+
   const attr = createDataAttribute({
     baseUrl: STUDIO_URL,
     id: item._id,
@@ -33,11 +41,19 @@ export default function LiveMusic({ query, params, initial }: LiveMusicProps) {
 
   return (
     <MusicView
-      item={{ ...item, embeds: embeds ?? item.embeds ?? [] }}
+      item={{
+        ...item,
+        embeds: embeds ?? item.embeds ?? [],
+        content: content ?? item.content ?? [],
+      }}
       draftMode
       embedsDataAttribute={attr("embeds")}
+      contentDataAttribute={attr("content")}
       getEmbedDataAttribute={(key) =>
         key ? attr(`embeds[_key=="${key}"]`) : undefined
+      }
+      getContentDataAttribute={(key) =>
+        key ? attr(`content[_key=="${key}"]`) : undefined
       }
     />
   );

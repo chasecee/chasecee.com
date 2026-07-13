@@ -19,8 +19,8 @@
   }
 }
 
-body.pt-10 {
-  --site-draft-offset: 2.5rem;
+body.pt-8 {
+  --site-draft-offset: 2rem;
 }
 
 [data-projects-header] {
