@@ -1,0 +1,249 @@
+---
+import type { Project } from "@/types/Project";
+import generateColorPalette from "@/src/utils/colorUtils";
+import CustomDashboardCard from "@/src/components/project-cards/CustomDashboardCard";
+import urlFor from "@/sanity/sanity.image";
+import { sanitizeProjectSvg } from "@/src/utils/sanitizeProjectSvg";
+
+interface Props {
+  project: Project;
+  index: number;
+  columns: number;
+  scroll?: boolean;
+  cardImageWidths: number[];
+  cardImageSizes: string;
+  cardImageMaxWidth: number;
+}
+
+const {
+  project,
+  index,
+  columns,
+  scroll = false,
+  cardImageWidths,
+  cardImageSizes,
+  cardImageMaxWidth,
+} = Astro.props;
+
+const getColumnClass = (cols: number): string => {
+  switch (cols) {
+    case 1:
+      return "w-full";
+    case 2:
+      return "md:w-1/2";
+    case 3:
+      return "md:w-1/3";
+    case 4:
+      return "md:w-1/4";
+    case 5:
+      return "md:w-1/5";
+    case 6:
+      return "md:w-1/6";
+    default:
+      return "md:w-1/4";
+  }
+};
+
+const slugname = project.slug ?? undefined;
+const displayType = project.displayType || "popup";
+const colorPalette = project.color?.hex
+  ? generateColorPalette(project.color.hex)
+  : null;
+const projectImage = project.image;
+const toCssRatio = (value: string) => {
+  const compact = value.replace(/\s+/g, "");
+  const normalized = compact.includes("/")
+    ? compact
+    : compact.includes(":")
+      ? compact.replace(":", "/")
+      : compact;
+  if (!/^\d+(\.\d+)?\/\d+(\.\d+)?$/.test(normalized)) return "1 / 1";
+  const [width, height] = normalized.split("/");
+  return `${width} / ${height}`;
+};
+const desktopRatio = toCssRatio(project.aspectRatio?.desktop || "1/1");
+const mobileRatio = toCssRatio(
+  project.aspectRatio?.mobile || project.aspectRatio?.desktop || "1/1",
+);
+const draftMode = Astro.locals.draftMode === true;
+const showDraftBadge = draftMode && project.isDraft;
+const draftRingClass = showDraftBadge
+  ? "rounded-2xl p-1 border-2 border-amber-300"
+  : "";
+const itemClass = scroll
+  ? `project-item ${getColumnClass(columns)} w-[80%] flex-shrink-0 project-${index + 1} project-${slugname} ${draftRingClass}`
+  : `project-item project-${index + 1} project-${slugname} ${draftRingClass}`;
+---
+
+<div class={itemClass}>
+  <a
+    href={`/projects/${slugname}`}
+    title={`See my work on ${project.name}`}
+    class="group"
+  >
+    {
+      displayType === "embed" && project.embedUrl ? (
+        <div
+          class="project-embed relative w-full overflow-hidden"
+          style={`--ar-desktop: ${desktopRatio}; --ar-mobile: ${mobileRatio};`}
+        >
+          {showDraftBadge && (
+            <span class="pointer-events-none absolute top-2 right-2 z-20 inline-flex rounded bg-amber-300 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black">
+              Draft
+            </span>
+          )}
+          <iframe
+            src={project.embedUrl}
+            title={project.name ?? undefined}
+            class="pointer-events-none absolute inset-0 h-full w-full border-0"
+            loading="lazy"
+            tabindex="-1"
+            data-project-embed
+          />
+        </div>
+      ) : slugname === "loop-player" ? (
+        <div class="relative h-0 overflow-hidden pt-[100%]">
+          {showDraftBadge && (
+            <span class="pointer-events-none absolute top-2 right-2 z-20 inline-flex rounded bg-amber-300 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black">
+              Draft
+            </span>
+          )}
+          <img
+            src="/img/loop-box.webp"
+            alt="Loop Player product packaging"
+            width={473}
+            height={473}
+            class="absolute inset-0 h-full w-full object-cover"
+            loading="eager"
+            fetchpriority="high"
+          />
+          {project.svgcode?.code && (
+            <div class="view-actor absolute inset-0 transition-transform delay-[25ms] duration-500 group-hover:scale-110 group-hover:duration-300">
+              <div
+                class="svg-parent absolute top-1/2 left-1/2 h-full w-[50%] -translate-x-1/2 -translate-y-1/2 text-white"
+                set:html={sanitizeProjectSvg(project.svgcode.code)}
+              />
+            </div>
+          )}
+        </div>
+      ) : slugname === "custom-dashboard" ? (
+        <div class="relative overflow-hidden">
+          {showDraftBadge && (
+            <span class="pointer-events-none absolute top-2 right-2 z-20 inline-flex rounded bg-amber-300 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black">
+              Draft
+            </span>
+          )}
+          <CustomDashboardCard client:visible project={project} index={index} />
+        </div>
+      ) : (
+        <div class="relative h-0 overflow-hidden pt-[100%]">
+          {showDraftBadge && (
+            <span class="pointer-events-none absolute top-2 right-2 z-20 inline-flex rounded bg-amber-300 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black">
+              Draft
+            </span>
+          )}
+          {displayType === "background" && projectImage ? (
+            <img
+              src={urlFor(projectImage)
+                .width(cardImageMaxWidth)
+                .height(cardImageMaxWidth)
+                .fit("crop")
+                .dpr(1)
+                .url()}
+              srcset={cardImageWidths
+                .map(
+                  (width) =>
+                    `${urlFor(projectImage)
+                      .width(width)
+                      .height(width)
+                      .fit("crop")
+                      .dpr(1)
+                      .url()} ${width}w`,
+                )
+                .join(", ")}
+              sizes={cardImageSizes}
+              alt={project.name ?? ""}
+              width={cardImageMaxWidth}
+              height={cardImageMaxWidth}
+              class="absolute inset-0 h-full w-full object-cover"
+              loading={index === 0 ? "eager" : "lazy"}
+              fetchpriority={index === 0 ? "high" : "auto"}
+              decoding="async"
+            />
+          ) : (
+            project.color?.hex && (
+              <div
+                class="absolute inset-0"
+                style={{ backgroundColor: project.color.hex }}
+              />
+            )
+          )}
+
+          {displayType === "popup" && colorPalette && (
+            <div class="project-gradient-bg absolute inset-0 -top-10 -bottom-10 flex-col flex-nowrap gap-0 overflow-hidden opacity-[20%] transition-all duration-500">
+              {[
+                colorPalette.darkest,
+                colorPalette.darker,
+                colorPalette.main,
+                colorPalette.lighter,
+                colorPalette.lightest,
+              ].map((color, colorIndex) => (
+                <div
+                  class={`color-div transform-gpu transition-transform duration-[200ms] ${
+                    project.name === "Strider Intel"
+                      ? "group-hover:translate-y-[20%]"
+                      : ""
+                  } ${project.name === "doxy.me" ? "group-hover:translate-y-[20%]" : ""} ${
+                    project.name === "InMoment.com"
+                      ? "translate-x-0 group-hover:-translate-y-[10%]"
+                      : ""
+                  } ${
+                    project.name === "Yoli"
+                      ? "translate-x-0 group-hover:-translate-x-[10%] group-hover:-translate-y-[10%]"
+                      : ""
+                  }`}
+                  style={{
+                    backgroundColor: color,
+                    top: `${((colorIndex / 5) * 100).toFixed(2)}%`,
+                    transitionDelay: `${colorIndex * 20}ms`,
+                    left:
+                      project.name === "Yoli"
+                        ? `${((colorIndex / 5) * 100).toFixed(2)}%`
+                        : undefined,
+                  }}
+                />
+              ))}
+            </div>
+          )}
+
+          {project.svgcode?.code && (
+            <div
+              class={`view-actor absolute inset-0 transition-transform delay-[25ms] duration-500 ${
+                displayType === "background"
+                  ? "group-hover:scale-100 scale-[80%] origin-center group-hover:duration-300"
+                  : "scale-[0.95] group-hover:scale-100 origin-center group-hover:duration-300"
+              }`}
+            >
+              <div
+                class="svg-parent absolute origin-center top-1/2 left-1/2 h-1/2 w-2/3 -translate-x-1/2 -translate-y-1/2 text-white"
+                set:html={sanitizeProjectSvg(project.svgcode.code)}
+              />
+            </div>
+          )}
+        </div>
+      )
+    }
+    <div class="relative">
+      <span class="mt-3 inline-block text-base">
+        <span class="font-bold">{project.name}</span>
+        {
+          project.subtitle && (
+            <span class="font-light opacity-40">
+              &nbsp;-&nbsp;{project.subtitle}
+            </span>
+          )
+        }
+      </span>
+    </div>
+  </a>
+</div>

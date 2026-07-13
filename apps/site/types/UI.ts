@@ -55,6 +55,8 @@ export interface ProjectsListProps {
   projects: import("./Project").Project[];
   title?: string;
   columns?: number;
+  scroll?: boolean;
+  initialCount?: number;
   forceLoading?: boolean;
 }
 

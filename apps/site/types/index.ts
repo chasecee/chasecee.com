@@ -1,6 +1,7 @@
-export type { Project } from "./Project";
+export type { Project, ProjectDetail, ProjectSiteMini } from "./Project";
 export type {
   Music,
+  MusicDetail,
   MusicLink,
   MusicEmbed,
   MusicSpotify,

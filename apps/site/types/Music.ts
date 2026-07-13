@@ -1,54 +1,14 @@
-export type MusicLink = {
-  _key?: string;
-  label: string;
-  url: string;
-};
+import type {
+  Embed,
+  MUSIC_LIST_QUERY_RESULT,
+  MUSIC_QUERY_RESULT,
+  Spotify,
+} from "../sanity/sanity.types";
 
-export type MusicEmbed = {
-  _key?: string;
-  _type: "embed";
-  url: string;
-  title?: string;
-  width?: "content" | "full";
-  ratio?: {
-    desktop?: string;
-    mobile?: string;
-  };
-  aspectRatio?: string;
-};
-
-export type MusicSpotify = {
-  _key?: string;
-  _type: "spotify";
-  url: string;
-  title?: string;
-  size?: "compact" | "default";
-  theme?: "dark" | "light";
-};
-
-export type MusicGalleryImage = {
-  _key?: string;
-  url?: string;
-  alt?: string;
-  caption?: string;
-};
-
-export type MusicGallery = {
-  columns?: number;
-  images?: MusicGalleryImage[];
-};
-
-export type Music = {
-  _id: string;
-  isDraft?: boolean;
-  _createdAt: Date;
-  slug: string | { current: string };
-  bandName: string;
-  albumName: string;
-  releaseYear?: number;
-  albumArt?: string;
-  albumArtAlt?: string;
-  gallery?: MusicGallery;
-  links?: MusicLink[];
-  embeds?: (MusicEmbed | MusicSpotify)[];
-};
+export type Music = MUSIC_LIST_QUERY_RESULT[number];
+export type MusicDetail = NonNullable<MUSIC_QUERY_RESULT>;
+export type MusicLink = NonNullable<Music["links"]>[number];
+export type MusicGallery = Music["gallery"];
+export type MusicGalleryImage = NonNullable<MusicGallery["images"]>[number];
+export type MusicEmbed = Embed & { _key?: string };
+export type MusicSpotify = Spotify & { _key?: string };

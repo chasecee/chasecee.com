@@ -1,11 +1,11 @@
 ---
 import SiteLayout from "@/src/layouts/SiteLayout.astro";
 import Container from "@/src/components/Container.astro";
-import ProjectLink from "@/src/components/ProjectLink.astro";
+import ProjectsList from "@/src/components/ProjectsList.astro";
 import ProjectView from "@/src/components/ProjectView";
 import LiveProject from "@/src/components/LiveProject";
 import ImageGalleryLightbox from "@/src/components/gallery/ImageGalleryLightbox.astro";
-import { getProjectSiblings } from "@/sanity/sanity-utils";
+import { getPersonalProjects } from "@/sanity/sanity-utils";
 import { metaDescription } from "@/src/utils/seo";
 import { contentHasBlock } from "@/src/utils/contentHasBlock";
 import { draftFetchOptions } from "@/sanity/preview";
@@ -25,7 +25,6 @@ if (!projectSlug) {
 
 type ProjectPageData = ProjectViewData & {
   slug: string;
-  orderRank?: string;
 };
 
 const initialProject = await loadQuery<ProjectPageData | null>({
@@ -50,10 +49,11 @@ const description = metaDescription(
   stegaClean(project.subtitle),
   `${cleanName} is a project designed and built by Chase Cee, a designer and developer in Salt Lake City.`,
 );
-const { nextProject, prevProject } =
-  typeof project.orderRank === "string"
-    ? await getProjectSiblings(project.orderRank, draftFetchOptions(Astro.locals))
-    : {};
+const moreProjects = (
+  await getPersonalProjects(draftFetchOptions(Astro.locals))
+)
+  .filter((p) => p.slug !== projectSlug)
+  .slice(0, 3);
 ---
 
 <SiteLayout
@@ -74,13 +74,20 @@ const { nextProject, prevProject } =
         <ProjectView project={project} />
       )
     }
-    <div class="prose prose-flow">
-      <h3 class="mt-20 mb-4 text-xl">Thanks for reading! Check out more:</h3>
-      <div class="not-prose grid gap-4 md:grid-cols-2">
-        {prevProject && <ProjectLink project={prevProject} direction="prev" />}
-        {nextProject && <ProjectLink project={nextProject} direction="next" />}
-      </div>
-    </div>
+    {
+      moreProjects.length > 0 && (
+        <div class="prose prose-flow mt-20">
+          <h3 class="!mt-0 mb-6">Thanks for reading! Check out more:</h3>
+          <div class="prose-wide not-prose">
+            <ProjectsList
+              projects={moreProjects}
+              columns={3}
+              scroll={false}
+            />
+          </div>
+        </div>
+      )
+    }
   </Container>
   {hasLightbox && <ImageGalleryLightbox />}
 </SiteLayout>

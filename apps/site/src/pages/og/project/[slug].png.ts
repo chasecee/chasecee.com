@@ -6,12 +6,15 @@ export const prerender = true;
 
 export const getStaticPaths = (async () => {
   const projects = await getProjects();
-  return projects.map((project) => ({
-    params: {
-      slug: typeof project.slug === "string" ? project.slug : project.slug.current,
-    },
-    props: { name: project.name },
-  }));
+  return projects.flatMap((project) => {
+    if (!project.slug) return [];
+    return [
+      {
+        params: { slug: project.slug },
+        props: { name: project.name ?? project.slug },
+      },
+    ];
+  });
 }) satisfies GetStaticPaths;
 
 export const GET: APIRoute = async ({ props }) => {

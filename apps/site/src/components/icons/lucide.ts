@@ -1,4 +1,5 @@
 import {
+  ChevronDown,
   ChevronRight,
   ExternalLink,
   FileText,
@@ -7,6 +8,7 @@ import {
 } from "lucide-static";
 
 export const LUCIDE_ICONS = {
+  chevronDown: ChevronDown,
   chevronRight: ChevronRight,
   externalLink: ExternalLink,
   fileText: FileText,

@@ -1,34 +1,41 @@
 ---
 import type { Project } from "@/types/Project";
-import generateColorPalette from "@/src/utils/colorUtils";
-import CustomDashboardCard from "@/src/components/project-cards/CustomDashboardCard";
-import urlFor from "@/sanity/sanity.image";
-import { sanitizeProjectSvg } from "@/src/utils/sanitizeProjectSvg";
+import ProjectCard from "@/src/components/ProjectCard.astro";
+import LucideIcon from "@/src/components/icons/LucideIcon.astro";
+import { LUCIDE_ICONS } from "@/src/components/icons/lucide";
 
 interface Props {
   projects: Project[];
   title?: string;
   columns?: number;
+  scroll?: boolean;
+  initialCount?: number;
 }
 
-const { projects, title, columns = 4 } = Astro.props;
+const {
+  projects,
+  title,
+  columns = 4,
+  scroll = true,
+  initialCount,
+} = Astro.props;
 
-const getColumnClass = (cols: number): string => {
+const getGridClass = (cols: number): string => {
   switch (cols) {
     case 1:
-      return "w-full";
+      return "grid-cols-1";
     case 2:
-      return "md:w-1/2";
+      return "grid-cols-1 md:grid-cols-2";
     case 3:
-      return "md:w-1/3";
+      return "grid-cols-1 md:grid-cols-3";
     case 4:
-      return "md:w-1/4";
+      return "grid-cols-1 md:grid-cols-4";
     case 5:
-      return "md:w-1/5";
+      return "grid-cols-1 md:grid-cols-5";
     case 6:
-      return "md:w-1/6";
+      return "grid-cols-1 md:grid-cols-6";
     default:
-      return "md:w-1/4";
+      return "grid-cols-1 md:grid-cols-3";
   }
 };
 
@@ -67,255 +74,97 @@ const getCardImageWidths = (cols: number): number[] => {
 const validProjects = projects.filter(
   (project) => project && project._id && project.name,
 );
-const draftMode = Astro.locals.draftMode === true;
+const expandable =
+  typeof initialCount === "number" &&
+  initialCount > 0 &&
+  validProjects.length > initialCount;
+const visibleProjects = expandable
+  ? validProjects.slice(0, initialCount)
+  : validProjects;
+const restProjects = expandable
+  ? validProjects.slice(initialCount)
+  : [];
 
 const cardImageWidths = getCardImageWidths(columns);
 const cardImageSizes = getCardImageSizes(columns);
 const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
+const gridClass = getGridClass(columns);
+const listClass = scroll
+  ? "flex flex-nowrap gap-12 overflow-x-auto pb-10"
+  : `grid gap-8 ${gridClass}`;
 ---
 
-<div class="project-list">
-  {title && <h2 class="mb-6 text-left text-xl font-bold">{title}</h2>}
-  <div class="flex flex-nowrap gap-12 overflow-x-auto pb-10">
-    {
-      validProjects.map((project, index) => {
-        const slugname =
-          typeof project.slug === "string"
-            ? project.slug
-            : project.slug?.current;
-        const displayType = project.displayType || "popup";
-        const colorPalette = project.color?.hex
-          ? generateColorPalette(project.color.hex)
-          : null;
-        const projectImage = project.image;
-        const toCssRatio = (value: string) => {
-          const compact = value.replace(/\s+/g, "");
-          const normalized = compact.includes("/")
-            ? compact
-            : compact.includes(":")
-              ? compact.replace(":", "/")
-              : compact;
-          if (!/^\d+(\.\d+)?\/\d+(\.\d+)?$/.test(normalized)) return "1 / 1";
-          const [width, height] = normalized.split("/");
-          return `${width} / ${height}`;
-        };
-        const desktopRatio = toCssRatio(
-          project.aspectRatio?.desktop || "1/1",
-        );
-        const mobileRatio = toCssRatio(
-          project.aspectRatio?.mobile || project.aspectRatio?.desktop || "1/1",
-        );
-        const showDraftBadge = draftMode && project.isDraft;
-        const draftRingClass = showDraftBadge
-          ? "rounded-2xl p-1 border-2 border-amber-300"
-          : "";
-
-        const projectTitle = (
-          <div class="relative">
-            <span class="mt-3 inline-block text-base">
-              <span class="font-bold">{project.name}</span>
-              {project.subtitle && (
-                <span class="font-light opacity-40">
-                  &nbsp;-&nbsp;{project.subtitle}
-                </span>
-              )}
-            </span>
-          </div>
-        );
-
-        if (displayType === "embed" && project.embedUrl) {
-          return (
-            <div
-              class={`project-item ${getColumnClass(columns)} w-[80%] flex-shrink-0 project-${index + 1} project-${slugname} ${draftRingClass}`}
-            >
-              <a
-                href={`/projects/${slugname}`}
-                title={`See my work on ${project.name}`}
-                class="group"
-              >
-                <div
-                  class="project-embed relative w-full overflow-hidden rounded-xl"
-                  style={`--ar-desktop: ${desktopRatio}; --ar-mobile: ${mobileRatio};`}
-                >
-                  {showDraftBadge && (
-                    <span class="pointer-events-none absolute top-2 right-2 z-20 inline-flex rounded bg-amber-300 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black">
-                      Draft
-                    </span>
-                  )}
-                  <iframe
-                    src={project.embedUrl}
-                    title={project.name}
-                    class="pointer-events-none absolute inset-0 h-full w-full border-0"
-                    loading="lazy"
-                    tabindex="-1"
-                    data-project-embed
-                  />
-                </div>
-                {projectTitle}
-              </a>
-            </div>
-          );
-        }
-
-        return (
-          <div
-            class={`project-item ${getColumnClass(columns)} w-[80%] flex-shrink-0 project-${index + 1} project-${slugname} ${draftRingClass}`}
+<section
+  class="project-list"
+  data-projects-expand={expandable ? "" : undefined}
+>
+  {
+    title && (
+      <div
+        class="mb-6 flex items-center justify-between gap-4"
+        data-projects-header
+      >
+        <h2 class="text-left text-xl font-bold">{title}</h2>
+        {expandable && (
+          <button
+            type="button"
+            class="inline-flex items-center gap-1.5 text-sm font-medium opacity-70 transition-opacity hover:opacity-100"
+            data-see-all
+            aria-expanded="false"
           >
-            <a
-              href={`/projects/${slugname}`}
-              title={`See my work on ${project.name}`}
-              class="group"
+            <span data-see-all-label>See All</span>
+            <span
+              class="inline-flex transition-transform duration-300"
+              data-see-all-icon
             >
-              {slugname === "loop-player" ? (
-                <div
-                  class="relative h-0 overflow-hidden rounded-xl pt-[100%]"
-                >
-                  {showDraftBadge && (
-                    <span class="pointer-events-none absolute top-2 right-2 z-20 inline-flex rounded bg-amber-300 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black">
-                      Draft
-                    </span>
-                  )}
-                  <img
-                    src="/img/loop-box.webp"
-                    alt="Loop Player product packaging"
-                    width={473}
-                    height={473}
-                    class="absolute inset-0 h-full w-full rounded-xl object-cover"
-                    loading="eager"
-                    fetchpriority="high"
-                  />
-                  {project.svgcode?.code && (
-                    <div class="view-actor absolute inset-0 transition-transform delay-[25ms] duration-500 group-hover:scale-110 group-hover:duration-300">
-                      <div
-                        class="svg-parent absolute top-1/2 left-1/2 h-full w-[50%] -translate-x-1/2 -translate-y-1/2 text-white"
-                        set:html={sanitizeProjectSvg(project.svgcode.code)}
-                      />
-                    </div>
-                  )}
-                </div>
-              ) : slugname === "custom-dashboard" ? (
-                <div class="relative overflow-hidden rounded-xl">
-                  {showDraftBadge && (
-                    <span class="pointer-events-none absolute top-2 right-2 z-20 inline-flex rounded bg-amber-300 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black">
-                      Draft
-                    </span>
-                  )}
-                  <CustomDashboardCard
-                    client:visible
-                    project={project}
-                    index={index}
-                  />
-                </div>
-              ) : (
-                <div
-                  class="relative h-0 overflow-hidden rounded-xl pt-[100%]"
-                >
-                  {showDraftBadge && (
-                    <span class="pointer-events-none absolute top-2 right-2 z-20 inline-flex rounded bg-amber-300 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black">
-                      Draft
-                    </span>
-                  )}
-                  {displayType === "background" && projectImage ? (
-                    <img
-                      src={urlFor(projectImage)
-                        .width(cardImageMaxWidth)
-                        .height(cardImageMaxWidth)
-                        .fit("crop")
-                        .dpr(1)
-                        .url()}
-                      srcset={cardImageWidths
-                        .map(
-                          (width) =>
-                            `${urlFor(projectImage)
-                              .width(width)
-                              .height(width)
-                              .fit("crop")
-                              .dpr(1)
-                              .url()} ${width}w`,
-                        )
-                        .join(", ")}
-                      sizes={cardImageSizes}
-                      alt={project.name}
-                      width={cardImageMaxWidth}
-                      height={cardImageMaxWidth}
-                      class="absolute inset-0 h-full w-full rounded-xl object-cover"
-                      loading={index === 0 ? "eager" : "lazy"}
-                      fetchpriority={index === 0 ? "high" : "auto"}
-                      decoding="async"
-                    />
-                  ) : (
-                    project.color?.hex && (
-                      <div
-                        class="absolute inset-0 rounded-xl"
-                        style={{ backgroundColor: project.color.hex }}
-                      />
-                    )
-                  )}
-
-                  {displayType === "popup" && colorPalette && (
-                    <div class="project-gradient-bg absolute inset-0 -top-10 -bottom-10 flex-col flex-nowrap gap-0 overflow-hidden rounded-xl opacity-[20%] transition-all duration-500">
-                      {[
-                        colorPalette.darkest,
-                        colorPalette.darker,
-                        colorPalette.main,
-                        colorPalette.lighter,
-                        colorPalette.lightest,
-                      ].map((color, colorIndex) => (
-                        <div
-                          class={`color-div transform-gpu transition-transform duration-[200ms] ${
-                            project.name === "Strider Intel"
-                              ? "group-hover:translate-y-[20%]"
-                              : ""
-                          } ${project.name === "doxy.me" ? "group-hover:translate-y-[20%]" : ""} ${
-                            project.name === "InMoment.com"
-                              ? "translate-x-0 group-hover:-translate-y-[10%]"
-                              : ""
-                          } ${
-                            project.name === "Yoli"
-                              ? "translate-x-0 group-hover:-translate-x-[10%] group-hover:-translate-y-[10%]"
-                              : ""
-                          }`}
-                          style={{
-                            backgroundColor: color,
-                            top: `${((colorIndex / 5) * 100).toFixed(2)}%`,
-                            transitionDelay: `${colorIndex * 20}ms`,
-                            left:
-                              project.name === "Yoli"
-                                ? `${((colorIndex / 5) * 100).toFixed(2)}%`
-                                : undefined,
-                          }}
-                        />
-                      ))}
-                    </div>
-                  )}
-
-                  {project.svgcode?.code && (
-                    <div
-                      class={`view-actor absolute inset-0 transition-transform delay-[25ms] duration-500 ${
-                        displayType === "background"
-                          ? "group-hover:scale-100 scale-[80%] origin-center group-hover:duration-300"
-                          : project.type === "client"
-                            ? "scale-[0.95] group-hover:scale-100 origin-center group-hover:duration-300"
-                            : "group-hover:-translate-y-[28%] origin-center group-hover:duration-300"
-                      }`}
-                    >
-                      <div
-                        class="svg-parent absolute origin-center top-1/2 left-1/2 h-1/2 w-2/3 -translate-x-1/2 -translate-y-1/2 text-white"
-                        set:html={sanitizeProjectSvg(project.svgcode.code)}
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {projectTitle}
-            </a>
-          </div>
-        );
-      })
+              <LucideIcon icon={LUCIDE_ICONS.chevronDown} size={16} />
+            </span>
+          </button>
+        )}
+      </div>
+    )
+  }
+  <div class={listClass}>
+    {
+      visibleProjects.map((project, index) => (
+        <ProjectCard
+          project={project}
+          index={index}
+          columns={columns}
+          scroll={scroll}
+          cardImageWidths={cardImageWidths}
+          cardImageSizes={cardImageSizes}
+          cardImageMaxWidth={cardImageMaxWidth}
+        />
+      ))
     }
   </div>
-</div>
+  {
+    expandable && (
+      <div
+        class="grid transition-[grid-template-rows] duration-500 ease-out"
+        style="grid-template-rows: 0fr"
+        data-see-all-panel
+      >
+        <div class="min-h-0 overflow-hidden">
+          <div class={`grid gap-8 pt-8 ${gridClass}`}>
+            {restProjects.map((project, index) => (
+              <ProjectCard
+                project={project}
+                index={visibleProjects.length + index}
+                columns={columns}
+                scroll={false}
+                cardImageWidths={cardImageWidths}
+                cardImageSizes={cardImageSizes}
+                cardImageMaxWidth={cardImageMaxWidth}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+</section>
 
 <script>
   const bindEmbedFades = () => {
@@ -329,6 +178,37 @@ const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
       });
   };
 
-  bindEmbedFades();
-  document.addEventListener("astro:page-load", bindEmbedFades);
+  const bindSeeAll = () => {
+    document
+      .querySelectorAll<HTMLElement>("[data-projects-expand]:not([data-bound])")
+      .forEach((root) => {
+        root.dataset.bound = "";
+        const button = root.querySelector<HTMLButtonElement>("[data-see-all]");
+        const panel = root.querySelector<HTMLElement>("[data-see-all-panel]");
+        const header = root.querySelector<HTMLElement>("[data-projects-header]");
+        const label = root.querySelector<HTMLElement>("[data-see-all-label]");
+        const icon = root.querySelector<HTMLElement>("[data-see-all-icon]");
+        if (!button || !panel || !header) return;
+
+        button.addEventListener("click", () => {
+          const open = button.getAttribute("aria-expanded") === "true";
+          const next = !open;
+          button.setAttribute("aria-expanded", String(next));
+          panel.style.gridTemplateRows = next ? "1fr" : "0fr";
+          if (label) label.textContent = next ? "Show less" : "See All";
+          icon?.classList.toggle("rotate-180", next);
+          if (next) {
+            header.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        });
+      });
+  };
+
+  const bind = () => {
+    bindEmbedFades();
+    bindSeeAll();
+  };
+
+  bind();
+  document.addEventListener("astro:page-load", bind);
 </script>

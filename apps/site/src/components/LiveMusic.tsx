@@ -6,9 +6,6 @@ import {
 import { useLiveQuery, STUDIO_URL, type QueryResponseInitial } from "@/sanity/live";
 import { createReconcileOptimistic } from "@chasecee/sanity-kit/astro";
 import MusicView, { type MusicViewData } from "@/src/components/MusicView";
-import type { MusicEmbed, MusicSpotify } from "@/types/Music";
-
-type MusicEmbedItem = MusicEmbed | MusicSpotify;
 
 type LiveMusicProps = {
   query: string;
@@ -21,10 +18,10 @@ export default function LiveMusic({ query, params, initial }: LiveMusicProps) {
   const item = data ?? initial.data;
 
   const embeds = useOptimistic<
-    MusicEmbedItem[] | undefined,
-    SanityDocument<{ embeds?: MusicEmbedItem[] }>
+    NonNullable<MusicViewData["embeds"]> | undefined,
+    SanityDocument<{ embeds?: NonNullable<MusicViewData["embeds"]> }>
   >(
-    item.embeds,
+    item.embeds ?? undefined,
     createReconcileOptimistic(item._id, (action) => action.document.embeds),
   );
 
@@ -36,7 +33,7 @@ export default function LiveMusic({ query, params, initial }: LiveMusicProps) {
 
   return (
     <MusicView
-      item={{ ...item, embeds: embeds ?? [] }}
+      item={{ ...item, embeds: embeds ?? item.embeds ?? [] }}
       draftMode
       embedsDataAttribute={attr("embeds")}
       getEmbedDataAttribute={(key) =>

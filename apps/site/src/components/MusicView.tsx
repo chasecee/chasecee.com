@@ -1,13 +1,11 @@
 import { stegaClean } from "@sanity/client/stega";
 import type { SanityImageSource } from "@sanity/image-url";
 import { Embed, Gallery, Spotify } from "@chasecee/sanity-kit/astro";
-import type { Music, MusicEmbed } from "@/types/Music";
+import type { MusicDetail, MusicEmbed } from "@/types/Music";
 import urlFor from "@/sanity/sanity.image";
 import { withSanityImageParams } from "@/src/utils/sanityImageParams";
 
-export type MusicViewData = Music & {
-  _type?: string;
-};
+export type MusicViewData = MusicDetail;
 
 type MusicViewProps = {
   item: MusicViewData;
@@ -23,8 +21,12 @@ export default function MusicView({
   getEmbedDataAttribute,
 }: MusicViewProps) {
   const showDraftBadge = draftMode && item.isDraft;
-  const bandName = draftMode ? item.bandName : stegaClean(item.bandName);
-  const albumName = draftMode ? item.albumName : stegaClean(item.albumName);
+  const bandName = draftMode
+    ? (item.bandName ?? "")
+    : stegaClean(item.bandName ?? "");
+  const albumName = draftMode
+    ? (item.albumName ?? "")
+    : stegaClean(item.albumName ?? "");
   const embeds = item.embeds ?? [];
 
   return (
@@ -56,6 +58,9 @@ export default function MusicView({
           <Gallery
             images={item.gallery.images.map((image) => ({
               ...image,
+              asset: image.asset ?? undefined,
+              alt: image.alt ?? undefined,
+              caption: image.caption ?? undefined,
               url: image.url
                 ? withSanityImageParams(image.url, {
                     w: 2400,

@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "sanity dev",
     "build": "sanity build",
-    "deploy": "sanity deploy"
+    "deploy": "sanity deploy",
+    "typegen": "sanity schema extract && sanity typegen generate"
   },
   "dependencies": {
     "@chasecee/sanity-kit": "github:chasecee/sanity-kit",

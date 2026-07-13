@@ -1,12 +1,3 @@
-import type { PortableTextBlock } from "@portabletext/types";
-import type { Skills, ImageBlock } from "./Content";
+import type { PAGE_QUERY_RESULT } from "../sanity/sanity.types";
 
-export type Page = {
-  name: string;
-  _id: string;
-  _createdAt: Date;
-  title: string;
-  subtitle: string;
-  slug: string;
-  content: (PortableTextBlock | Skills | ImageBlock)[];
-};
+export type Page = NonNullable<PAGE_QUERY_RESULT>;

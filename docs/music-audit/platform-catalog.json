@@ -1,0 +1,254 @@
+[
+  {
+    "sanityId": "4b2eb10c-facc-4a3c-92b8-f9eea5949fe2",
+    "slug": "phantom-drum-initialize",
+    "bandName": "Phantom Drum",
+    "albumName": "INITIALIZE",
+    "releaseYear": 2025,
+    "current": {
+      "links": [],
+      "embeds": []
+    },
+    "proposed": {
+      "links": [
+        {
+          "label": "Spotify",
+          "url": "https://open.spotify.com/album/5GDYFMTp1nIQKuXt4UJ9TN"
+        },
+        {
+          "label": "Apple Music",
+          "url": "https://music.apple.com/us/album/initialize/1853366939?uo=4"
+        }
+      ],
+      "embeds": [
+        {
+          "_type": "spotify",
+          "url": "https://open.spotify.com/album/5GDYFMTp1nIQKuXt4UJ9TN",
+          "size": "default",
+          "theme": "dark"
+        },
+        {
+          "_type": "embed",
+          "url": "https://embed.music.apple.com/us/album/initialize/1853366939",
+          "title": "INITIALIZE - Apple Music",
+          "width": "full",
+          "ratio": {
+            "desktop": "16/9"
+          }
+        }
+      ]
+    },
+    "sources": {
+      "spotify": "https://open.spotify.com/album/5GDYFMTp1nIQKuXt4UJ9TN",
+      "appleMusic": "https://music.apple.com/us/album/initialize/1853366939?uo=4",
+      "youtube": null
+    },
+    "notes": [
+      "No confident YouTube full-album match."
+    ]
+  },
+  {
+    "sanityId": "2783c356-6f8a-468f-b8b6-94c89b593f1b",
+    "slug": "rumble-gums-metro-party-life",
+    "bandName": "Rumble Gums",
+    "albumName": "Metro Party Life",
+    "releaseYear": 2023,
+    "current": {
+      "links": [],
+      "embeds": [
+        {
+          "_key": "2aec596758c7",
+          "_type": "embed",
+          "aspectRatio": "16/9",
+          "url": "https://open.spotify.com/embed/album/4Gz1TJFI2JbzVlF7HV3WOn?utm_source=generator&si=c2f6e08c7bee4f6e"
+        }
+      ]
+    },
+    "proposed": {
+      "links": [
+        {
+          "label": "Spotify",
+          "url": "https://open.spotify.com/album/4Gz1TJFI2JbzVlF7HV3WOn"
+        },
+        {
+          "label": "Apple Music",
+          "url": "https://music.apple.com/us/album/metro-party-life/1709909808?uo=4"
+        }
+      ],
+      "embeds": [
+        {
+          "_type": "spotify",
+          "url": "https://open.spotify.com/album/4Gz1TJFI2JbzVlF7HV3WOn",
+          "size": "default",
+          "theme": "dark"
+        },
+        {
+          "_type": "embed",
+          "url": "https://embed.music.apple.com/us/album/metro-party-life/1709909808",
+          "title": "Metro Party Life - Apple Music",
+          "width": "full",
+          "ratio": {
+            "desktop": "16/9"
+          }
+        }
+      ]
+    },
+    "sources": {
+      "spotify": "https://open.spotify.com/album/4Gz1TJFI2JbzVlF7HV3WOn",
+      "appleMusic": "https://music.apple.com/us/album/metro-party-life/1709909808?uo=4",
+      "youtube": null
+    },
+    "notes": [
+      "Existing Spotify embed is stored as generic embed.",
+      "Apple Music found via artist lookup (iTunes search misses this album).",
+      "No confident YouTube full-album match."
+    ]
+  },
+  {
+    "sanityId": "2f40cbcb-5f7a-48e1-a7cb-66de1611f7af",
+    "slug": "honey-dew-cant-elope",
+    "bandName": "Honey Dew",
+    "albumName": "Can't Elope",
+    "releaseYear": 2018,
+    "current": {
+      "links": [],
+      "embeds": []
+    },
+    "proposed": {
+      "links": [
+        {
+          "label": "Spotify",
+          "url": "https://open.spotify.com/album/2cY7CHVikqMpVvMuF2ik3H"
+        },
+        {
+          "label": "Apple Music",
+          "url": "https://music.apple.com/us/album/cant-elope/1410840299?uo=4"
+        }
+      ],
+      "embeds": [
+        {
+          "_type": "spotify",
+          "url": "https://open.spotify.com/album/2cY7CHVikqMpVvMuF2ik3H",
+          "size": "default",
+          "theme": "dark"
+        },
+        {
+          "_type": "embed",
+          "url": "https://embed.music.apple.com/us/album/cant-elope/1410840299",
+          "title": "Can't Elope - Apple Music",
+          "width": "full",
+          "ratio": {
+            "desktop": "16/9"
+          }
+        }
+      ]
+    },
+    "sources": {
+      "spotify": "https://open.spotify.com/album/2cY7CHVikqMpVvMuF2ik3H",
+      "appleMusic": "https://music.apple.com/us/album/cant-elope/1410840299?uo=4",
+      "youtube": null
+    },
+    "notes": [
+      "No confident YouTube full-album match."
+    ]
+  },
+  {
+    "sanityId": "403c15be-205b-4ddb-8631-5354750c8b96",
+    "slug": "rumble-gums-pool-party-palace",
+    "bandName": "Rumble Gums",
+    "albumName": "Pool Party Palace",
+    "releaseYear": 2016,
+    "current": {
+      "links": [],
+      "embeds": []
+    },
+    "proposed": {
+      "links": [
+        {
+          "label": "Spotify",
+          "url": "https://open.spotify.com/album/6olrzFKie6TRPkLGgyXBww"
+        },
+        {
+          "label": "Apple Music",
+          "url": "https://music.apple.com/us/album/pool-party-palace/1176821002?uo=4"
+        }
+      ],
+      "embeds": [
+        {
+          "_type": "spotify",
+          "url": "https://open.spotify.com/album/6olrzFKie6TRPkLGgyXBww",
+          "size": "default",
+          "theme": "dark"
+        },
+        {
+          "_type": "embed",
+          "url": "https://embed.music.apple.com/us/album/pool-party-palace/1176821002",
+          "title": "Pool Party Palace - Apple Music",
+          "width": "full",
+          "ratio": {
+            "desktop": "16/9"
+          }
+        }
+      ]
+    },
+    "sources": {
+      "spotify": "https://open.spotify.com/album/6olrzFKie6TRPkLGgyXBww",
+      "appleMusic": "https://music.apple.com/us/album/pool-party-palace/1176821002?uo=4",
+      "youtube": null
+    },
+    "notes": [
+      "Spotify confirmed via provided embed.",
+      "Apple Music found via artist lookup (iTunes search misses this album).",
+      "No confident YouTube full-album match."
+    ]
+  },
+  {
+    "sanityId": "ace78aca-d215-4ed7-9487-2e70c8c2ac07",
+    "slug": "pandahead-everybody",
+    "bandName": "Pandahead",
+    "albumName": "Everybody",
+    "releaseYear": 2012,
+    "current": {
+      "links": [],
+      "embeds": []
+    },
+    "proposed": {
+      "links": [
+        {
+          "label": "Spotify",
+          "url": "https://open.spotify.com/album/4wvTC13RXjdCUvkowQasg3"
+        },
+        {
+          "label": "Apple Music",
+          "url": "https://music.apple.com/us/album/everybody/531956029?uo=4"
+        }
+      ],
+      "embeds": [
+        {
+          "_type": "spotify",
+          "url": "https://open.spotify.com/album/4wvTC13RXjdCUvkowQasg3",
+          "size": "default",
+          "theme": "dark"
+        },
+        {
+          "_type": "embed",
+          "url": "https://embed.music.apple.com/us/album/everybody/531956029",
+          "title": "Everybody - Apple Music",
+          "width": "full",
+          "ratio": {
+            "desktop": "16/9"
+          }
+        }
+      ]
+    },
+    "sources": {
+      "spotify": "https://open.spotify.com/album/4wvTC13RXjdCUvkowQasg3",
+      "appleMusic": "https://music.apple.com/us/album/everybody/531956029?uo=4",
+      "youtube": null
+    },
+    "notes": [
+      "Spotify confirmed via provided embed.",
+      "No confident YouTube full-album match."
+    ]
+  }
+]

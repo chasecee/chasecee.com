@@ -5,10 +5,7 @@ import {
   createDataAttribute,
   useOptimistic,
 } from "@sanity/visual-editing/react";
-import type { ArbitraryTypedObject, PortableTextBlock } from "@portabletext/types";
 import ProjectView, { type ProjectViewData } from "@/src/components/ProjectView";
-
-type ProjectContentItem = PortableTextBlock | ArbitraryTypedObject;
 
 type LiveProjectProps = {
   query: string;
@@ -25,18 +22,18 @@ export default function LiveProject({
   const project = data ?? initial.data;
 
   const content = useOptimistic<
-    ProjectContentItem[] | undefined,
-    SanityDocument<{ content?: ProjectContentItem[] }>
+    NonNullable<ProjectViewData["content"]> | undefined,
+    SanityDocument<{ content?: NonNullable<ProjectViewData["content"]> }>
   >(
-    project.content,
+    project.content ?? undefined,
     createReconcileOptimistic(project._id, (action) => action.document.content),
   );
 
   const leadIn = useOptimistic<
-    ProjectContentItem[] | undefined,
-    SanityDocument<{ leadIn?: ProjectContentItem[] }>
+    NonNullable<ProjectViewData["leadIn"]> | undefined,
+    SanityDocument<{ leadIn?: NonNullable<ProjectViewData["leadIn"]> }>
   >(
-    project.leadIn,
+    project.leadIn ?? undefined,
     createReconcileOptimistic(project._id, (action) => action.document.leadIn),
   );
 
@@ -48,7 +45,11 @@ export default function LiveProject({
 
   return (
     <ProjectView
-      project={{ ...project, content: content ?? [], leadIn: leadIn ?? [] }}
+      project={{
+        ...project,
+        content: content ?? project.content ?? [],
+        leadIn: leadIn ?? project.leadIn ?? [],
+      }}
       draftMode
       contentDataAttribute={attr("content")}
       leadInDataAttribute={attr("leadIn")}

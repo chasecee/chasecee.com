@@ -1,5 +1,31 @@
 @import "tailwindcss";
+@import "@chasecee/sanity-kit/astro/tailwind.css";
 @import "./typography.css";
+
+:root {
+  --site-header-height: 4rem;
+  --site-header-pad: 1rem;
+  --site-scroll-gap: 1rem;
+  --site-draft-offset: 0rem;
+  --site-scroll-offset: calc(
+    var(--site-header-height) + var(--site-header-pad) + var(--site-scroll-gap) +
+      var(--site-draft-offset)
+  );
+}
+
+@media (width >= theme(--breakpoint-md)) {
+  :root {
+    --site-header-pad: 2rem;
+  }
+}
+
+body.pt-10 {
+  --site-draft-offset: 2.5rem;
+}
+
+[data-projects-header] {
+  scroll-margin-top: var(--site-scroll-offset);
+}
 
 @theme {
   --font-sans: var(--font-rubik), ui-sans-serif, system-ui, sans-serif,

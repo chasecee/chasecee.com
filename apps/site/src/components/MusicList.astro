@@ -20,7 +20,7 @@ const draftMode = Astro.locals.draftMode === true;
       return (
         <article class="w-full shrink-0">
           <a
-            href={`/music/${typeof item.slug === "string" ? item.slug : item.slug?.current}`}
+            href={`/music/${item.slug}`}
             class={`group block text-black no-underline dark:text-white ${draftRingClass}`}
           >
             <div class="relative overflow-hidden aspect-square">

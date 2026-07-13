@@ -1,5 +1,5 @@
 export function contentHasBlock(
-  blocks: unknown[] | undefined,
+  blocks: unknown[] | undefined | null,
   types: string | readonly string[],
 ): boolean {
   if (!Array.isArray(blocks)) return false;

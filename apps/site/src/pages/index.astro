@@ -20,14 +20,17 @@ const [personalProjects, clientProjects] = await Promise.all([
     <HomeHero9 client:load />
     <div class="relative z-10 flex flex-col gap-10">
       <ProjectsList
-        projects={personalProjects}
+        projects={personalProjects.filter((p) => !p.archived)}
         title="Projects"
         columns={3}
+        scroll={false}
+        initialCount={3}
       />
       <ProjectsList
-        projects={clientProjects}
+        projects={clientProjects.filter((p) => !p.archived)}
         title="Client Work"
         columns={4}
+        scroll={false}
       />
     </div>
   </ContainerHome>

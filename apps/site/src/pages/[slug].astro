@@ -6,11 +6,14 @@ import ImageGalleryLightbox from "@/src/components/gallery/ImageGalleryLightbox.
 import { getPage } from "@/sanity/sanity-utils";
 import { metaDescription } from "@/src/utils/seo";
 import { contentHasBlock } from "@/src/utils/contentHasBlock";
-import type { ImageBlock } from "@/types/Content";
+import type { PAGE_QUERY_RESULT } from "@/sanity/sanity.types";
 import { stegaClean } from "@sanity/client/stega";
 import { draftFetchOptions } from "@/sanity/preview";
 
 export const prerender = false;
+
+type PageContent = NonNullable<NonNullable<PAGE_QUERY_RESULT>["content"]>[number];
+type PageImageBlock = Extract<PageContent, { _type: "image" }>;
 
 const { slug } = Astro.params;
 const page = await getPage(slug!, draftFetchOptions(Astro.locals));
@@ -24,16 +27,17 @@ const description = metaDescription(
   page.subtitle,
   `${page.title} - Chase Cee, a designer and developer in Salt Lake City building excellent web products front to back.`,
 );
+const content = page.content ?? [];
 const heroImage =
-  page.content.find(
-    (block): block is ImageBlock =>
+  content.find(
+    (block): block is PageImageBlock =>
       block._type === "image" &&
       "imageUrl" in block &&
       typeof block.imageUrl === "string",
   ) ?? null;
 const contentWithoutHero = heroImage
-  ? page.content.filter((block) => block !== heroImage)
-  : page.content;
+  ? content.filter((block) => block !== heroImage)
+  : content;
 const heroTitle = page.subtitle ?? page.title;
 const heroImageTransitionName = `page-hero-image-${page.slug}`;
 const heroImageSrc =

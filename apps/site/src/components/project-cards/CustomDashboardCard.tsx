@@ -40,23 +40,23 @@ export default function CustomDashboardCard({
 
   return (
     <div
-      className="aspect-square h-auto overflow-hidden rounded-xl bg-black"
+      className="aspect-square h-auto overflow-hidden bg-black"
       ref={containerRef}
     >
-      <div className="relative h-full w-full overflow-hidden rounded-2xl">
+      <div className="relative h-full w-full overflow-hidden">
         {shouldLoadIframe ? (
           <iframe
             width="100%"
             height="100%"
             loading="lazy"
             src="https://pi-dashboard-one.vercel.app/"
-            className="absolute inset-0 rounded-xl"
+            className="absolute inset-0"
             style={{
               border: "none",
             }}
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
             <div className="text-center opacity-60">
               <div className="mx-auto mb-2 h-8 w-8 animate-pulse rounded border-2 border-current" />
               <span className="text-sm">Loading preview...</span>

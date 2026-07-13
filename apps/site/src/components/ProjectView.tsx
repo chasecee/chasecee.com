@@ -1,25 +1,12 @@
 import type { ArbitraryTypedObject, PortableTextBlock } from "@portabletext/types";
-import type { ProjectSiteMini } from "@/types/Project";
+import type { ProjectDetail, ProjectSiteMini } from "@/types/Project";
 import { Body } from "@/src/components/Body";
 import ProjectHero from "@/src/components/ProjectHero";
 import SiteMini from "@/src/components/blocks/SiteMini";
 
 export type { ProjectSiteMini };
 
-export type ProjectViewData = {
-  _id: string;
-  _type: string;
-  isDraft?: boolean;
-  name: string;
-  subtitle?: string;
-  url?: string;
-  archived?: boolean;
-  image?: string;
-  svgcode?: { code?: string };
-  siteMini?: ProjectSiteMini;
-  leadIn?: (PortableTextBlock | ArbitraryTypedObject)[];
-  content?: (PortableTextBlock | ArbitraryTypedObject)[];
-};
+export type ProjectViewData = ProjectDetail;
 
 type ProjectViewProps = {
   project: ProjectViewData;
@@ -40,8 +27,14 @@ export default function ProjectView({
   getDataAttribute,
   getLeadInDataAttribute,
 }: ProjectViewProps) {
-  const content = project.content ?? [];
-  const leadIn = project.leadIn ?? [];
+  const content = (project.content ?? []) as (
+    | PortableTextBlock
+    | ArbitraryTypedObject
+  )[];
+  const leadIn = (project.leadIn ?? []) as (
+    | PortableTextBlock
+    | ArbitraryTypedObject
+  )[];
   const siteMini = project.siteMini;
   const hasSiteMini = Boolean(siteMini?.url);
 
@@ -72,7 +65,7 @@ export default function ProjectView({
         </div>
         {hasSiteMini && siteMini && (
           <div className="not-prose relative hidden md:block">
-            <div className="sticky top-24">
+            <div className="sticky top-[var(--site-scroll-offset)]">
               <SiteMini
                 url={siteMini.url}
                 embedUrl={siteMini.embedUrl}

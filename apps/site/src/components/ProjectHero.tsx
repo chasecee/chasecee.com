@@ -5,14 +5,14 @@ import LucideIcon from "@/src/components/icons/LucideIcon";
 import { LUCIDE_ICONS } from "@/src/components/icons/lucide";
 
 type ProjectHeroData = {
-  name: string;
-  subtitle?: string;
-  url?: string;
-  archived?: boolean;
-  image?: string;
+  name?: string | null;
+  subtitle?: string | null;
+  url?: string | null;
+  archived?: boolean | null;
+  image?: string | null;
   svgcode?: {
-    code?: string;
-  };
+    code?: string | null;
+  } | null;
 };
 
 type ProjectHeroProps = {
@@ -41,7 +41,7 @@ export default function ProjectHero({
   hasSiteMini = false,
   className = "",
 }: ProjectHeroProps) {
-  const cleanName = stegaClean(project.name);
+  const cleanName = stegaClean(project.name ?? "");
   const projectUrl =
     typeof project.url === "string" ? stegaClean(project.url).trim() : "";
   const rawSvgCode = project.svgcode?.code;
@@ -84,7 +84,7 @@ export default function ProjectHero({
         </span>
       )}
       <div className="relative z-10 flex flex-col items-start gap-3">
-        <h1 className="sr-only">{project.name}</h1>
+        <h1 className="sr-only">{cleanName}</h1>
         {svgCode ? (
           <div
             className="max-w-full lg:max-w-[60ch]"
@@ -92,7 +92,7 @@ export default function ProjectHero({
             dangerouslySetInnerHTML={{ __html: svgCode }}
           />
         ) : (
-          <div className="mb-0 text-6xl leading-none">{project.name}</div>
+          <div className="mb-0 text-6xl leading-none">{cleanName}</div>
         )}
         {projectUrl && (
           <a

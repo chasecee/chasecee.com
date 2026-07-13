@@ -206,6 +206,7 @@ export default defineConfig({
     },
   },
   document: {
+    ...kitStudioConfig.document,
     productionUrl: resolveProductionUrlAsync,
     actions: (prev) =>
       prev.map((Action) =>
