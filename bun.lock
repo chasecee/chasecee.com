@@ -378,7 +378,7 @@
 
     "@capsizecss/unpack": ["@capsizecss/unpack@4.0.1", "", { "dependencies": { "fontkitten": "^1.0.3" } }, "sha512-CuNiSqg7+e1cO/GjffyMOm5Tt2jUF9CWHHnvQ/UkqvtkGfHdgwEC0wpmq7fkN3gxwpRnrAN0WzO3vREKmNolMQ=="],
 
-    "@chasecee/sanity-kit": ["@chasecee/sanity-kit@github:chasecee/sanity-kit#29bd0f7", { "dependencies": { "@portabletext/editor": "^7.10.7", "@portabletext/react": "^6.2.0", "@sanity/client": "^7.23.0", "@sanity/icons": "^5.0.0", "@sanity/image-url": "^2.1.1", "@sanity/preview-url-secret": "^4.0.8", "@sanity/react-loader": "^2.0.14", "@sanity/ui": "^3.2.0", "@sanity/visual-editing": "^5.4.5" }, "peerDependencies": { "astro": "^5.0.0 || ^6.0.0 || ^7.0.0", "photoswipe": "^5.4.4", "react": "^19.0.0", "react-dom": "^19.0.0", "sanity": "^6.0.0" } }, "chasecee-sanity-kit-29bd0f7", "sha512-6Op41Uto2ecu/VsuLSXmjBTTBU8Mr3AbCD8/pkJ6oAEJIE+4rt7o0/HgpXCa1LBnneOCSAQU+fTXnAZ9viUc5g=="],
+    "@chasecee/sanity-kit": ["@chasecee/sanity-kit@github:chasecee/sanity-kit#29bd0f7", { "dependencies": { "@portabletext/editor": "^7.10.7", "@portabletext/react": "^6.2.0", "@sanity/client": "^7.23.0", "@sanity/icons": "^5.0.0", "@sanity/image-url": "^2.1.1", "@sanity/preview-url-secret": "^4.0.8", "@sanity/react-loader": "^2.0.14", "@sanity/ui": "^3.2.0", "@sanity/visual-editing": "^5.4.5" }, "peerDependencies": { "astro": "^5.0.0 || ^6.0.0 || ^7.0.0", "photoswipe": "^5.4.4", "react": "^19.0.0", "react-dom": "^19.0.0", "sanity": "^6.0.0" } }, "chasecee-sanity-kit-29bd0f7"],
 
     "@clack/core": ["@clack/core@1.4.2", "", { "dependencies": { "fast-wrap-ansi": "^0.2.0", "sisteransi": "^1.0.5" } }, "sha512-0Ty/1Gfm+Kb07sXcuESjyKfwEhSy4Ns1AgeEisHb/bDY5fWme0tTeTkU14T1Gmcs17YIjB/teiDe4uaCghbYqQ=="],
 
