@@ -120,7 +120,7 @@
 .prose-flow > .prose-wide,
 .prose-flow .content > .prose-wide,
 .prose-flow > .content {
-  @apply max-w-[var(--prose-measure)] md:max-w-[calc(var(--prose-measure)*1.25)] xl:max-w-[calc(var(--prose-measure)*1.5)];
+  @apply min-w-(--prose-measure) max-w-(--prose-measure) md:max-w-[calc(var(--prose-measure)*1.25)] lg:max-w-[min(var(--prose-measure)*1.5,calc(100vh-var(--site-scroll-offset)))];
   margin-inline: auto;
 }
 
