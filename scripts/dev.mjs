@@ -8,8 +8,10 @@ import { ensureLocalKit } from "./local-kit.ts";
 ensureLocalKit();
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
-const sitePort = process.env.PORT || 4321;
-const studioPort = Number(process.env.SANITY_STUDIO_PORT || 3333);
+const siteDir = path.join(root, "apps/site");
+const adminDir = path.join(root, "apps/admin");
+const preferredSite = Number(process.env.PORT || 4321);
+const preferredStudio = Number(process.env.SANITY_STUDIO_PORT || 3333);
 
 function loadEnvFile(filePath) {
   try {
@@ -30,12 +32,9 @@ function loadEnvFile(filePath) {
   }
 }
 
-const rootEnv = {
+const sharedEnv = {
   ...loadEnvFile(path.join(root, ".env")),
   ...loadEnvFile(path.join(root, ".env.local")),
-};
-const sharedEnv = {
-  ...rootEnv,
   ...process.env,
 };
 
@@ -63,13 +62,40 @@ async function isPortInUse(port) {
   return results.some(Boolean);
 }
 
-function run(command, args, cwd) {
+async function findFreePort(start) {
+  let port = start;
+  while (await isPortInUse(port)) port += 1;
+  return port;
+}
+
+function run(command, args, cwd, env = sharedEnv) {
   return spawn(command, args, {
     cwd,
     stdio: "inherit",
-    env: sharedEnv,
+    env,
   });
 }
+
+function stopAstro() {
+  return new Promise((resolve) => {
+    const child = spawn("bun", ["x", "astro", "dev", "stop"], {
+      cwd: siteDir,
+      stdio: "ignore",
+      env: sharedEnv,
+    });
+    child.on("exit", () => resolve());
+    child.on("error", () => resolve());
+  });
+}
+
+await stopAstro();
+
+for (let i = 0; i < 20 && (await isPortInUse(preferredSite)); i++) {
+  await new Promise((r) => setTimeout(r, 100));
+}
+
+const sitePort = await findFreePort(preferredSite);
+const studioPort = await findFreePort(preferredStudio);
 
 const children = [];
 
@@ -82,41 +108,43 @@ process.on("SIGINT", () => shutdown(0));
 process.on("SIGTERM", () => shutdown(0));
 
 console.log("");
+if (sitePort !== preferredSite || studioPort !== preferredStudio) {
+  console.log(
+    `  Ports busy — using site ${sitePort}, studio ${studioPort}`,
+  );
+}
 console.log(`  Site    http://localhost:${sitePort}/`);
 console.log(`  Studio  http://localhost:${studioPort}/`);
 console.log("");
 
-const astro = run("bun", ["run", "dev"], path.join(root, "apps/site"));
-children.push(astro);
+const site = run(
+  "bun",
+  ["x", "astro", "dev", "--force", "--port", String(sitePort)],
+  siteDir,
+);
+children.push(site);
 
-astro.on("exit", (code, signal) => {
+site.on("exit", (code, signal) => {
   if (signal === "SIGTERM") return;
   shutdown(code ?? 1);
 });
 
-const studioBusy = await isPortInUse(studioPort);
-if (studioBusy) {
-  console.log(`Studio already running on port ${studioPort}\n`);
-} else {
-  const studio = spawn(
-    "bun",
-    ["x", "sanity", "dev", "--port", String(studioPort)],
-    {
-      cwd: path.join(root, "apps/admin"),
-      stdio: "inherit",
-      env: {
-        ...sharedEnv,
-        SANITY_STUDIO_PREVIEW_URL: sharedEnv.SANITY_STUDIO_PREVIEW_URL ||
-          `http://localhost:${sitePort}`,
-      },
-    },
-  );
-  children.push(studio);
+const studio = run(
+  "bun",
+  ["x", "sanity", "dev", "--port", String(studioPort)],
+  adminDir,
+  {
+    ...sharedEnv,
+    SANITY_STUDIO_PREVIEW_URL:
+      sharedEnv.SANITY_STUDIO_PREVIEW_URL ||
+      `http://localhost:${sitePort}`,
+  },
+);
+children.push(studio);
 
-  studio.on("exit", (code, signal) => {
-    if (signal === "SIGTERM") return;
-    console.error(
-      `\nStudio exited (${code ?? signal ?? "unknown"}). Site keeps running.\n`,
-    );
-  });
-}
+studio.on("exit", (code, signal) => {
+  if (signal === "SIGTERM") return;
+  console.error(
+    `\nStudio exited (${code ?? signal ?? "unknown"}). Site keeps running.\n`,
+  );
+});

@@ -1,0 +1,63 @@
+---
+import LucideIcon from "@/src/components/icons/LucideIcon.astro";
+import { LUCIDE_ICONS } from "@/src/components/icons/lucide";
+
+interface Props {
+  href: string;
+}
+
+const { href } = Astro.props;
+const token = Buffer.from(href).toString("base64");
+---
+
+<button
+  type="button"
+  data-x={token}
+  aria-hidden="true"
+  tabindex="-1"
+  class="studio-egg not-prose inline-flex origin-center cursor-default border-0 bg-transparent p-0 text-current opacity-60 hover:opacity-100"
+>
+  <LucideIcon icon={LUCIDE_ICONS.asterisk} size={14} />
+</button>
+
+<style>
+  .studio-egg {
+    transform: scale(1);
+    transition:
+      color 280ms ease,
+      transform 280ms ease,
+      opacity 280ms ease;
+  }
+</style>
+
+<script>
+  function bindStudioEggs() {
+    for (const el of document.querySelectorAll<HTMLButtonElement>("button[data-x]")) {
+      if (el.dataset.bound === "1") continue;
+      el.dataset.bound = "1";
+      el.dataset.step = "0";
+      el.addEventListener("click", () => {
+        const step = Number(el.dataset.step || "0");
+        if (step === 0) {
+          el.dataset.step = "1";
+          el.style.opacity = "1";
+          el.style.color = "#ef4444";
+          el.style.transform = "scale(2)";
+          return;
+        }
+        if (step === 1) {
+          el.dataset.step = "2";
+          el.style.opacity = "1";
+          el.style.color = "#22c55e";
+          el.style.transform = "scale(2)";
+          const raw = el.dataset.x;
+          if (!raw) return;
+          window.open(atob(raw), "_blank", "noopener,noreferrer");
+        }
+      });
+    }
+  }
+
+  bindStudioEggs();
+  document.addEventListener("astro:page-load", bindStudioEggs);
+</script>

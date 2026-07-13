@@ -1,4 +1,5 @@
 import {
+  Asterisk,
   ChevronDown,
   ChevronRight,
   ExternalLink,
@@ -8,6 +9,7 @@ import {
 } from "lucide-static";
 
 export const LUCIDE_ICONS = {
+  asterisk: Asterisk,
   chevronDown: ChevronDown,
   chevronRight: ChevronRight,
   externalLink: ExternalLink,

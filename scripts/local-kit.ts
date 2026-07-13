@@ -7,6 +7,7 @@ import {
   rmSync,
   symlinkSync,
 } from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -52,6 +53,16 @@ function ensureLink(linkPath: string, targetPath: string): boolean {
   return true;
 }
 
+function resolvePkg(fromPkgJson: string, name: string): string | null {
+  try {
+    return path.dirname(
+      createRequire(fromPkgJson).resolve(`${name}/package.json`),
+    );
+  } catch {
+    return null;
+  }
+}
+
 export function ensureLocalKit(): boolean {
   if (!useLocalKit) return false;
   const targets = [
@@ -59,23 +70,37 @@ export function ensureLocalKit(): boolean {
     path.join(monorepoRoot, "apps/site/node_modules/@chasecee/sanity-kit"),
     path.join(monorepoRoot, "apps/admin/node_modules/@chasecee/sanity-kit"),
   ];
-  const peerTargets: Array<[string, string]> = [
+  const sitePkg = path.join(monorepoRoot, "apps/site/package.json");
+  const adminPkg = path.join(monorepoRoot, "apps/admin/package.json");
+  const sanity = resolvePkg(adminPkg, "sanity");
+  const peers: Array<[string, string | null]> = [
+    ["react", resolvePkg(sitePkg, "react")],
+    ["react-dom", resolvePkg(sitePkg, "react-dom")],
+    ["astro", resolvePkg(sitePkg, "astro")],
+    ["photoswipe", resolvePkg(sitePkg, "photoswipe")],
+    ["sanity", sanity],
     [
-      path.join(localKit, "node_modules/react"),
-      path.join(monorepoRoot, "node_modules/react"),
+      "styled-components",
+      sanity
+        ? resolvePkg(path.join(sanity, "package.json"), "styled-components")
+        : resolvePkg(adminPkg, "styled-components"),
     ],
     [
-      path.join(localKit, "node_modules/react-dom"),
-      path.join(monorepoRoot, "node_modules/react-dom"),
+      "react-is",
+      sanity
+        ? resolvePkg(path.join(sanity, "package.json"), "react-is")
+        : null,
     ],
   ];
   let changed = false;
   for (const linkPath of targets) {
     if (ensureLink(linkPath, localKit)) changed = true;
   }
-  for (const [linkPath, targetPath] of peerTargets) {
-    if (!existsSync(targetPath)) continue;
-    if (ensureLink(linkPath, targetPath)) changed = true;
+  for (const [name, targetPath] of peers) {
+    if (!targetPath) continue;
+    if (ensureLink(path.join(localKit, "node_modules", name), targetPath)) {
+      changed = true;
+    }
   }
   return changed;
 }

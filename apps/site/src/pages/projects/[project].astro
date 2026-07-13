@@ -61,7 +61,7 @@ const moreProjects = (
   {description}
   ogImage={`/og/project/${stegaClean(project.slug)}.png`}
 >
-  <Container>
+  <Container document={project}>
     {
       draftMode ? (
         <LiveProject

@@ -49,7 +49,7 @@ const albumName = stegaClean(item.albumName);
   description={`${albumName} by ${bandName}.`}
   ogImage="/og/home.png"
 >
-  <Container>
+  <Container document={item}>
     {
       draftMode && initialMusic ? (
         <LiveMusic

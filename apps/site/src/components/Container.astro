@@ -2,12 +2,15 @@
 import Header from "@/src/components/Header";
 import LucideIcon from "@/src/components/icons/LucideIcon.astro";
 import { LUCIDE_ICONS } from "@/src/components/icons/lucide";
+import StudioEgg from "@/src/components/StudioEgg.astro";
+import { studioDocumentUrl } from "@/sanity/studio-url";
 
 interface Props {
   className?: string;
   showCTA?: boolean;
   ctaTitle?: string;
   ctaSubtitle?: string;
+  document?: { _id?: string | null; _type?: string | null } | null;
 }
 
 const {
@@ -15,7 +18,10 @@ const {
   showCTA = false,
   ctaTitle = "Let's build something spectacular.",
   ctaSubtitle = "I build powerful and beautiful applications for businesses of all sizes. I'm available for work, let's get started!",
+  document: sanityDocument,
 } = Astro.props;
+
+const studioHref = studioDocumentUrl(sanityDocument);
 ---
 
 <div class={`root min-h-screen w-full ${className} pt-4 md:pt-8`}>
@@ -84,7 +90,10 @@ const {
             by
             <a href="/about">Chase Cee</a>
           </p>
-          <p class="m-0 whitespace-nowrap text-black/50 dark:text-white/50">Copyright © 2011-2099</p>
+          <p class="m-0 flex items-center gap-2 whitespace-nowrap text-black/50 dark:text-white/50">
+            Copyright © 2011-2099
+            <StudioEgg href={studioHref} />
+          </p>
         </div>
       </div>
     </footer>

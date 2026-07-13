@@ -159,6 +159,7 @@ export default defineConfig({
           .items([
             orderableDocumentListDeskItem({
               type: "project",
+              id: "project",
               title: "Projects",
               icon: ImagesIcon,
               S,
@@ -166,6 +167,7 @@ export default defineConfig({
             }),
             orderableDocumentListDeskItem({
               type: "page",
+              id: "page",
               title: "Pages",
               icon: DocumentsIcon,
               S,
@@ -173,6 +175,7 @@ export default defineConfig({
             }),
             orderableDocumentListDeskItem({
               type: "music",
+              id: "music",
               title: "Music",
               icon: ImagesIcon,
               S,
