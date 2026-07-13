@@ -1144,28 +1144,6 @@ export type MUSIC_BY_SLUG_QUERY_RESULT = {
 } | null;
 
 // Source: ../site/sanity/queries.ts
-// Variable: PROJECT_NEXT_QUERY
-// Query: *[_type == "project" && orderRank > $orderRank] | order(orderRank) [0] {  _id,  "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),  name,  "slug": slug.current,  "image": image.asset->url}
-export type PROJECT_NEXT_QUERY_RESULT = {
-  _id: string;
-  isDraft: boolean;
-  name: string | null;
-  slug: string | null;
-  image: string | null;
-} | null;
-
-// Source: ../site/sanity/queries.ts
-// Variable: PROJECT_PREV_QUERY
-// Query: *[_type == "project" && orderRank < $orderRank] | order(orderRank desc) [0] {  _id,  "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),  name,  "slug": slug.current,  "image": image.asset->url}
-export type PROJECT_PREV_QUERY_RESULT = {
-  _id: string;
-  isDraft: boolean;
-  name: string | null;
-  slug: string | null;
-  image: string | null;
-} | null;
-
-// Source: ../site/sanity/queries.ts
 // Variable: PAGES_QUERY
 // Query: *[_type == "page"]{  _id,  _createdAt,  title,  "slug": slug.current}
 export type PAGES_QUERY_RESULT = Array<{
@@ -1290,22 +1268,4 @@ export type PAGE_QUERY_RESULT = {
     title?: string;
   }> | null;
 } | null;
-
-// Query TypeMap
-import "@sanity/client";
-declare module "@sanity/client" {
-  interface SanityQueries {
-    "*[_type == \"project\" && slug.current == $slug][0]{\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  name,\n  \"slug\": slug.current,\n  \"image\": image.asset->url,\n  subtitle,\n  svgcode,\n  url,\n  archived,\n  siteMini,\n  orderRank,\n  \"leadIn\": leadIn[]{\n  ...,\n  markDefs[]{\n    ...,\n    _type == \"internalLink\" => {\n      \"slug\": @.reference->slug.current,\n      \"refType\": @.reference->_type\n    },\n    _type == \"link\" => {\n      ...,\n    }\n  }\n},\n  \"content\": content[]{\n  ...,\n  markDefs[]{\n    ...,\n    _type == \"internalLink\" => {\n      \"slug\": @.reference->slug.current,\n      \"refType\": @.reference->_type\n    },\n    _type == \"link\" => {\n      ...,\n    }\n  }\n}\n}": PROJECT_QUERY_RESULT;
-    "*[_type == \"music\" && (slug.current == $slug || _id == $slug)][0]{\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  \"slug\": coalesce(slug.current, _id),\n  bandName,\n  albumName,\n  releaseYear,\n  \"albumArt\": albumArt.asset->url,\n  \"albumArtAlt\": albumArt.alt,\n  \"gallery\": {\n    \"columns\": coalesce(gallery.columns, 2),\n    \"images\": coalesce(gallery.images, gallery)[]{\n      _key,\n      asset,\n      \"url\": asset->url,\n      alt,\n      caption\n    }\n  },\n  links,\n  embeds\n}": MUSIC_QUERY_RESULT;
-    "*[_type == \"project\"] | order(orderRank) {\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  name,\n  \"slug\": slug.current,\n  \"image\": image.asset->url,\n  archived,\n  type,\n  svgcode,\n  subtitle,\n  color,\n  displayType,\n  embedUrl,\n  aspectRatio,\n  url,\n  content\n}": PROJECTS_QUERY_RESULT;
-    "*[_type == \"project\" && type == \"personal\"] | order(orderRank) {\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  name,\n  \"slug\": slug.current,\n  \"image\": image.asset->url,\n  archived,\n  type,\n  svgcode,\n  subtitle,\n  color,\n  displayType,\n  embedUrl,\n  aspectRatio,\n  url,\n  content\n}": PERSONAL_PROJECTS_QUERY_RESULT;
-    "*[_type == \"project\" && type == \"client\"] | order(orderRank) {\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  name,\n  \"slug\": slug.current,\n  \"image\": image.asset->url,\n  archived,\n  type,\n  svgcode,\n  subtitle,\n  color,\n  displayType,\n  embedUrl,\n  aspectRatio,\n  url,\n  content\n}": CLIENT_PROJECTS_QUERY_RESULT;
-    "*[_type == \"music\"] | order(orderRank) {\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  \"slug\": coalesce(slug.current, _id),\n  bandName,\n  albumName,\n  releaseYear,\n  \"albumArt\": albumArt.asset->url,\n  \"albumArtAlt\": albumArt.alt,\n  \"gallery\": {\n    \"columns\": coalesce(gallery.columns, 2),\n    \"images\": coalesce(gallery.images, gallery)[]{\n      _key,\n      asset,\n      \"url\": asset->url,\n      alt,\n      caption\n    }\n  },\n  links,\n  embeds\n}": MUSIC_LIST_QUERY_RESULT;
-    "*[_type == \"music\" && (slug.current == $slug || _id == $slug)][0] {\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  \"slug\": coalesce(slug.current, _id),\n  bandName,\n  albumName,\n  releaseYear,\n  \"albumArt\": albumArt.asset->url,\n  \"albumArtAlt\": albumArt.alt,\n  \"gallery\": {\n    \"columns\": coalesce(gallery.columns, 2),\n    \"images\": coalesce(gallery.images, gallery)[]{\n      _key,\n      asset,\n      \"url\": asset->url,\n      alt,\n      caption\n    }\n  },\n  links,\n  embeds\n}": MUSIC_BY_SLUG_QUERY_RESULT;
-    "*[_type == \"project\" && orderRank > $orderRank] | order(orderRank) [0] {\n  _id,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  name,\n  \"slug\": slug.current,\n  \"image\": image.asset->url\n}": PROJECT_NEXT_QUERY_RESULT;
-    "*[_type == \"project\" && orderRank < $orderRank] | order(orderRank desc) [0] {\n  _id,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  name,\n  \"slug\": slug.current,\n  \"image\": image.asset->url\n}": PROJECT_PREV_QUERY_RESULT;
-    "*[_type == \"page\"]{\n  _id,\n  _createdAt,\n  title,\n  \"slug\": slug.current\n}": PAGES_QUERY_RESULT;
-    "*[_type == \"page\" && slug.current == $slug][0]{\n  _id,\n  _createdAt,\n  title,\n  subtitle,\n  \"slug\": slug.current,\n  content[]{\n    ...,\n    _type == \"image\" => {\n      \"imageUrl\": asset->url,\n      \"alt\": alt\n    }\n  }\n}": PAGE_QUERY_RESULT;
-  }
-}
 

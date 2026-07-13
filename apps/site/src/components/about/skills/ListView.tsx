@@ -1,15 +1,13 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { palette } from "@/src/components/palette";
 import LucideIcon from "@/src/components/icons/LucideIcon";
 import { LUCIDE_ICONS } from "@/src/components/icons/lucide";
-import { useSkillsData } from "@/src/hooks/useSkillsData";
 import type { Skill, SkillDotsProps } from "@/types";
 import { getSkillCount, sortSkills } from "./utils";
-import { ErrorDisplay } from "./ErrorDisplay";
 
-const SkillDots: React.FC<SkillDotsProps> = ({ value, max = 10 }) => {
+const SkillDots = ({ value, max = 10 }: SkillDotsProps) => {
   const normalizedValue = (value / max) * 5;
   const fullDots = Math.ceil(normalizedValue);
   const getColor = (dotIndex: number) => {
@@ -33,17 +31,18 @@ const SkillDots: React.FC<SkillDotsProps> = ({ value, max = 10 }) => {
   );
 };
 
-const ListView = () => {
-  const { data: skillsData, error } = useSkillsData();
+type ListViewProps = {
+  category: Skill;
+};
+
+const ListView = ({ category }: ListViewProps) => {
   const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
 
   const toggleCategory = useCallback((name: string) => {
     setOpenCategories((prev) => {
-      const newCategories = new Set(prev);
-      newCategories.has(name)
-        ? newCategories.delete(name)
-        : newCategories.add(name);
-      return newCategories;
+      const next = new Set(prev);
+      next.has(name) ? next.delete(name) : next.add(name);
+      return next;
     });
   }, []);
 
@@ -55,7 +54,7 @@ const ListView = () => {
       return (
         <div key={skill.name}>
           <div
-            className={`flex items-center justify-between px-2 py-1.5 transition-all duration-200 ${
+            className={`flex items-center justify-between px-2 py-1.5 transition-colors ${
               hasChildren
                 ? "cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800"
                 : ""
@@ -101,21 +100,16 @@ const ListView = () => {
     [openCategories, toggleCategory],
   );
 
-  const sortedCategories = useMemo(
-    () => (skillsData?.children ? sortSkills([...skillsData.children]) : []),
-    [skillsData?.children],
+  const items = useMemo(
+    () => (category.children ? sortSkills([...category.children]) : []),
+    [category.children],
   );
 
-  if (error) return <ErrorDisplay error={error} />;
-  if (!skillsData?.children) return null;
+  if (items.length === 0) return null;
 
   return (
-    <div className="relative mx-auto overflow-hidden rounded-lg">
-      <div className="py-2">
-        <div>
-          {sortedCategories.map((category) => renderSkillItem(category, 0))}
-        </div>
-      </div>
+    <div className="py-1">
+      {items.map((skill) => renderSkillItem(skill, 0))}
     </div>
   );
 };

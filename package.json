@@ -15,6 +15,8 @@
     "site:dev": "bun run --filter site dev",
     "typegen": "bun run --filter admin typegen",
     "convert-webp": "node scripts/convert-to-webp.mjs",
+    "music:audit": "bun scripts/music-audit.ts",
+    "music:apply": "bun scripts/music-apply.ts",
     "blueprints:plan": "bunx sanity@latest blueprints plan",
     "blueprints:deploy": "bunx sanity@latest blueprints deploy",
     "blueprints:destroy": "bunx sanity@latest blueprints destroy"

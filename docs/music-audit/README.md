@@ -17,7 +17,7 @@ This folder is the phase-1 audit output for Sanity music docs in `lgevplo8/produ
 | Rumble Gums | Pool Party Palace | found | found | no confident match | ready |
 | Pandahead | Everybody | found | found | no confident match | ready |
 
-Spotify + Apple Music are complete for all 5 releases. YouTube has no confident full-album embeds.
+Spotify + Apple Music are complete for all 5 releases. Players render as minimal Spotify / Apple Music tabs (inactive iframe unmounted; Apple forced `theme=dark`). YouTube has no confident full-album embeds.
 
 ## Script
 
@@ -42,6 +42,25 @@ Manual fills after the automated pass:
   - Spotify candidates per release: `MAX_SPOTIFY_CANDIDATES = 6`
   - Invidious instance probes: `MAX_INVIDIOUS_PROBES = 4`
 - verbose logs print each network request, request duration, candidate scoring, and per-release completion.
+
+## Phase-2 Apply (draft-safe)
+
+Script: `scripts/music-apply.ts`
+
+```bash
+# dry-run all (default, no writes)
+bun music:apply
+
+# dry-run one release
+bun music:apply --only=phantom-drum-initialize
+
+# write drafts only (needs SANITY_API_WRITE_TOKEN)
+bun music:apply --draft --only=phantom-drum-initialize --apply
+```
+
+- Default is dry-run: prints planned `links` / `embeds` patches.
+- `--apply` requires `--draft` (refuses published writes).
+- Draft writes use `createOrReplace` on `drafts.{id}`; published docs stay unchanged until you publish in Studio.
 
 ## Phase-2 Mapping Notes
 

@@ -29,11 +29,11 @@
         },
         {
           "_type": "embed",
-          "url": "https://embed.music.apple.com/us/album/initialize/1853366939",
+          "url": "https://embed.music.apple.com/us/album/initialize/1853366939?theme=dark",
           "title": "INITIALIZE - Apple Music",
-          "width": "full",
+          "width": "content",
           "ratio": {
-            "desktop": "16/9"
+            "desktop": "1"
           }
         }
       ]
@@ -44,7 +44,8 @@
       "youtube": null
     },
     "notes": [
-      "No confident YouTube full-album match."
+      "No confident YouTube full-album match.",
+      "Players shown as Spotify/Apple Music tabs; inactive iframe unmounted."
     ]
   },
   {
@@ -84,11 +85,11 @@
         },
         {
           "_type": "embed",
-          "url": "https://embed.music.apple.com/us/album/metro-party-life/1709909808",
+          "url": "https://embed.music.apple.com/us/album/metro-party-life/1709909808?theme=dark",
           "title": "Metro Party Life - Apple Music",
-          "width": "full",
+          "width": "content",
           "ratio": {
-            "desktop": "16/9"
+            "desktop": "1"
           }
         }
       ]
@@ -101,7 +102,8 @@
     "notes": [
       "Existing Spotify embed is stored as generic embed.",
       "Apple Music found via artist lookup (iTunes search misses this album).",
-      "No confident YouTube full-album match."
+      "No confident YouTube full-album match.",
+      "Players shown as Spotify/Apple Music tabs; inactive iframe unmounted."
     ]
   },
   {
@@ -134,11 +136,11 @@
         },
         {
           "_type": "embed",
-          "url": "https://embed.music.apple.com/us/album/cant-elope/1410840299",
+          "url": "https://embed.music.apple.com/us/album/cant-elope/1410840299?theme=dark",
           "title": "Can't Elope - Apple Music",
-          "width": "full",
+          "width": "content",
           "ratio": {
-            "desktop": "16/9"
+            "desktop": "1"
           }
         }
       ]
@@ -149,7 +151,8 @@
       "youtube": null
     },
     "notes": [
-      "No confident YouTube full-album match."
+      "No confident YouTube full-album match.",
+      "Players shown as Spotify/Apple Music tabs; inactive iframe unmounted."
     ]
   },
   {
@@ -182,11 +185,11 @@
         },
         {
           "_type": "embed",
-          "url": "https://embed.music.apple.com/us/album/pool-party-palace/1176821002",
+          "url": "https://embed.music.apple.com/us/album/pool-party-palace/1176821002?theme=dark",
           "title": "Pool Party Palace - Apple Music",
-          "width": "full",
+          "width": "content",
           "ratio": {
-            "desktop": "16/9"
+            "desktop": "1"
           }
         }
       ]
@@ -199,7 +202,8 @@
     "notes": [
       "Spotify confirmed via provided embed.",
       "Apple Music found via artist lookup (iTunes search misses this album).",
-      "No confident YouTube full-album match."
+      "No confident YouTube full-album match.",
+      "Players shown as Spotify/Apple Music tabs; inactive iframe unmounted."
     ]
   },
   {
@@ -232,11 +236,11 @@
         },
         {
           "_type": "embed",
-          "url": "https://embed.music.apple.com/us/album/everybody/531956029",
+          "url": "https://embed.music.apple.com/us/album/everybody/531956029?theme=dark",
           "title": "Everybody - Apple Music",
-          "width": "full",
+          "width": "content",
           "ratio": {
-            "desktop": "16/9"
+            "desktop": "1"
           }
         }
       ]
@@ -248,7 +252,8 @@
     },
     "notes": [
       "Spotify confirmed via provided embed.",
-      "No confident YouTube full-album match."
+      "No confident YouTube full-album match.",
+      "Players shown as Spotify/Apple Music tabs; inactive iframe unmounted."
     ]
   }
 ]

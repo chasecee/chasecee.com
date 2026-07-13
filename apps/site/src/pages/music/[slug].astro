@@ -58,7 +58,7 @@ const albumName = stegaClean(item.albumName);
           initial={{ ...initialMusic, data: item }}
         />
       ) : (
-        <MusicView item={item} />
+        <MusicView client:load item={item} />
       )
     }
   </Container>

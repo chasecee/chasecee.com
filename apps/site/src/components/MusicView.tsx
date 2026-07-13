@@ -1,9 +1,10 @@
 import { stegaClean } from "@sanity/client/stega";
 import type { SanityImageSource } from "@sanity/image-url";
-import { Embed, Gallery, Spotify } from "@chasecee/sanity-kit/astro";
-import type { MusicDetail, MusicEmbed } from "@/types/Music";
+import { Gallery } from "@chasecee/sanity-kit/astro";
+import type { MusicDetail } from "@/types/Music";
 import urlFor from "@/sanity/sanity.image";
 import { withSanityImageParams } from "@/src/utils/sanityImageParams";
+import MusicPlayers, { isPlatformListenLink } from "@/src/components/MusicPlayers";
 
 export type MusicViewData = MusicDetail;
 
@@ -28,6 +29,8 @@ export default function MusicView({
     ? (item.albumName ?? "")
     : stegaClean(item.albumName ?? "");
   const embeds = item.embeds ?? [];
+  const links = item.links ?? [];
+  const otherLinks = links.filter((link) => !isPlatformListenLink(link.label));
 
   return (
     <div className="prose prose-flow mt-10">
@@ -38,6 +41,30 @@ export default function MusicView({
       )}
       <h1>{bandName}</h1>
       <h2>{albumName}</h2>
+
+      <MusicPlayers
+        embeds={embeds}
+        links={links}
+        albumName={stegaClean(item.albumName ?? "")}
+        draftMode={draftMode}
+        embedsDataAttribute={embedsDataAttribute}
+        getEmbedDataAttribute={getEmbedDataAttribute}
+      />
+
+      {otherLinks.length > 0 && (
+        <section className="mt-10">
+          <h3>Links</h3>
+          <ul>
+            {otherLinks.map((link) => (
+              <li key={link._key || link.url}>
+                <a href={stegaClean(link.url)} target="_blank" rel="noopener noreferrer">
+                  {draftMode ? link.label : stegaClean(link.label)}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {item.albumArt && (
         <img
@@ -77,56 +104,6 @@ export default function MusicView({
               return image.fit("max").url();
             }}
           />
-        </section>
-      )}
-
-      {item.links && item.links.length > 0 && (
-        <section className="mt-10">
-          <h3>Links</h3>
-          <ul>
-            {item.links.map((link) => (
-              <li key={link._key || link.url}>
-                <a href={stegaClean(link.url)} target="_blank" rel="noopener noreferrer">
-                  {draftMode ? link.label : stegaClean(link.label)}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {embeds.length > 0 && (
-        <section
-          className="not-prose mt-10 flex flex-col gap-6"
-          data-sanity={embedsDataAttribute}
-        >
-          {embeds.map((embed) =>
-            embed._type === "spotify" ? (
-              <Spotify
-                key={embed._key || embed.url}
-                url={embed.url}
-                title={embed.title}
-                size={embed.size}
-                theme={embed.theme}
-                draftMode={draftMode}
-                dataSanity={getEmbedDataAttribute?.(embed._key)}
-              />
-            ) : (
-              <Embed
-                key={embed._key || (embed as MusicEmbed).url}
-                url={(embed as MusicEmbed).url}
-                title={
-                  (embed as MusicEmbed).title ||
-                  `${stegaClean(item.albumName)} embed`
-                }
-                width={(embed as MusicEmbed).width}
-                aspectRatio={(embed as MusicEmbed).aspectRatio}
-                ratio={(embed as MusicEmbed).ratio}
-                draftMode={draftMode}
-                dataSanity={getEmbedDataAttribute?.(embed._key)}
-              />
-            ),
-          )}
         </section>
       )}
     </div>

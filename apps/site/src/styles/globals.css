@@ -90,8 +90,8 @@ body.pt-10 {
 }
 
 @utility site-mini {
-  --site-mini-frame-w: 500;
-  --site-mini-frame-h: 1000;
+  --site-mini-frame-w: 600;
+  --site-mini-frame-h: 600;
   --site-mini-layout-w: 1400;
 
   display: block;

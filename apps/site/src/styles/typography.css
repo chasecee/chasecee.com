@@ -14,7 +14,7 @@
   --prose-link: var(--color-indigo-600);
   --prose-link-hover: var(--color-indigo-500);
   --prose-blockquote-border: rgb(0 0 0 / 0.2);
-  --project-lead-col: 40rem;
+  --project-lead-col: 46rem;
 }
 @media (width >= theme(--breakpoint-lg)) {
   :root {
@@ -45,7 +45,7 @@
     }
 
     &:where(h1, h2, h3, h4) {
-      margin-top: calc(var(--prose-gap) * 1.45);
+      margin-top: calc(var(--prose-gap) * 1.25);
       margin-bottom: calc(var(--prose-gap) * 0.5);
       font-weight: var(--prose-heading-weight);
       letter-spacing: var(--prose-heading-track);

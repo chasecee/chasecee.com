@@ -43,7 +43,7 @@ export default function ProjectView({
       <div
         className={
           hasSiteMini
-            ? "prose-full my-8 grid gap-6 md:grid-cols-[minmax(0,var(--project-lead-col))_1fr]"
+            ? "prose-full my-8 grid gap-8 md:gap-12 md:grid-cols-[minmax(0,var(--project-lead-col))_1fr]"
             : "prose-full my-8"
         }
       >
