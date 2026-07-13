@@ -636,7 +636,7 @@ export type AllSanitySchemaTypes = Ratio | SanityFileAssetReference | MediaMedia
 
 // Source: ../site/sanity/queries.ts
 // Variable: PROJECT_QUERY
-// Query: *[_type == "project" && slug.current == $slug][0]{  _id,  _type,  "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),  _createdAt,  name,  "slug": slug.current,  "image": image.asset->url,  subtitle,  svgcode,  url,  archived,  orderRank,  "leadIn": leadIn[]{  ...,  markDefs[]{  ...,  _type == "internalLink" => {    "slug": @.reference->slug.current,    "refType": @.reference->_type  },  _type == "link" => {    ...,  }},  _type == "media" => {  ...,  media{    ...,    asset->{  _id,  url,  mimeType,  originalFilename,  size}  }},  _type == "videoFile" => {  ...,  asset->{  _id,  url,  mimeType,  originalFilename,  size}},  _type == "columns" => {    ...,    columns[]{      ...,      content[]{        ...,        markDefs[]{  ...,  _type == "internalLink" => {    "slug": @.reference->slug.current,    "refType": @.reference->_type  },  _type == "link" => {    ...,  }},        _type == "media" => {  ...,  media{    ...,    asset->{  _id,  url,  mimeType,  originalFilename,  size}  }},        _type == "videoFile" => {  ...,  asset->{  _id,  url,  mimeType,  originalFilename,  size}}      }    }  }},  "content": content[]{  ...,  markDefs[]{  ...,  _type == "internalLink" => {    "slug": @.reference->slug.current,    "refType": @.reference->_type  },  _type == "link" => {    ...,  }},  _type == "media" => {  ...,  media{    ...,    asset->{  _id,  url,  mimeType,  originalFilename,  size}  }},  _type == "videoFile" => {  ...,  asset->{  _id,  url,  mimeType,  originalFilename,  size}},  _type == "columns" => {    ...,    columns[]{      ...,      content[]{        ...,        markDefs[]{  ...,  _type == "internalLink" => {    "slug": @.reference->slug.current,    "refType": @.reference->_type  },  _type == "link" => {    ...,  }},        _type == "media" => {  ...,  media{    ...,    asset->{  _id,  url,  mimeType,  originalFilename,  size}  }},        _type == "videoFile" => {  ...,  asset->{  _id,  url,  mimeType,  originalFilename,  size}}      }    }  }}}
+// Query: *[_type == "project" && slug.current == $slug][0]{  _id,  _type,  "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),  _createdAt,  name,  "slug": slug.current,  "image": image.asset->url,  subtitle,  svgcode,  url,  archived,  orderRank,  "leadIn": leadIn[]{  ...,  markDefs[]{  ...,  _type == "internalLink" => {    "slug": @.reference->slug.current,    "refType": @.reference->_type  },  _type == "link" => {    ...,  }},  _type == "media" => {  ...,  media{    ...,    asset->{  _id,  url,  mimeType,  originalFilename,  size}  }},  _type == "videoFile" => {  ...,  asset->{  _id,  url,  mimeType,  originalFilename,  size},  poster{  ...,  asset->{    _id,    url,    mimeType,    metadata{      dimensions    }  }}},  _type == "gallery" => {  ...,  images[]{    ...,    _type == "galleryVideo" => {      ...,      asset->{  _id,  url,  mimeType,  originalFilename,  size},      poster{  ...,  asset->{    _id,    url,    mimeType,    metadata{      dimensions    }  }}    }  }},  _type == "columns" => {    ...,    columns[]{      ...,      content[]{        ...,        markDefs[]{  ...,  _type == "internalLink" => {    "slug": @.reference->slug.current,    "refType": @.reference->_type  },  _type == "link" => {    ...,  }},        _type == "media" => {  ...,  media{    ...,    asset->{  _id,  url,  mimeType,  originalFilename,  size}  }},        _type == "videoFile" => {  ...,  asset->{  _id,  url,  mimeType,  originalFilename,  size},  poster{  ...,  asset->{    _id,    url,    mimeType,    metadata{      dimensions    }  }}},        _type == "gallery" => {  ...,  images[]{    ...,    _type == "galleryVideo" => {      ...,      asset->{  _id,  url,  mimeType,  originalFilename,  size},      poster{  ...,  asset->{    _id,    url,    mimeType,    metadata{      dimensions    }  }}    }  }}      }    }  }},  "content": content[]{  ...,  markDefs[]{  ...,  _type == "internalLink" => {    "slug": @.reference->slug.current,    "refType": @.reference->_type  },  _type == "link" => {    ...,  }},  _type == "media" => {  ...,  media{    ...,    asset->{  _id,  url,  mimeType,  originalFilename,  size}  }},  _type == "videoFile" => {  ...,  asset->{  _id,  url,  mimeType,  originalFilename,  size},  poster{  ...,  asset->{    _id,    url,    mimeType,    metadata{      dimensions    }  }}},  _type == "gallery" => {  ...,  images[]{    ...,    _type == "galleryVideo" => {      ...,      asset->{  _id,  url,  mimeType,  originalFilename,  size},      poster{  ...,  asset->{    _id,    url,    mimeType,    metadata{      dimensions    }  }}    }  }},  _type == "columns" => {    ...,    columns[]{      ...,      content[]{        ...,        markDefs[]{  ...,  _type == "internalLink" => {    "slug": @.reference->slug.current,    "refType": @.reference->_type  },  _type == "link" => {    ...,  }},        _type == "media" => {  ...,  media{    ...,    asset->{  _id,  url,  mimeType,  originalFilename,  size}  }},        _type == "videoFile" => {  ...,  asset->{  _id,  url,  mimeType,  originalFilename,  size},  poster{  ...,  asset->{    _id,    url,    mimeType,    metadata{      dimensions    }  }}},        _type == "gallery" => {  ...,  images[]{    ...,    _type == "galleryVideo" => {      ...,      asset->{  _id,  url,  mimeType,  originalFilename,  size},      poster{  ...,  asset->{    _id,    url,    mimeType,    metadata{      dimensions    }  }}    }  }}      }    }  }}}
 export type PROJECT_QUERY_RESULT = {
   _id: string;
   _type: "project";
@@ -764,11 +764,45 @@ export type PROJECT_QUERY_RESULT = {
         _key: string;
         _type: "gallery";
         columns?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-        images?: Array<{
+        images: Array<{
           _key: string;
-        } & GalleryImage | {
+          _type: "galleryImage";
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt?: string;
+          caption?: string;
+        } | {
           _key: string;
-        } & GalleryVideo>;
+          _type: "galleryVideo";
+          asset: {
+            _id: string;
+            url: string | null;
+            mimeType: string | null;
+            originalFilename: string | null;
+            size: number | null;
+          } | null;
+          media?: unknown;
+          alt?: string;
+          poster: {
+            asset: {
+              _id: string;
+              url: string | null;
+              mimeType: string | null;
+              metadata: {
+                dimensions: SanityImageDimensions | null;
+              } | null;
+            } | null;
+            media?: unknown;
+            hotspot?: SanityImageHotspot;
+            crop?: SanityImageCrop;
+            _type: "image";
+          } | null;
+          caption?: string;
+          width?: number;
+          height?: number;
+        }> | null;
         markDefs: null;
       } | {
         asset?: SanityImageAssetReference;
@@ -813,7 +847,21 @@ export type PROJECT_QUERY_RESULT = {
         } | null;
         media?: unknown;
         alt?: string;
-        poster?: Poster;
+        poster: {
+          asset: {
+            _id: string;
+            url: string | null;
+            mimeType: string | null;
+            metadata: {
+              dimensions: SanityImageDimensions | null;
+            } | null;
+          } | null;
+          media?: unknown // Unable to locate the referenced type "poster.media" in schema
+;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+        } | null;
         width?: number;
         height?: number;
         _type: "videoFile";
@@ -838,11 +886,45 @@ export type PROJECT_QUERY_RESULT = {
     _key: string;
     _type: "gallery";
     columns?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-    images?: Array<{
+    images: Array<{
       _key: string;
-    } & GalleryImage | {
+      _type: "galleryImage";
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      alt?: string;
+      caption?: string;
+    } | {
       _key: string;
-    } & GalleryVideo>;
+      _type: "galleryVideo";
+      asset: {
+        _id: string;
+        url: string | null;
+        mimeType: string | null;
+        originalFilename: string | null;
+        size: number | null;
+      } | null;
+      media?: unknown;
+      alt?: string;
+      poster: {
+        asset: {
+          _id: string;
+          url: string | null;
+          mimeType: string | null;
+          metadata: {
+            dimensions: SanityImageDimensions | null;
+          } | null;
+        } | null;
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
+      } | null;
+      caption?: string;
+      width?: number;
+      height?: number;
+    }> | null;
     markDefs: null;
   } | {
     asset?: SanityImageAssetReference;
@@ -894,7 +976,21 @@ export type PROJECT_QUERY_RESULT = {
     } | null;
     media?: unknown;
     alt?: string;
-    poster?: Poster;
+    poster: {
+      asset: {
+        _id: string;
+        url: string | null;
+        mimeType: string | null;
+        metadata: {
+          dimensions: SanityImageDimensions | null;
+        } | null;
+      } | null;
+      media?: unknown // Unable to locate the referenced type "poster.media" in schema
+;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    } | null;
     width?: number;
     height?: number;
     _type: "videoFile";
@@ -1015,23 +1111,18 @@ export type PROJECT_QUERY_RESULT = {
         _key: string;
         _type: "gallery";
         columns?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-        images?: Array<{
+        images: Array<{
           _key: string;
-        } & GalleryImage | {
+          _type: "galleryImage";
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt?: string;
+          caption?: string;
+        } | {
           _key: string;
-        } & GalleryVideo>;
-        markDefs: null;
-      } | {
-        asset?: SanityImageAssetReference;
-        media?: unknown;
-        hotspot?: SanityImageHotspot;
-        crop?: SanityImageCrop;
-        alt?: string;
-        _type: "image";
-        _key: string;
-        markDefs: null;
-      } | {
-        media: {
+          _type: "galleryVideo";
           asset: {
             _id: string;
             url: string | null;
@@ -1039,257 +1130,26 @@ export type PROJECT_QUERY_RESULT = {
             originalFilename: string | null;
             size: number | null;
           } | null;
-          media?: unknown // Unable to locate the referenced type "media.media.media" in schema
-;
-          _type: "file";
-        } | null;
-        _type: "media";
-        _key: string;
-        markDefs: null;
-      } | {
-        _key: string;
-        _type: "spotify";
-        url?: string;
-        size?: "compact" | "default";
-        theme?: "dark" | "light";
-        title?: string;
-        markDefs: null;
-      } | {
-        asset: {
-          _id: string;
-          url: string | null;
-          mimeType: string | null;
-          originalFilename: string | null;
-          size: number | null;
-        } | null;
-        media?: unknown;
-        alt?: string;
-        poster?: Poster;
-        width?: number;
-        height?: number;
-        _type: "videoFile";
-        _key: string;
-        markDefs: null;
-      }> | null;
-      _type: "column";
-      _key: string;
-    }> | null;
-    valign?: "bottom" | "center" | "top";
-    markDefs: null;
-  } | {
-    _key: string;
-    _type: "embed";
-    url?: string;
-    title?: string;
-    width?: "content" | "full";
-    ratio?: Ratio;
-    aspectRatio?: string;
-    markDefs: null;
-  } | {
-    _key: string;
-    _type: "gallery";
-    columns?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-    images?: Array<{
-      _key: string;
-    } & GalleryImage | {
-      _key: string;
-    } & GalleryVideo>;
-    markDefs: null;
-  } | {
-    asset?: SanityImageAssetReference;
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    alt?: string;
-    _type: "image";
-    _key: string;
-    markDefs: null;
-  } | {
-    media: {
-      asset: {
-        _id: string;
-        url: string | null;
-        mimeType: string | null;
-        originalFilename: string | null;
-        size: number | null;
-      } | null;
-      media?: unknown // Unable to locate the referenced type "media.media.media" in schema
-;
-      _type: "file";
-    } | null;
-    _type: "media";
-    _key: string;
-    markDefs: null;
-  } | {
-    _key: string;
-    _type: "spotify";
-    url?: string;
-    size?: "compact" | "default";
-    theme?: "dark" | "light";
-    title?: string;
-    markDefs: null;
-  } | {
-    asset: {
-      _id: string;
-      url: string | null;
-      mimeType: string | null;
-      originalFilename: string | null;
-      size: number | null;
-    } | null;
-    media?: unknown;
-    alt?: string;
-    poster?: Poster;
-    width?: number;
-    height?: number;
-    _type: "videoFile";
-    _key: string;
-    markDefs: null;
-  }> | null;
-} | null;
-
-// Source: ../site/sanity/queries.ts
-// Variable: MUSIC_QUERY
-// Query: *[_type == "music" && (slug.current == $slug || _id == $slug)][0] {  _id,  _type,  "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),  _createdAt,  "slug": coalesce(slug.current, _id),  bandName,  albumName,  releaseYear,  "albumArt": albumArt.asset->url,  "albumArtAlt": albumArt.alt,  links,  embeds,  "content": content[]{  ...,  markDefs[]{  ...,  _type == "internalLink" => {    "slug": @.reference->slug.current,    "refType": @.reference->_type  },  _type == "link" => {    ...,  }},  _type == "media" => {  ...,  media{    ...,    asset->{  _id,  url,  mimeType,  originalFilename,  size}  }},  _type == "videoFile" => {  ...,  asset->{  _id,  url,  mimeType,  originalFilename,  size}},  _type == "columns" => {    ...,    columns[]{      ...,      content[]{        ...,        markDefs[]{  ...,  _type == "internalLink" => {    "slug": @.reference->slug.current,    "refType": @.reference->_type  },  _type == "link" => {    ...,  }},        _type == "media" => {  ...,  media{    ...,    asset->{  _id,  url,  mimeType,  originalFilename,  size}  }},        _type == "videoFile" => {  ...,  asset->{  _id,  url,  mimeType,  originalFilename,  size}}      }    }  }}}
-export type MUSIC_QUERY_RESULT = {
-  _id: string;
-  _type: "music";
-  isDraft: boolean;
-  _createdAt: string;
-  slug: string;
-  bandName: string | null;
-  albumName: string | null;
-  releaseYear: number | null;
-  albumArt: string | null;
-  albumArtAlt: string | null;
-  links: Array<{
-    label?: string;
-    url?: string;
-    _key: string;
-  }> | null;
-  embeds: Array<{
-    _key: string;
-  } & Embed | {
-    _key: string;
-  } & Spotify> | null;
-  content: Array<{
-    children?: Array<{
-      marks?: Array<string>;
-      text?: string;
-      _type: "span";
-      _key: string;
-    }>;
-    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-    listItem?: "bullet" | "number";
-    markDefs: Array<{
-      reference?: MusicReference | PageReference | ProjectReference;
-      _type: "internalLink";
-      _key: string;
-      slug: string | null;
-      refType: "music" | "page" | "project" | null;
-    } | {
-      href?: string;
-      blank?: boolean;
-      _type: "link";
-      _key: string;
-    }> | null;
-    level?: number;
-    _type: "block";
-    _key: string;
-  } | {
-    _key: string;
-    _type: "columns";
-    columns: Array<{
-      content: Array<{
-        children?: Array<{
-          marks?: Array<string>;
-          text?: string;
-          _type: "span";
-          _key: string;
-        }>;
-        style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-        listItem?: "bullet" | "number";
-        markDefs: Array<{
-          href?: string;
-          _type: "link";
-          _key: string;
-        }> | null;
-        level?: number;
-        _type: "block";
-        _key: string;
-      } | {
-        _key: string;
-        _type: "columns";
-        columns?: Array<{
-          content?: Array<{
-            _key: string;
-          } & Columns | {
-            _key: string;
-          } & Embed | {
-            _key: string;
-          } & Gallery | {
-            _key: string;
-          } & Spotify | {
-            children?: Array<{
-              marks?: Array<string>;
-              text?: string;
-              _type: "span";
-              _key: string;
-            }>;
-            style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-            listItem?: "bullet" | "number";
-            markDefs?: Array<{
-              href?: string;
-              _type: "link";
-              _key: string;
-            }>;
-            level?: number;
-            _type: "block";
-            _key: string;
-          } | {
-            asset?: SanityImageAssetReference;
+          media?: unknown;
+          alt?: string;
+          poster: {
+            asset: {
+              _id: string;
+              url: string | null;
+              mimeType: string | null;
+              metadata: {
+                dimensions: SanityImageDimensions | null;
+              } | null;
+            } | null;
             media?: unknown;
             hotspot?: SanityImageHotspot;
             crop?: SanityImageCrop;
-            alt?: string;
             _type: "image";
-            _key: string;
-          } | {
-            media?: MediaMedia;
-            _type: "media";
-            _key: string;
-          } | {
-            asset?: SanityFileAssetReference;
-            media?: unknown;
-            alt?: string;
-            poster?: Poster;
-            width?: number;
-            height?: number;
-            _type: "videoFile";
-            _key: string;
-          }>;
-          _type: "column";
-          _key: string;
-        }>;
-        valign?: "bottom" | "center" | "top";
-        markDefs: null;
-      } | {
-        _key: string;
-        _type: "embed";
-        url?: string;
-        title?: string;
-        width?: "content" | "full";
-        ratio?: Ratio;
-        aspectRatio?: string;
-        markDefs: null;
-      } | {
-        _key: string;
-        _type: "gallery";
-        columns?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-        images?: Array<{
-          _key: string;
-        } & GalleryImage | {
-          _key: string;
-        } & GalleryVideo>;
+          } | null;
+          caption?: string;
+          width?: number;
+          height?: number;
+        }> | null;
         markDefs: null;
       } | {
         asset?: SanityImageAssetReference;
@@ -1334,7 +1194,21 @@ export type MUSIC_QUERY_RESULT = {
         } | null;
         media?: unknown;
         alt?: string;
-        poster?: Poster;
+        poster: {
+          asset: {
+            _id: string;
+            url: string | null;
+            mimeType: string | null;
+            metadata: {
+              dimensions: SanityImageDimensions | null;
+            } | null;
+          } | null;
+          media?: unknown // Unable to locate the referenced type "poster.media" in schema
+;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+        } | null;
         width?: number;
         height?: number;
         _type: "videoFile";
@@ -1359,11 +1233,45 @@ export type MUSIC_QUERY_RESULT = {
     _key: string;
     _type: "gallery";
     columns?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-    images?: Array<{
+    images: Array<{
       _key: string;
-    } & GalleryImage | {
+      _type: "galleryImage";
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      alt?: string;
+      caption?: string;
+    } | {
       _key: string;
-    } & GalleryVideo>;
+      _type: "galleryVideo";
+      asset: {
+        _id: string;
+        url: string | null;
+        mimeType: string | null;
+        originalFilename: string | null;
+        size: number | null;
+      } | null;
+      media?: unknown;
+      alt?: string;
+      poster: {
+        asset: {
+          _id: string;
+          url: string | null;
+          mimeType: string | null;
+          metadata: {
+            dimensions: SanityImageDimensions | null;
+          } | null;
+        } | null;
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
+      } | null;
+      caption?: string;
+      width?: number;
+      height?: number;
+    }> | null;
     markDefs: null;
   } | {
     asset?: SanityImageAssetReference;
@@ -1408,7 +1316,21 @@ export type MUSIC_QUERY_RESULT = {
     } | null;
     media?: unknown;
     alt?: string;
-    poster?: Poster;
+    poster: {
+      asset: {
+        _id: string;
+        url: string | null;
+        mimeType: string | null;
+        metadata: {
+          dimensions: SanityImageDimensions | null;
+        } | null;
+      } | null;
+      media?: unknown // Unable to locate the referenced type "poster.media" in schema
+;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    } | null;
     width?: number;
     height?: number;
     _type: "videoFile";
@@ -1419,7 +1341,7 @@ export type MUSIC_QUERY_RESULT = {
 
 // Source: ../site/sanity/queries.ts
 // Variable: PROJECTS_QUERY
-// Query: *[_type == "project"] | order(orderRank) {  _id,  _type,  "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),  _createdAt,  name,  "slug": slug.current,  "image": image.asset->url,  archived,  type,  svgcode,  subtitle,  color,  displayType,  embedUrl,  aspectRatio,  url,  content}
+// Query: *[_type == "project"] | order(orderRank) {  _id,  _type,  "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),  _createdAt,  name,  "slug": slug.current,  "image": image.asset->url,  archived,  type,  svgcode,  subtitle,  color,  displayType,  embedUrl,  aspectRatio,  url}
 export type PROJECTS_QUERY_RESULT = Array<{
   _id: string;
   _type: "project";
@@ -1440,63 +1362,11 @@ export type PROJECTS_QUERY_RESULT = Array<{
     mobile?: string;
   } | null;
   url: string | null;
-  content: Array<{
-    _key: string;
-  } & Columns | {
-    _key: string;
-  } & Embed | {
-    _key: string;
-  } & Gallery | {
-    _key: string;
-  } & Spotify | {
-    children?: Array<{
-      marks?: Array<string>;
-      text?: string;
-      _type: "span";
-      _key: string;
-    }>;
-    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-    listItem?: "bullet" | "number";
-    markDefs?: Array<{
-      reference?: MusicReference | PageReference | ProjectReference;
-      _type: "internalLink";
-      _key: string;
-    } | {
-      href?: string;
-      blank?: boolean;
-      _type: "link";
-      _key: string;
-    }>;
-    level?: number;
-    _type: "block";
-    _key: string;
-  } | {
-    asset?: SanityImageAssetReference;
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    alt?: string;
-    _type: "image";
-    _key: string;
-  } | {
-    media?: MediaMedia;
-    _type: "media";
-    _key: string;
-  } | {
-    asset?: SanityFileAssetReference;
-    media?: unknown;
-    alt?: string;
-    poster?: Poster;
-    width?: number;
-    height?: number;
-    _type: "videoFile";
-    _key: string;
-  }> | null;
 }>;
 
 // Source: ../site/sanity/queries.ts
 // Variable: PERSONAL_PROJECTS_QUERY
-// Query: *[_type == "project" && type == "personal"] | order(orderRank) {  _id,  _type,  "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),  _createdAt,  name,  "slug": slug.current,  "image": image.asset->url,  archived,  type,  svgcode,  subtitle,  color,  displayType,  embedUrl,  aspectRatio,  url,  content}
+// Query: *[_type == "project" && type == "personal"] | order(orderRank) {  _id,  _type,  "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),  _createdAt,  name,  "slug": slug.current,  "image": image.asset->url,  archived,  type,  svgcode,  subtitle,  color,  displayType,  embedUrl,  aspectRatio,  url}
 export type PERSONAL_PROJECTS_QUERY_RESULT = Array<{
   _id: string;
   _type: "project";
@@ -1517,63 +1387,11 @@ export type PERSONAL_PROJECTS_QUERY_RESULT = Array<{
     mobile?: string;
   } | null;
   url: string | null;
-  content: Array<{
-    _key: string;
-  } & Columns | {
-    _key: string;
-  } & Embed | {
-    _key: string;
-  } & Gallery | {
-    _key: string;
-  } & Spotify | {
-    children?: Array<{
-      marks?: Array<string>;
-      text?: string;
-      _type: "span";
-      _key: string;
-    }>;
-    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-    listItem?: "bullet" | "number";
-    markDefs?: Array<{
-      reference?: MusicReference | PageReference | ProjectReference;
-      _type: "internalLink";
-      _key: string;
-    } | {
-      href?: string;
-      blank?: boolean;
-      _type: "link";
-      _key: string;
-    }>;
-    level?: number;
-    _type: "block";
-    _key: string;
-  } | {
-    asset?: SanityImageAssetReference;
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    alt?: string;
-    _type: "image";
-    _key: string;
-  } | {
-    media?: MediaMedia;
-    _type: "media";
-    _key: string;
-  } | {
-    asset?: SanityFileAssetReference;
-    media?: unknown;
-    alt?: string;
-    poster?: Poster;
-    width?: number;
-    height?: number;
-    _type: "videoFile";
-    _key: string;
-  }> | null;
 }>;
 
 // Source: ../site/sanity/queries.ts
 // Variable: CLIENT_PROJECTS_QUERY
-// Query: *[_type == "project" && type == "client"] | order(orderRank) {  _id,  _type,  "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),  _createdAt,  name,  "slug": slug.current,  "image": image.asset->url,  archived,  type,  svgcode,  subtitle,  color,  displayType,  embedUrl,  aspectRatio,  url,  content}
+// Query: *[_type == "project" && type == "client"] | order(orderRank) {  _id,  _type,  "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),  _createdAt,  name,  "slug": slug.current,  "image": image.asset->url,  archived,  type,  svgcode,  subtitle,  color,  displayType,  embedUrl,  aspectRatio,  url}
 export type CLIENT_PROJECTS_QUERY_RESULT = Array<{
   _id: string;
   _type: "project";
@@ -1594,58 +1412,6 @@ export type CLIENT_PROJECTS_QUERY_RESULT = Array<{
     mobile?: string;
   } | null;
   url: string | null;
-  content: Array<{
-    _key: string;
-  } & Columns | {
-    _key: string;
-  } & Embed | {
-    _key: string;
-  } & Gallery | {
-    _key: string;
-  } & Spotify | {
-    children?: Array<{
-      marks?: Array<string>;
-      text?: string;
-      _type: "span";
-      _key: string;
-    }>;
-    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-    listItem?: "bullet" | "number";
-    markDefs?: Array<{
-      reference?: MusicReference | PageReference | ProjectReference;
-      _type: "internalLink";
-      _key: string;
-    } | {
-      href?: string;
-      blank?: boolean;
-      _type: "link";
-      _key: string;
-    }>;
-    level?: number;
-    _type: "block";
-    _key: string;
-  } | {
-    asset?: SanityImageAssetReference;
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    alt?: string;
-    _type: "image";
-    _key: string;
-  } | {
-    media?: MediaMedia;
-    _type: "media";
-    _key: string;
-  } | {
-    asset?: SanityFileAssetReference;
-    media?: unknown;
-    alt?: string;
-    poster?: Poster;
-    width?: number;
-    height?: number;
-    _type: "videoFile";
-    _key: string;
-  }> | null;
 }>;
 
 // Source: ../site/sanity/queries.ts
@@ -1676,7 +1442,7 @@ export type MUSIC_LIST_QUERY_RESULT = Array<{
 
 // Source: ../site/sanity/queries.ts
 // Variable: MUSIC_BY_SLUG_QUERY
-// Query: *[_type == "music" && (slug.current == $slug || _id == $slug)][0] {  _id,  _type,  "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),  _createdAt,  "slug": coalesce(slug.current, _id),  bandName,  albumName,  releaseYear,  "albumArt": albumArt.asset->url,  "albumArtAlt": albumArt.alt,  links,  embeds,  "content": content[]{  ...,  markDefs[]{  ...,  _type == "internalLink" => {    "slug": @.reference->slug.current,    "refType": @.reference->_type  },  _type == "link" => {    ...,  }},  _type == "media" => {  ...,  media{    ...,    asset->{  _id,  url,  mimeType,  originalFilename,  size}  }},  _type == "videoFile" => {  ...,  asset->{  _id,  url,  mimeType,  originalFilename,  size}},  _type == "columns" => {    ...,    columns[]{      ...,      content[]{        ...,        markDefs[]{  ...,  _type == "internalLink" => {    "slug": @.reference->slug.current,    "refType": @.reference->_type  },  _type == "link" => {    ...,  }},        _type == "media" => {  ...,  media{    ...,    asset->{  _id,  url,  mimeType,  originalFilename,  size}  }},        _type == "videoFile" => {  ...,  asset->{  _id,  url,  mimeType,  originalFilename,  size}}      }    }  }}}
+// Query: *[_type == "music" && (slug.current == $slug || _id == $slug)][0] {  _id,  _type,  "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),  _createdAt,  "slug": coalesce(slug.current, _id),  bandName,  albumName,  releaseYear,  "albumArt": albumArt.asset->url,  "albumArtAlt": albumArt.alt,  links,  embeds,  "content": content[]{  ...,  markDefs[]{  ...,  _type == "internalLink" => {    "slug": @.reference->slug.current,    "refType": @.reference->_type  },  _type == "link" => {    ...,  }},  _type == "media" => {  ...,  media{    ...,    asset->{  _id,  url,  mimeType,  originalFilename,  size}  }},  _type == "videoFile" => {  ...,  asset->{  _id,  url,  mimeType,  originalFilename,  size},  poster{  ...,  asset->{    _id,    url,    mimeType,    metadata{      dimensions    }  }}},  _type == "gallery" => {  ...,  images[]{    ...,    _type == "galleryVideo" => {      ...,      asset->{  _id,  url,  mimeType,  originalFilename,  size},      poster{  ...,  asset->{    _id,    url,    mimeType,    metadata{      dimensions    }  }}    }  }},  _type == "columns" => {    ...,    columns[]{      ...,      content[]{        ...,        markDefs[]{  ...,  _type == "internalLink" => {    "slug": @.reference->slug.current,    "refType": @.reference->_type  },  _type == "link" => {    ...,  }},        _type == "media" => {  ...,  media{    ...,    asset->{  _id,  url,  mimeType,  originalFilename,  size}  }},        _type == "videoFile" => {  ...,  asset->{  _id,  url,  mimeType,  originalFilename,  size},  poster{  ...,  asset->{    _id,    url,    mimeType,    metadata{      dimensions    }  }}},        _type == "gallery" => {  ...,  images[]{    ...,    _type == "galleryVideo" => {      ...,      asset->{  _id,  url,  mimeType,  originalFilename,  size},      poster{  ...,  asset->{    _id,    url,    mimeType,    metadata{      dimensions    }  }}    }  }}      }    }  }}}
 export type MUSIC_BY_SLUG_QUERY_RESULT = {
   _id: string;
   _type: "music";
@@ -1812,11 +1578,45 @@ export type MUSIC_BY_SLUG_QUERY_RESULT = {
         _key: string;
         _type: "gallery";
         columns?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-        images?: Array<{
+        images: Array<{
           _key: string;
-        } & GalleryImage | {
+          _type: "galleryImage";
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt?: string;
+          caption?: string;
+        } | {
           _key: string;
-        } & GalleryVideo>;
+          _type: "galleryVideo";
+          asset: {
+            _id: string;
+            url: string | null;
+            mimeType: string | null;
+            originalFilename: string | null;
+            size: number | null;
+          } | null;
+          media?: unknown;
+          alt?: string;
+          poster: {
+            asset: {
+              _id: string;
+              url: string | null;
+              mimeType: string | null;
+              metadata: {
+                dimensions: SanityImageDimensions | null;
+              } | null;
+            } | null;
+            media?: unknown;
+            hotspot?: SanityImageHotspot;
+            crop?: SanityImageCrop;
+            _type: "image";
+          } | null;
+          caption?: string;
+          width?: number;
+          height?: number;
+        }> | null;
         markDefs: null;
       } | {
         asset?: SanityImageAssetReference;
@@ -1861,7 +1661,21 @@ export type MUSIC_BY_SLUG_QUERY_RESULT = {
         } | null;
         media?: unknown;
         alt?: string;
-        poster?: Poster;
+        poster: {
+          asset: {
+            _id: string;
+            url: string | null;
+            mimeType: string | null;
+            metadata: {
+              dimensions: SanityImageDimensions | null;
+            } | null;
+          } | null;
+          media?: unknown // Unable to locate the referenced type "poster.media" in schema
+;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+        } | null;
         width?: number;
         height?: number;
         _type: "videoFile";
@@ -1886,11 +1700,45 @@ export type MUSIC_BY_SLUG_QUERY_RESULT = {
     _key: string;
     _type: "gallery";
     columns?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-    images?: Array<{
+    images: Array<{
       _key: string;
-    } & GalleryImage | {
+      _type: "galleryImage";
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      alt?: string;
+      caption?: string;
+    } | {
       _key: string;
-    } & GalleryVideo>;
+      _type: "galleryVideo";
+      asset: {
+        _id: string;
+        url: string | null;
+        mimeType: string | null;
+        originalFilename: string | null;
+        size: number | null;
+      } | null;
+      media?: unknown;
+      alt?: string;
+      poster: {
+        asset: {
+          _id: string;
+          url: string | null;
+          mimeType: string | null;
+          metadata: {
+            dimensions: SanityImageDimensions | null;
+          } | null;
+        } | null;
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
+      } | null;
+      caption?: string;
+      width?: number;
+      height?: number;
+    }> | null;
     markDefs: null;
   } | {
     asset?: SanityImageAssetReference;
@@ -1935,7 +1783,21 @@ export type MUSIC_BY_SLUG_QUERY_RESULT = {
     } | null;
     media?: unknown;
     alt?: string;
-    poster?: Poster;
+    poster: {
+      asset: {
+        _id: string;
+        url: string | null;
+        mimeType: string | null;
+        metadata: {
+          dimensions: SanityImageDimensions | null;
+        } | null;
+      } | null;
+      media?: unknown // Unable to locate the referenced type "poster.media" in schema
+;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    } | null;
     width?: number;
     height?: number;
     _type: "videoFile";
@@ -1956,7 +1818,7 @@ export type PAGES_QUERY_RESULT = Array<{
 
 // Source: ../site/sanity/queries.ts
 // Variable: PAGE_QUERY
-// Query: *[_type == "page" && slug.current == $slug][0]{  _id,  _createdAt,  title,  subtitle,  "slug": slug.current,  content[]{  ...,  markDefs[]{  ...,  _type == "internalLink" => {    "slug": @.reference->slug.current,    "refType": @.reference->_type  },  _type == "link" => {    ...,  }},  _type == "media" => {  ...,  media{    ...,    asset->{  _id,  url,  mimeType,  originalFilename,  size}  }},  _type == "videoFile" => {  ...,  asset->{  _id,  url,  mimeType,  originalFilename,  size}},  _type == "columns" => {    ...,    columns[]{      ...,      content[]{        ...,        markDefs[]{  ...,  _type == "internalLink" => {    "slug": @.reference->slug.current,    "refType": @.reference->_type  },  _type == "link" => {    ...,  }},        _type == "media" => {  ...,  media{    ...,    asset->{  _id,  url,  mimeType,  originalFilename,  size}  }},        _type == "videoFile" => {  ...,  asset->{  _id,  url,  mimeType,  originalFilename,  size}}      }    }  }}}
+// Query: *[_type == "page" && slug.current == $slug][0]{  _id,  _createdAt,  title,  subtitle,  "slug": slug.current,  content[]{  ...,  markDefs[]{  ...,  _type == "internalLink" => {    "slug": @.reference->slug.current,    "refType": @.reference->_type  },  _type == "link" => {    ...,  }},  _type == "media" => {  ...,  media{    ...,    asset->{  _id,  url,  mimeType,  originalFilename,  size}  }},  _type == "videoFile" => {  ...,  asset->{  _id,  url,  mimeType,  originalFilename,  size},  poster{  ...,  asset->{    _id,    url,    mimeType,    metadata{      dimensions    }  }}},  _type == "gallery" => {  ...,  images[]{    ...,    _type == "galleryVideo" => {      ...,      asset->{  _id,  url,  mimeType,  originalFilename,  size},      poster{  ...,  asset->{    _id,    url,    mimeType,    metadata{      dimensions    }  }}    }  }},  _type == "columns" => {    ...,    columns[]{      ...,      content[]{        ...,        markDefs[]{  ...,  _type == "internalLink" => {    "slug": @.reference->slug.current,    "refType": @.reference->_type  },  _type == "link" => {    ...,  }},        _type == "media" => {  ...,  media{    ...,    asset->{  _id,  url,  mimeType,  originalFilename,  size}  }},        _type == "videoFile" => {  ...,  asset->{  _id,  url,  mimeType,  originalFilename,  size},  poster{  ...,  asset->{    _id,    url,    mimeType,    metadata{      dimensions    }  }}},        _type == "gallery" => {  ...,  images[]{    ...,    _type == "galleryVideo" => {      ...,      asset->{  _id,  url,  mimeType,  originalFilename,  size},      poster{  ...,  asset->{    _id,    url,    mimeType,    metadata{      dimensions    }  }}    }  }}      }    }  }}}
 export type PAGE_QUERY_RESULT = {
   _id: string;
   _createdAt: string;
@@ -2070,11 +1932,45 @@ export type PAGE_QUERY_RESULT = {
         _key: string;
         _type: "gallery";
         columns?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-        images?: Array<{
+        images: Array<{
           _key: string;
-        } & GalleryImage | {
+          _type: "galleryImage";
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt?: string;
+          caption?: string;
+        } | {
           _key: string;
-        } & GalleryVideo>;
+          _type: "galleryVideo";
+          asset: {
+            _id: string;
+            url: string | null;
+            mimeType: string | null;
+            originalFilename: string | null;
+            size: number | null;
+          } | null;
+          media?: unknown;
+          alt?: string;
+          poster: {
+            asset: {
+              _id: string;
+              url: string | null;
+              mimeType: string | null;
+              metadata: {
+                dimensions: SanityImageDimensions | null;
+              } | null;
+            } | null;
+            media?: unknown;
+            hotspot?: SanityImageHotspot;
+            crop?: SanityImageCrop;
+            _type: "image";
+          } | null;
+          caption?: string;
+          width?: number;
+          height?: number;
+        }> | null;
         markDefs: null;
       } | {
         asset?: SanityImageAssetReference;
@@ -2119,7 +2015,21 @@ export type PAGE_QUERY_RESULT = {
         } | null;
         media?: unknown;
         alt?: string;
-        poster?: Poster;
+        poster: {
+          asset: {
+            _id: string;
+            url: string | null;
+            mimeType: string | null;
+            metadata: {
+              dimensions: SanityImageDimensions | null;
+            } | null;
+          } | null;
+          media?: unknown // Unable to locate the referenced type "poster.media" in schema
+;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+        } | null;
         width?: number;
         height?: number;
         _type: "videoFile";
@@ -2144,11 +2054,45 @@ export type PAGE_QUERY_RESULT = {
     _key: string;
     _type: "gallery";
     columns?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-    images?: Array<{
+    images: Array<{
       _key: string;
-    } & GalleryImage | {
+      _type: "galleryImage";
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      alt?: string;
+      caption?: string;
+    } | {
       _key: string;
-    } & GalleryVideo>;
+      _type: "galleryVideo";
+      asset: {
+        _id: string;
+        url: string | null;
+        mimeType: string | null;
+        originalFilename: string | null;
+        size: number | null;
+      } | null;
+      media?: unknown;
+      alt?: string;
+      poster: {
+        asset: {
+          _id: string;
+          url: string | null;
+          mimeType: string | null;
+          metadata: {
+            dimensions: SanityImageDimensions | null;
+          } | null;
+        } | null;
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
+      } | null;
+      caption?: string;
+      width?: number;
+      height?: number;
+    }> | null;
     markDefs: null;
   } | {
     asset?: SanityImageAssetReference;
@@ -2193,7 +2137,21 @@ export type PAGE_QUERY_RESULT = {
     } | null;
     media?: unknown;
     alt?: string;
-    poster?: Poster;
+    poster: {
+      asset: {
+        _id: string;
+        url: string | null;
+        mimeType: string | null;
+        metadata: {
+          dimensions: SanityImageDimensions | null;
+        } | null;
+      } | null;
+      media?: unknown // Unable to locate the referenced type "poster.media" in schema
+;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    } | null;
     width?: number;
     height?: number;
     _type: "videoFile";
@@ -2201,4 +2159,19 @@ export type PAGE_QUERY_RESULT = {
     markDefs: null;
   }> | null;
 } | null;
+
+// Query TypeMap
+import "@sanity/client";
+declare module "@sanity/client" {
+  interface SanityQueries {
+    "*[_type == \"project\" && slug.current == $slug][0]{\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  name,\n  \"slug\": slug.current,\n  \"image\": image.asset->url,\n  subtitle,\n  svgcode,\n  url,\n  archived,\n  orderRank,\n  \"leadIn\": leadIn[]{\n  ...,\n  markDefs[]{\n  ...,\n  _type == \"internalLink\" => {\n    \"slug\": @.reference->slug.current,\n    \"refType\": @.reference->_type\n  },\n  _type == \"link\" => {\n    ...,\n  }\n},\n  _type == \"media\" => {\n  ...,\n  media{\n    ...,\n    asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n}\n  }\n},\n  _type == \"videoFile\" => {\n  ...,\n  asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n  poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n},\n  _type == \"gallery\" => {\n  ...,\n  images[]{\n    ...,\n    _type == \"galleryVideo\" => {\n      ...,\n      asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n      poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n    }\n  }\n},\n  _type == \"columns\" => {\n    ...,\n    columns[]{\n      ...,\n      content[]{\n        ...,\n        markDefs[]{\n  ...,\n  _type == \"internalLink\" => {\n    \"slug\": @.reference->slug.current,\n    \"refType\": @.reference->_type\n  },\n  _type == \"link\" => {\n    ...,\n  }\n},\n        _type == \"media\" => {\n  ...,\n  media{\n    ...,\n    asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n}\n  }\n},\n        _type == \"videoFile\" => {\n  ...,\n  asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n  poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n},\n        _type == \"gallery\" => {\n  ...,\n  images[]{\n    ...,\n    _type == \"galleryVideo\" => {\n      ...,\n      asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n      poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n    }\n  }\n}\n      }\n    }\n  }\n},\n  \"content\": content[]{\n  ...,\n  markDefs[]{\n  ...,\n  _type == \"internalLink\" => {\n    \"slug\": @.reference->slug.current,\n    \"refType\": @.reference->_type\n  },\n  _type == \"link\" => {\n    ...,\n  }\n},\n  _type == \"media\" => {\n  ...,\n  media{\n    ...,\n    asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n}\n  }\n},\n  _type == \"videoFile\" => {\n  ...,\n  asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n  poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n},\n  _type == \"gallery\" => {\n  ...,\n  images[]{\n    ...,\n    _type == \"galleryVideo\" => {\n      ...,\n      asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n      poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n    }\n  }\n},\n  _type == \"columns\" => {\n    ...,\n    columns[]{\n      ...,\n      content[]{\n        ...,\n        markDefs[]{\n  ...,\n  _type == \"internalLink\" => {\n    \"slug\": @.reference->slug.current,\n    \"refType\": @.reference->_type\n  },\n  _type == \"link\" => {\n    ...,\n  }\n},\n        _type == \"media\" => {\n  ...,\n  media{\n    ...,\n    asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n}\n  }\n},\n        _type == \"videoFile\" => {\n  ...,\n  asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n  poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n},\n        _type == \"gallery\" => {\n  ...,\n  images[]{\n    ...,\n    _type == \"galleryVideo\" => {\n      ...,\n      asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n      poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n    }\n  }\n}\n      }\n    }\n  }\n}\n}": PROJECT_QUERY_RESULT;
+    "*[_type == \"project\"] | order(orderRank) {\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  name,\n  \"slug\": slug.current,\n  \"image\": image.asset->url,\n  archived,\n  type,\n  svgcode,\n  subtitle,\n  color,\n  displayType,\n  embedUrl,\n  aspectRatio,\n  url\n}": PROJECTS_QUERY_RESULT;
+    "*[_type == \"project\" && type == \"personal\"] | order(orderRank) {\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  name,\n  \"slug\": slug.current,\n  \"image\": image.asset->url,\n  archived,\n  type,\n  svgcode,\n  subtitle,\n  color,\n  displayType,\n  embedUrl,\n  aspectRatio,\n  url\n}": PERSONAL_PROJECTS_QUERY_RESULT;
+    "*[_type == \"project\" && type == \"client\"] | order(orderRank) {\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  name,\n  \"slug\": slug.current,\n  \"image\": image.asset->url,\n  archived,\n  type,\n  svgcode,\n  subtitle,\n  color,\n  displayType,\n  embedUrl,\n  aspectRatio,\n  url\n}": CLIENT_PROJECTS_QUERY_RESULT;
+    "*[_type == \"music\"] | order(orderRank) {\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  \"slug\": coalesce(slug.current, _id),\n  bandName,\n  albumName,\n  releaseYear,\n  \"albumArt\": albumArt.asset->url,\n  \"albumArtAlt\": albumArt.alt,\n  links,\n  embeds\n}": MUSIC_LIST_QUERY_RESULT;
+    "*[_type == \"music\" && (slug.current == $slug || _id == $slug)][0] {\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  \"slug\": coalesce(slug.current, _id),\n  bandName,\n  albumName,\n  releaseYear,\n  \"albumArt\": albumArt.asset->url,\n  \"albumArtAlt\": albumArt.alt,\n  links,\n  embeds,\n  \"content\": content[]{\n  ...,\n  markDefs[]{\n  ...,\n  _type == \"internalLink\" => {\n    \"slug\": @.reference->slug.current,\n    \"refType\": @.reference->_type\n  },\n  _type == \"link\" => {\n    ...,\n  }\n},\n  _type == \"media\" => {\n  ...,\n  media{\n    ...,\n    asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n}\n  }\n},\n  _type == \"videoFile\" => {\n  ...,\n  asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n  poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n},\n  _type == \"gallery\" => {\n  ...,\n  images[]{\n    ...,\n    _type == \"galleryVideo\" => {\n      ...,\n      asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n      poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n    }\n  }\n},\n  _type == \"columns\" => {\n    ...,\n    columns[]{\n      ...,\n      content[]{\n        ...,\n        markDefs[]{\n  ...,\n  _type == \"internalLink\" => {\n    \"slug\": @.reference->slug.current,\n    \"refType\": @.reference->_type\n  },\n  _type == \"link\" => {\n    ...,\n  }\n},\n        _type == \"media\" => {\n  ...,\n  media{\n    ...,\n    asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n}\n  }\n},\n        _type == \"videoFile\" => {\n  ...,\n  asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n  poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n},\n        _type == \"gallery\" => {\n  ...,\n  images[]{\n    ...,\n    _type == \"galleryVideo\" => {\n      ...,\n      asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n      poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n    }\n  }\n}\n      }\n    }\n  }\n}\n}": MUSIC_BY_SLUG_QUERY_RESULT;
+    "*[_type == \"page\"]{\n  _id,\n  _createdAt,\n  title,\n  \"slug\": slug.current\n}": PAGES_QUERY_RESULT;
+    "*[_type == \"page\" && slug.current == $slug][0]{\n  _id,\n  _createdAt,\n  title,\n  subtitle,\n  \"slug\": slug.current,\n  content[]{\n  ...,\n  markDefs[]{\n  ...,\n  _type == \"internalLink\" => {\n    \"slug\": @.reference->slug.current,\n    \"refType\": @.reference->_type\n  },\n  _type == \"link\" => {\n    ...,\n  }\n},\n  _type == \"media\" => {\n  ...,\n  media{\n    ...,\n    asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n}\n  }\n},\n  _type == \"videoFile\" => {\n  ...,\n  asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n  poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n},\n  _type == \"gallery\" => {\n  ...,\n  images[]{\n    ...,\n    _type == \"galleryVideo\" => {\n      ...,\n      asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n      poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n    }\n  }\n},\n  _type == \"columns\" => {\n    ...,\n    columns[]{\n      ...,\n      content[]{\n        ...,\n        markDefs[]{\n  ...,\n  _type == \"internalLink\" => {\n    \"slug\": @.reference->slug.current,\n    \"refType\": @.reference->_type\n  },\n  _type == \"link\" => {\n    ...,\n  }\n},\n        _type == \"media\" => {\n  ...,\n  media{\n    ...,\n    asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n}\n  }\n},\n        _type == \"videoFile\" => {\n  ...,\n  asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n  poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n},\n        _type == \"gallery\" => {\n  ...,\n  images[]{\n    ...,\n    _type == \"galleryVideo\" => {\n      ...,\n      asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n      poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n    }\n  }\n}\n      }\n    }\n  }\n}\n}": PAGE_QUERY_RESULT;
+  }
+}
 

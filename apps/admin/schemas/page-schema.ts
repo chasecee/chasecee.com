@@ -1,4 +1,4 @@
-import { columnsBlock, contentBlocks, ColumnsPortableTextPlugin } from "@chasecee/sanity-kit/studio";
+import { contentPortableText } from "./portable-text";
 
 const page = {
   name: "page",
@@ -16,12 +16,7 @@ const page = {
       name: "content",
       title: "Content",
       type: "array",
-      of: [{ type: "block" }, columnsBlock, ...contentBlocks()],
-      components: {
-        portableText: {
-          plugins: ColumnsPortableTextPlugin,
-        },
-      },
+      ...contentPortableText,
     },
     {
       name: "title",

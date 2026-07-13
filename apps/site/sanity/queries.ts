@@ -32,7 +32,7 @@ const MUSIC_DETAIL_FIELDS = `{
   "content": content[]${portableTextFields}
 }`;
 
-const PROJECT_FIELDS = `{
+const PROJECT_CARD_FIELDS = `{
   _id,
   _type,
   "isDraft": _id in path("drafts.**") || _originalId in path("drafts.**"),
@@ -48,8 +48,7 @@ const PROJECT_FIELDS = `{
   displayType,
   embedUrl,
   aspectRatio,
-  url,
-  content
+  url
 }`;
 
 export const PROJECT_QUERY = defineQuery(`*[_type == "project" && slug.current == $slug][0]{
@@ -69,20 +68,16 @@ export const PROJECT_QUERY = defineQuery(`*[_type == "project" && slug.current =
   "content": content[]${portableTextFields}
 }`);
 
-export const MUSIC_QUERY = defineQuery(
-  `*[_type == "music" && (slug.current == $slug || _id == $slug)][0] ${MUSIC_DETAIL_FIELDS}`,
-);
-
 export const PROJECTS_QUERY = defineQuery(
-  `*[_type == "project"] | order(orderRank) ${PROJECT_FIELDS}`,
+  `*[_type == "project"] | order(orderRank) ${PROJECT_CARD_FIELDS}`,
 );
 
 export const PERSONAL_PROJECTS_QUERY = defineQuery(
-  `*[_type == "project" && type == "personal"] | order(orderRank) ${PROJECT_FIELDS}`,
+  `*[_type == "project" && type == "personal"] | order(orderRank) ${PROJECT_CARD_FIELDS}`,
 );
 
 export const CLIENT_PROJECTS_QUERY = defineQuery(
-  `*[_type == "project" && type == "client"] | order(orderRank) ${PROJECT_FIELDS}`,
+  `*[_type == "project" && type == "client"] | order(orderRank) ${PROJECT_CARD_FIELDS}`,
 );
 
 export const MUSIC_LIST_QUERY = defineQuery(
@@ -92,6 +87,8 @@ export const MUSIC_LIST_QUERY = defineQuery(
 export const MUSIC_BY_SLUG_QUERY = defineQuery(
   `*[_type == "music" && (slug.current == $slug || _id == $slug)][0] ${MUSIC_DETAIL_FIELDS}`,
 );
+
+export const MUSIC_QUERY = MUSIC_BY_SLUG_QUERY;
 
 export const PAGES_QUERY = defineQuery(`*[_type == "page"]{
   _id,
