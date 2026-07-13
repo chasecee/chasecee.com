@@ -59,9 +59,23 @@ export function ensureLocalKit(): boolean {
     path.join(monorepoRoot, "apps/site/node_modules/@chasecee/sanity-kit"),
     path.join(monorepoRoot, "apps/admin/node_modules/@chasecee/sanity-kit"),
   ];
+  const peerTargets: Array<[string, string]> = [
+    [
+      path.join(localKit, "node_modules/react"),
+      path.join(monorepoRoot, "node_modules/react"),
+    ],
+    [
+      path.join(localKit, "node_modules/react-dom"),
+      path.join(monorepoRoot, "node_modules/react-dom"),
+    ],
+  ];
   let changed = false;
   for (const linkPath of targets) {
     if (ensureLink(linkPath, localKit)) changed = true;
+  }
+  for (const [linkPath, targetPath] of peerTargets) {
+    if (!existsSync(targetPath)) continue;
+    if (ensureLink(linkPath, targetPath)) changed = true;
   }
   return changed;
 }

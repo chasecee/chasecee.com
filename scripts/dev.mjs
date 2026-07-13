@@ -3,6 +3,9 @@ import { readFileSync } from "node:fs";
 import net from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { ensureLocalKit } from "./local-kit.ts";
+
+ensureLocalKit();
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const sitePort = process.env.PORT || 4321;

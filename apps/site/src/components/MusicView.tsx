@@ -1,8 +1,8 @@
 import { stegaClean } from "@sanity/client/stega";
 import type { MusicDetail } from "@/types/Music";
+import { withSanityImageParams } from "@chasecee/sanity-kit/astro";
 import Body from "@/src/components/Body";
 import MusicPlayers, { isPlatformListenLink } from "@/src/components/MusicPlayers";
-import { withSanityImageParams } from "@/src/utils/sanityImageParams";
 
 export type MusicViewData = MusicDetail;
 

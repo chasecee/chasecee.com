@@ -376,21 +376,6 @@
                         {
                           "type": "object",
                           "attributes": {
-                            "_key": {
-                              "type": "objectAttribute",
-                              "value": {
-                                "type": "string"
-                              }
-                            }
-                          },
-                          "rest": {
-                            "type": "inline",
-                            "name": "skills"
-                          }
-                        },
-                        {
-                          "type": "object",
-                          "attributes": {
                             "asset": {
                               "type": "objectAttribute",
                               "value": {
@@ -1201,21 +1186,6 @@
               {
                 "type": "object",
                 "attributes": {
-                  "_key": {
-                    "type": "objectAttribute",
-                    "value": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "rest": {
-                  "type": "inline",
-                  "name": "skills"
-                }
-              },
-              {
-                "type": "object",
-                "attributes": {
                   "asset": {
                     "type": "objectAttribute",
                     "value": {
@@ -1663,21 +1633,6 @@
                 "rest": {
                   "type": "inline",
                   "name": "gallery"
-                }
-              },
-              {
-                "type": "object",
-                "attributes": {
-                  "_key": {
-                    "type": "objectAttribute",
-                    "value": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "rest": {
-                  "type": "inline",
-                  "name": "skills"
                 }
               },
               {
@@ -2595,21 +2550,6 @@
               {
                 "type": "object",
                 "attributes": {
-                  "_key": {
-                    "type": "objectAttribute",
-                    "value": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "rest": {
-                  "type": "inline",
-                  "name": "skills"
-                }
-              },
-              {
-                "type": "object",
-                "attributes": {
                   "asset": {
                     "type": "objectAttribute",
                     "value": {
@@ -3094,21 +3034,6 @@
                 "rest": {
                   "type": "inline",
                   "name": "gallery"
-                }
-              },
-              {
-                "type": "object",
-                "attributes": {
-                  "_key": {
-                    "type": "objectAttribute",
-                    "value": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "rest": {
-                  "type": "inline",
-                  "name": "skills"
                 }
               },
               {
