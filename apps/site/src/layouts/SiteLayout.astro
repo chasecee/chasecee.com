@@ -80,7 +80,7 @@ const editUrl = presentationEditUrl(STUDIO_URL, Astro.url.href);
     <div id="sanity-preview-root">
       <slot />
     </div>
-    <script is:inline define:vars={{ navOrder: ["/", "/about", "/music"] }}>
+    <script is:inline define:vars={{ navOrder: ["/", "/music", "/about"] }}>
       document.addEventListener("astro:before-preparation", (event) => {
         const normalizePath = (url) => {
           const path = url.pathname.replace(/\/+$/, "") || "/";

@@ -24,15 +24,15 @@ const baseClass = "header_item no-underline transition-colors group relative";
     Work
     {normalizedActivePath === "/" && <NavActiveIndicator />}
   </a>
+  <a href="/music" class:list={[baseClass, isMusicPath ? "item_active" : "item_inactive"]}>
+    Music
+    {isMusicPath && <NavActiveIndicator />}
+  </a>
   <a
     href="/about"
     class:list={[baseClass, normalizedActivePath === "/about" ? "item_active" : "item_inactive"]}
   >
     About
     {normalizedActivePath === "/about" && <NavActiveIndicator />}
-  </a>
-  <a href="/music" class:list={[baseClass, isMusicPath ? "item_active" : "item_inactive"]}>
-    Music
-    {isMusicPath && <NavActiveIndicator />}
   </a>
 </div>

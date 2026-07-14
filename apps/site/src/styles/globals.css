@@ -17,7 +17,7 @@
 
 @media (width >= theme(--breakpoint-md)) {
   :root {
-    --site-header-height: 3rem;
+    --site-header-height: 3.25rem;
     --site-header-pad: 2rem;
   }
 }
