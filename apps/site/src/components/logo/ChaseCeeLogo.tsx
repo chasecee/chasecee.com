@@ -3,10 +3,13 @@
 import * as React from "react";
 import { MORPH_POINT_COUNT, MORPH_VARIANTS } from "./variants/morphData.js";
 import {
+  interpolateNumber,
   interpolatePoints,
   KAPOW_POINT_COUNT,
+  KAPOW_VARIANT_ROUNDNESS,
   KAPOW_VARIANT_PATHS,
   KAPOW_VARIANT_POINTS,
+  pointsToKapowPath,
   pointsToQuadraticPath,
 } from "./kapowMorph";
 import { LOGO_VIEW_HEIGHT, LOGO_VIEW_WIDTH } from "./silhouette";
@@ -60,6 +63,7 @@ export default function ChaseCeeLogo({
   ...props
 }: ChaseCeeLogoProps) {
   const kapowPathRef = React.useRef<SVGPathElement | null>(null);
+  const underlayPathRefs = React.useRef<(SVGPathElement | null)[]>([]);
   const pathRefs = React.useRef<(SVGPathElement | null)[]>([]);
   const frameRef = React.useRef(0);
   const stepRef = React.useRef<MorphStep | null>(null);
@@ -68,6 +72,7 @@ export default function ChaseCeeLogo({
 
   const setPathValue = React.useCallback(
     (index: number, pathValue: string) => {
+      underlayPathRefs.current[index]?.setAttribute("d", pathValue);
       pathRefs.current[index]?.setAttribute("d", pathValue);
       mirrorPathRefs?.forEach((groupRef) => {
         groupRef.current[index]?.setAttribute("d", pathValue);
@@ -85,7 +90,14 @@ export default function ChaseCeeLogo({
   React.useEffect(() => {
     stop();
     const variant = MORPH_VARIANTS[initialIndex];
-    kapowPathRef.current?.setAttribute("d", KAPOW_VARIANT_PATHS[initialIndex]);
+    kapowPathRef.current?.setAttribute(
+      "d",
+      pointsToKapowPath(
+        KAPOW_VARIANT_POINTS[initialIndex],
+        KAPOW_POINT_COUNT,
+        KAPOW_VARIANT_ROUNDNESS[initialIndex],
+      ),
+    );
     variant.paths.forEach((pathValue, index) => {
       setPathValue(index, pathValue);
     });
@@ -108,9 +120,14 @@ export default function ChaseCeeLogo({
         KAPOW_VARIANT_POINTS[activeStep.toIndex],
         progress,
       );
+      const kapowRoundness = interpolateNumber(
+        KAPOW_VARIANT_ROUNDNESS[activeStep.fromIndex],
+        KAPOW_VARIANT_ROUNDNESS[activeStep.toIndex],
+        progress,
+      );
       kapowPathRef.current?.setAttribute(
         "d",
-        pointsToQuadraticPath(kapowPoints, KAPOW_POINT_COUNT),
+        pointsToKapowPath(kapowPoints, KAPOW_POINT_COUNT, kapowRoundness),
       );
       from.glyphs.forEach((points, index) => {
         const d = pointsToQuadraticPath(
@@ -120,7 +137,14 @@ export default function ChaseCeeLogo({
         setPathValue(index, d);
       });
       if (raw >= 1) {
-        kapowPathRef.current?.setAttribute("d", KAPOW_VARIANT_PATHS[activeStep.toIndex]);
+        kapowPathRef.current?.setAttribute(
+          "d",
+          pointsToKapowPath(
+            KAPOW_VARIANT_POINTS[activeStep.toIndex],
+            KAPOW_POINT_COUNT,
+            KAPOW_VARIANT_ROUNDNESS[activeStep.toIndex],
+          ),
+        );
         to.paths.forEach((pathValue, index) => {
           setPathValue(index, pathValue);
         });
@@ -141,7 +165,7 @@ export default function ChaseCeeLogo({
 
   const kapowClassName = [
     "logo-kapow-path",
-    activePhase !== null || isExploding ? "logo-kapow-path--active" : "",
+    activePhase !== null || isExploding || activeStep ? "logo-kapow-path--active" : "",
     activePhase !== null ? `logo-kapow-path--phase-${activePhase}` : "",
     isExploding ? "logo-kapow-path--phase-0 logo-kapow-path--explode" : "",
   ]
@@ -166,6 +190,19 @@ export default function ChaseCeeLogo({
         suppressHydrationWarning
         className={kapowClassName}
       />
+      {MORPH_VARIANTS[initialIndex].paths.map((pathValue, index) => (
+        <path
+          key={`underlay-${index}`}
+          ref={(node) => {
+            underlayPathRefs.current[index] = node;
+          }}
+          d={pathValue}
+          suppressHydrationWarning
+          fill="none"
+          data-chasecee-logo-path-index={index}
+          className="logo-wordmark-underlay-path"
+        />
+      ))}
       {MORPH_VARIANTS[initialIndex].paths.map((pathValue, index) => (
         <path
           key={index}

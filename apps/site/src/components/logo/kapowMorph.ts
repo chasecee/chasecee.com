@@ -14,6 +14,7 @@ type KapowVariantParams = {
   xScale: number;
   yScale: number;
   jitter: number;
+  cornerRoundness: number;
 };
 
 const TAU = Math.PI * 2;
@@ -30,6 +31,7 @@ const KAPOW_VARIANT_PARAMS: readonly KapowVariantParams[] = [
     xScale: 1.06,
     yScale: 0.28,
     jitter: 5,
+    cornerRoundness: 0.58,
   },
   {
     radialBase: 138,
@@ -42,6 +44,7 @@ const KAPOW_VARIANT_PARAMS: readonly KapowVariantParams[] = [
     xScale: 1.02,
     yScale: 0.29,
     jitter: 6,
+    cornerRoundness: 0.3,
   },
   {
     radialBase: 136,
@@ -54,6 +57,7 @@ const KAPOW_VARIANT_PARAMS: readonly KapowVariantParams[] = [
     xScale: 1.03,
     yScale: 0.27,
     jitter: 5,
+    cornerRoundness: 0.72,
   },
   {
     radialBase: 140,
@@ -66,6 +70,7 @@ const KAPOW_VARIANT_PARAMS: readonly KapowVariantParams[] = [
     xScale: 1.05,
     yScale: 0.3,
     jitter: 6,
+    cornerRoundness: 0.4,
   },
   {
     radialBase: 137,
@@ -78,6 +83,7 @@ const KAPOW_VARIANT_PARAMS: readonly KapowVariantParams[] = [
     xScale: 1,
     yScale: 0.27,
     jitter: 6,
+    cornerRoundness: 0.62,
   },
   {
     radialBase: 142,
@@ -90,6 +96,7 @@ const KAPOW_VARIANT_PARAMS: readonly KapowVariantParams[] = [
     xScale: 1.08,
     yScale: 0.29,
     jitter: 5,
+    cornerRoundness: 0.46,
   },
 ];
 
@@ -110,6 +117,11 @@ const midpoint = (ax: number, ay: number, bx: number, by: number) => ({
   x: (ax + bx) / 2,
   y: (ay + by) / 2,
 });
+
+const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
+
+export const interpolateNumber = (from: number, to: number, progress: number) =>
+  from + (to - from) * progress;
 
 const buildKapowPoints = (params: KapowVariantParams) => {
   const points: number[] = [];
@@ -162,10 +174,51 @@ export const pointsToQuadraticPath = (points: readonly number[], pointCount: num
   return path;
 };
 
+export const pointsToKapowPath = (
+  points: readonly number[],
+  pointCount: number,
+  cornerRoundness: number,
+) => {
+  const roundness = clamp01(cornerRoundness);
+  let path = "";
+  const contourSize = pointCount * 2;
+
+  for (let offset = 0; offset < points.length; offset += contourSize) {
+    const firstX = points[offset];
+    const firstY = points[offset + 1];
+    const secondX = points[offset + 2];
+    const secondY = points[offset + 3];
+    const firstMid = midpoint(firstX, firstY, secondX, secondY);
+    const startX = interpolateNumber(firstX, firstMid.x, roundness);
+    const startY = interpolateNumber(firstY, firstMid.y, roundness);
+    path += `M${round(startX)} ${round(startY)}`;
+
+    for (let point = 0; point < pointCount; point++) {
+      const current = offset + ((point + 1) % pointCount) * 2;
+      const next = offset + ((point + 2) % pointCount) * 2;
+      const controlX = points[current];
+      const controlY = points[current + 1];
+      const nextX = points[next];
+      const nextY = points[next + 1];
+      const nextMid = midpoint(controlX, controlY, nextX, nextY);
+      const endX = interpolateNumber(controlX, nextMid.x, roundness);
+      const endY = interpolateNumber(controlY, nextMid.y, roundness);
+      path += `Q${round(controlX)} ${round(controlY)} ${round(endX)} ${round(endY)}`;
+    }
+    path += "Z";
+  }
+
+  return path;
+};
+
 export const KAPOW_VARIANT_POINTS = MORPH_VARIANTS.map((_, index) =>
   buildKapowPoints(KAPOW_VARIANT_PARAMS[clampVariantIndex(index)]),
 ) as readonly (readonly number[])[];
 
-export const KAPOW_VARIANT_PATHS = KAPOW_VARIANT_POINTS.map((points) =>
-  pointsToQuadraticPath(points, KAPOW_POINT_COUNT),
+export const KAPOW_VARIANT_ROUNDNESS = KAPOW_VARIANT_PARAMS.map(
+  ({ cornerRoundness }) => cornerRoundness,
+);
+
+export const KAPOW_VARIANT_PATHS = KAPOW_VARIANT_POINTS.map((points, index) =>
+  pointsToKapowPath(points, KAPOW_POINT_COUNT, KAPOW_VARIANT_ROUNDNESS[index]),
 );

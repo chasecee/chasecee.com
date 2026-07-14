@@ -6,10 +6,11 @@
 }
 
 .logo-kapow-path {
-  @apply fill-transparent stroke-current text-yellow-400 opacity-0 transition-[opacity,color,fill,stroke,transform] duration-[180ms] will-change-[transform,opacity];
+  @apply fill-transparent stroke-current text-yellow-400 opacity-0 transition-[opacity,color,fill,stroke,transform] duration-[50ms] will-change-[transform,opacity];
   stroke-width: 4;
   stroke-linecap: round;
-  stroke-linejoin: round;
+  stroke-linejoin: miter;
+  stroke-miterlimit: 3;
   transform-box: fill-box;
   transform-origin: center;
 }
@@ -23,15 +24,15 @@
 }
 
 .logo-kapow-path--phase-1 {
-  @apply text-red-500;
+  @apply text-red-800;
 }
 
 .logo-kapow-path--phase-2 {
-  @apply text-orange-500;
+  @apply text-orange-700;
 }
 
 .logo-kapow-path--phase-3 {
-  @apply text-purple-500;
+  @apply text-purple-400;
 }
 
 .logo-kapow-path--explode {
@@ -100,6 +101,14 @@
 
   .logo-wordmark-path {
     @apply fill-current;
+  }
+
+  .logo-wordmark-underlay-path {
+    fill: none;
+    stroke: var(--color-neutral-900);
+    stroke-width: calc(var(--site-border-width) * 2);
+    stroke-linejoin: round;
+    stroke-linecap: round;
   }
 
   &:active {
