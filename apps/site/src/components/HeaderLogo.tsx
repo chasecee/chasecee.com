@@ -66,7 +66,7 @@ export default function HeaderLogo() {
   const [borderRoot, setBorderRoot] = useState<HTMLElement | null>(null);
   const [borderInnerRoot, setBorderInnerRoot] = useState<HTMLElement | null>(null);
   const [isHovered, setIsHovered] = useState(false);
-  const [initialIndex] = useState(readStoredIndex);
+  const [initialIndex, setInitialIndex] = useState(readStoredIndex);
   const [currentIndex, setCurrentIndex] = useState(readStoredIndex);
   const [activePhase, setActivePhase] = useState<number | null>(null);
   const [activeStep, setActiveStep] = useState<MorphStep | null>(null);
@@ -134,16 +134,35 @@ export default function HeaderLogo() {
   }, [activeStep, prefersReducedMotion, restDurationMs, startStep, stopRest]);
 
   useEffect(() => {
-    setBorderRoot(document.getElementById("logo-border-root"));
-    setBorderInnerRoot(document.getElementById("logo-border-inner-root"));
-  }, []);
+    const onSwap = () => {
+      setBorderRoot(document.getElementById("logo-border-root"));
+      setBorderInnerRoot(document.getElementById("logo-border-inner-root"));
+      hoverRef.current = false;
+      setIsHovered(false);
+      setActivePhase(null);
+      stopRest();
+    };
+    onSwap();
+    document.addEventListener("astro:after-swap", onSwap);
+    return () => document.removeEventListener("astro:after-swap", onSwap);
+  }, [stopRest]);
 
   useLayoutEffect(() => {
-    const header = document.querySelector<HTMLElement>("header.header");
-    const kapow = kapowContainerRef.current;
-    if (!header || !kapow) return;
+    const paths = MORPH_VARIANTS[currentIndexRef.current]?.paths;
+    if (!paths) return;
+    paths.forEach((pathValue, index) => {
+      borderPathRefs.current[index]?.setAttribute("d", pathValue);
+      borderInnerPathRefs.current[index]?.setAttribute("d", pathValue);
+    });
+  }, [borderRoot, borderInnerRoot, strokeBox]);
 
-    const sync = () => {
+  useLayoutEffect(() => {
+    const kapow = kapowContainerRef.current;
+    if (!kapow) return;
+
+    const measure = () => {
+      const header = document.querySelector<HTMLElement>("header.header");
+      if (!header) return;
       const headerRect = header.getBoundingClientRect();
       const kapowRect = kapow.getBoundingClientRect();
       setStrokeBox({
@@ -154,14 +173,22 @@ export default function HeaderLogo() {
       });
     };
 
-    sync();
-    const observer = new ResizeObserver(sync);
-    observer.observe(header);
-    observer.observe(kapow);
-    window.addEventListener("resize", sync);
+    const observer = new ResizeObserver(measure);
+    const bind = () => {
+      observer.disconnect();
+      const header = document.querySelector<HTMLElement>("header.header");
+      if (header) observer.observe(header);
+      observer.observe(kapow);
+      measure();
+    };
+
+    bind();
+    window.addEventListener("resize", measure);
+    document.addEventListener("astro:after-swap", bind);
     return () => {
       observer.disconnect();
-      window.removeEventListener("resize", sync);
+      window.removeEventListener("resize", measure);
+      document.removeEventListener("astro:after-swap", bind);
     };
   }, []);
 
@@ -209,6 +236,7 @@ export default function HeaderLogo() {
   const handleStepEnd = useCallback(
     (step: MorphStep) => {
       setCurrentIndex(step.toIndex);
+      setInitialIndex(step.toIndex);
       currentIndexRef.current = step.toIndex;
       setActiveStep((current) => (current?.id === step.id ? null : current));
       setActivePhase(null);

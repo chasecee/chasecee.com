@@ -88,20 +88,21 @@ export default function ChaseCeeLogo({
   }, []);
 
   React.useEffect(() => {
+    if (activeStep) return;
     stop();
-    const variant = MORPH_VARIANTS[initialIndex];
+    const variant = MORPH_VARIANTS[currentIndex];
     kapowPathRef.current?.setAttribute(
       "d",
       pointsToKapowPath(
-        KAPOW_VARIANT_POINTS[initialIndex],
+        KAPOW_VARIANT_POINTS[currentIndex],
         KAPOW_POINT_COUNT,
-        KAPOW_VARIANT_ROUNDNESS[initialIndex],
+        KAPOW_VARIANT_ROUNDNESS[currentIndex],
       ),
     );
     variant.paths.forEach((pathValue, index) => {
       setPathValue(index, pathValue);
     });
-  }, [initialIndex, setPathValue, stop]);
+  }, [activeStep, currentIndex, setPathValue, stop]);
 
   React.useEffect(() => {
     stop();
