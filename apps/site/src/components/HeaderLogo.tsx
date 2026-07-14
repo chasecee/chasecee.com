@@ -352,7 +352,7 @@ export default function HeaderLogo() {
         <div className="sr-only">Chase Cee Logo</div>
         <div
           ref={kapowContainerRef}
-          className="logo-kapow-container relative min-h-[var(--site-header-height)] w-[15rem] overflow-visible before:absolute before:-inset-x-[18px] before:-inset-y-[15px] before:content-['']"
+          className="logo-kapow-container relative min-h-[var(--site-header-height)] w-[12rem] md:w-[15rem] overflow-visible before:absolute before:-inset-x-[18px] before:-inset-y-[15px] before:content-['']"
         >
           <div className="logo-wordmark-core relative z-5 h-full w-full overflow-visible">
             <div className="logo-wordmark absolute top-0 left-0 w-full origin-center [transform:translateY(0%)_skew(-3.5deg,-4deg)]">

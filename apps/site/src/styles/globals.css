@@ -4,7 +4,7 @@
 @import "./logo.css";
 
 :root {
-  --site-header-height: 3rem;
+  --site-header-height: 2.5rem;
   --site-header-pad: 1rem;
   --site-scroll-gap: 1rem;
   --site-draft-offset: 0rem;
@@ -17,6 +17,7 @@
 
 @media (width >= theme(--breakpoint-md)) {
   :root {
+    --site-header-height: 3rem;
     --site-header-pad: 2rem;
   }
 }
