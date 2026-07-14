@@ -18,6 +18,22 @@ export const interpolatePoints = (
   progress: number,
 ) => from.map((value, index) => value + (to[index] - value) * progress);
 
+export const interpolatePointsInto = (
+  out: number[],
+  from: readonly number[],
+  to: readonly number[],
+  progress: number,
+) => {
+  const length = from.length;
+  if (out.length !== length) out.length = length;
+  for (let index = 0; index < length; index++) {
+    out[index] = from[index] + (to[index] - from[index]) * progress;
+  }
+  return out;
+};
+
+const round2 = (value: number) => Math.round(value * 100) / 100;
+
 export const pointsToQuadraticPath = (points: readonly number[], pointCount: number) => {
   let path = "";
   const contourSize = pointCount * 2;
@@ -27,16 +43,18 @@ export const pointsToQuadraticPath = (points: readonly number[], pointCount: num
     const firstY = points[offset + 1];
     const secondX = points[offset + 2];
     const secondY = points[offset + 3];
-    const start = midpoint(firstX, firstY, secondX, secondY);
-    path += `M${round(start.x)} ${round(start.y)}`;
+    const startX = (firstX + secondX) * 0.5;
+    const startY = (firstY + secondY) * 0.5;
+    path += `M${round2(startX)} ${round2(startY)}`;
 
     for (let point = 1; point < pointCount; point++) {
       const index = offset + point * 2;
       const next = offset + ((point + 1) % pointCount) * 2;
       const controlX = points[index];
       const controlY = points[index + 1];
-      const end = midpoint(controlX, controlY, points[next], points[next + 1]);
-      path += `Q${round(controlX)} ${round(controlY)} ${round(end.x)} ${round(end.y)}`;
+      const endX = (controlX + points[next]) * 0.5;
+      const endY = (controlY + points[next + 1]) * 0.5;
+      path += `Q${round2(controlX)} ${round2(controlY)} ${round2(endX)} ${round2(endY)}`;
     }
     path += "Z";
   }

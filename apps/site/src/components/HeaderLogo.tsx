@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
-import ChaseCeeLogo, { type MorphStep } from "./logo/ChaseCeeLogo";
+import ChaseCeeLogo, { FONT_CYCLE } from "./logo/ChaseCeeLogo";
 import LogoMorphDevControls from "./logo/LogoMorphDevControls";
 import {
   DEFAULT_MORPH_BEZIER,
@@ -30,7 +30,6 @@ const parseCssDurationMs = (raw: string) => {
 
 const STORAGE_KEY = "chasecee:logo-font";
 const KAPOW_EXPLODE_DURATION_MS = 440;
-const FONT_CYCLE = [0, 6, 9, 5, 3, 7, 8, 2, 4] as const;
 
 type StrokeBox = {
   left: number;
@@ -45,24 +44,19 @@ const isHomePath = () => {
 };
 
 const readStoredIndex = () => {
-  if (typeof window === "undefined") return 0;
+  if (typeof window === "undefined") return FONT_CYCLE[0];
   const storedId = localStorage.getItem(STORAGE_KEY);
   const storedIndex = MORPH_VARIANTS.findIndex((variant) => variant.id === storedId);
   if (storedIndex === -1) return FONT_CYCLE[0];
-  if (storedIndex === 1) return FONT_CYCLE[1];
   if (!FONT_CYCLE.includes(storedIndex as (typeof FONT_CYCLE)[number])) return FONT_CYCLE[0];
   return storedIndex;
 };
 
 export default function HeaderLogo() {
-  const stepCounterRef = useRef(0);
-  const restTimerRef = useRef<number | null>(null);
   const explodeTimerRef = useRef<number | null>(null);
-  const hoverRef = useRef(false);
   const pendingNavigateRef = useRef(false);
   const morphDoneRef = useRef(true);
   const explodeDoneRef = useRef(true);
-  const currentIndexRef = useRef(readStoredIndex());
   const borderPathRefs = useRef<(SVGPathElement | null)[]>([]);
   const borderInnerPathRefs = useRef<(SVGPathElement | null)[]>([]);
   const mirrorPathRefs = useMemo(() => [borderPathRefs, borderInnerPathRefs], []);
@@ -71,20 +65,16 @@ export default function HeaderLogo() {
   const [borderRoot, setBorderRoot] = useState<HTMLElement | null>(null);
   const [borderInnerRoot, setBorderInnerRoot] = useState<HTMLElement | null>(null);
   const [isHovered, setIsHovered] = useState(false);
-  const [initialIndex, setInitialIndex] = useState(readStoredIndex);
-  const [currentIndex, setCurrentIndex] = useState(readStoredIndex);
-  const [activePhase, setActivePhase] = useState<number | null>(null);
-  const [activeStep, setActiveStep] = useState<MorphStep | null>(null);
+  const [paintIndex] = useState(readStoredIndex);
+  const [currentIndex, setCurrentIndex] = useState(paintIndex);
   const [isExploding, setIsExploding] = useState(false);
   const [restDurationMs, setRestDurationMs] = useState(720);
   const [morphDurationMs, setMorphDurationMs] = useState(140);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const [kapowRestEpoch, setKapowRestEpoch] = useState(0);
-  const [easeBezier, setEaseBezier] = useState<EaseBezier>(() => [
-    ...DEFAULT_MORPH_BEZIER,
-  ]);
+  const [easeBezier, setEaseBezier] = useState<EaseBezier>(() => [...DEFAULT_MORPH_BEZIER]);
   const [kapowStartOffsetMs, setKapowStartOffsetMs] = useState(0);
   const [forceHover, setForceHover] = useState(false);
+  const active = (isHovered || forceHover) && !prefersReducedMotion;
   const currentFontId = MORPH_VARIANTS[currentIndex]?.id ?? MORPH_VARIANTS[0].id;
 
   const maybeNavigate = useCallback(() => {
@@ -95,83 +85,35 @@ export default function HeaderLogo() {
     navigate("/");
   }, []);
 
-  const stopRest = useCallback(() => {
-    if (!restTimerRef.current) return;
-    window.clearTimeout(restTimerRef.current);
-    restTimerRef.current = null;
-  }, []);
-
-  const startExplosion = useCallback(() => {
-    if (explodeTimerRef.current) {
-      window.clearTimeout(explodeTimerRef.current);
-      explodeTimerRef.current = null;
-    }
-    explodeDoneRef.current = false;
-    setIsExploding(true);
-    explodeTimerRef.current = window.setTimeout(() => {
-      explodeTimerRef.current = null;
-      setIsExploding(false);
-      explodeDoneRef.current = true;
+  const handleIndexChange = useCallback(
+    (index: number) => {
+      setCurrentIndex(index);
+      morphDoneRef.current = true;
       maybeNavigate();
-    }, KAPOW_EXPLODE_DURATION_MS);
-  }, [maybeNavigate]);
-
-  const startStep = useCallback(() => {
-    if (activeStep || prefersReducedMotion) return;
-    const fromIndex = currentIndexRef.current;
-    const cycleIndex = FONT_CYCLE.indexOf(fromIndex as (typeof FONT_CYCLE)[number]);
-    const toIndex =
-      cycleIndex === -1 ? FONT_CYCLE[0] : FONT_CYCLE[(cycleIndex + 1) % FONT_CYCLE.length];
-    morphDoneRef.current = false;
-    setActivePhase(null);
-    const step: MorphStep = {
-      id: ++stepCounterRef.current,
-      fromIndex,
-      toIndex,
-      durationMs: morphDurationMs,
-    };
-    setActiveStep(step);
-  }, [activeStep, morphDurationMs, prefersReducedMotion]);
-
-  const stopKapow = useCallback(() => {
-    setKapowRestEpoch(0);
-  }, []);
-
-  const startRest = useCallback(() => {
-    if (activeStep || prefersReducedMotion || pendingNavigateRef.current) return;
-    stopRest();
-    setActivePhase(currentIndexRef.current % 4);
-    setKapowRestEpoch((epoch) => epoch + 1);
-    restTimerRef.current = window.setTimeout(() => {
-      restTimerRef.current = null;
-      if (!hoverRef.current || pendingNavigateRef.current) return;
-      startStep();
-    }, restDurationMs);
-  }, [activeStep, prefersReducedMotion, restDurationMs, startStep, stopRest]);
+    },
+    [maybeNavigate],
+  );
 
   useEffect(() => {
     const onSwap = () => {
       setBorderRoot(document.getElementById("logo-border-root"));
       setBorderInnerRoot(document.getElementById("logo-border-inner-root"));
-      hoverRef.current = false;
       setIsHovered(false);
-      setActivePhase(null);
-      stopRest();
-      stopKapow();
+      setIsExploding(false);
     };
     onSwap();
     document.addEventListener("astro:after-swap", onSwap);
     return () => document.removeEventListener("astro:after-swap", onSwap);
-  }, [stopRest, stopKapow]);
+  }, []);
 
   useLayoutEffect(() => {
-    const paths = MORPH_VARIANTS[currentIndexRef.current]?.paths;
+    const paths = MORPH_VARIANTS[currentIndex]?.paths;
     if (!paths) return;
     paths.forEach((pathValue, index) => {
       borderPathRefs.current[index]?.setAttribute("d", pathValue);
       borderInnerPathRefs.current[index]?.setAttribute("d", pathValue);
     });
-  }, [borderRoot, borderInnerRoot, strokeBox]);
+  }, [borderRoot, borderInnerRoot, strokeBox, currentIndex]);
 
   useLayoutEffect(() => {
     const kapow = kapowContainerRef.current;
@@ -210,12 +152,6 @@ export default function HeaderLogo() {
   }, []);
 
   useEffect(() => {
-    currentIndexRef.current = currentIndex;
-  }, [currentIndex]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
     const styles = getComputedStyle(document.documentElement);
     setRestDurationMs(parseCssDurationMs(styles.getPropertyValue("--logo-rest-duration")) ?? 720);
     setMorphDurationMs(
@@ -226,58 +162,14 @@ export default function HeaderLogo() {
     const applyMotionPref = () => setPrefersReducedMotion(media.matches);
     applyMotionPref();
     media.addEventListener("change", applyMotionPref);
-
     return () => {
       media.removeEventListener("change", applyMotionPref);
-      stopRest();
       if (explodeTimerRef.current) {
         window.clearTimeout(explodeTimerRef.current);
         explodeTimerRef.current = null;
       }
     };
-  }, [stopRest]);
-
-  useEffect(() => {
-    const hovered = isHovered || forceHover;
-    hoverRef.current = hovered;
-    if (!hovered) {
-      stopRest();
-      stopKapow();
-      setActivePhase(null);
-      return;
-    }
-    if (pendingNavigateRef.current) return;
-    if (!activeStep && !restTimerRef.current && !prefersReducedMotion) {
-      startRest();
-    }
-  }, [
-    isHovered,
-    forceHover,
-    activeStep,
-    prefersReducedMotion,
-    startRest,
-    stopRest,
-    stopKapow,
-  ]);
-
-  const handleStepEnd = useCallback(
-    (step: MorphStep) => {
-      setCurrentIndex(step.toIndex);
-      setInitialIndex(step.toIndex);
-      currentIndexRef.current = step.toIndex;
-      setActiveStep((current) => (current?.id === step.id ? null : current));
-      setActivePhase(null);
-      morphDoneRef.current = true;
-      if (pendingNavigateRef.current) {
-        maybeNavigate();
-        return;
-      }
-      if (hoverRef.current && !prefersReducedMotion) {
-        startRest();
-      }
-    },
-    [maybeNavigate, prefersReducedMotion, startRest],
-  );
+  }, []);
 
   const handleLogoClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
     if (event.defaultPrevented) return;
@@ -286,15 +178,17 @@ export default function HeaderLogo() {
     if (prefersReducedMotion) return;
     event.preventDefault();
     setIsHovered(false);
-    hoverRef.current = forceHover;
-    stopRest();
-    stopKapow();
-    setActivePhase(null);
     pendingNavigateRef.current = !isHomePath();
-    startExplosion();
-    if (!activeStep) {
-      startStep();
-    }
+    morphDoneRef.current = false;
+    explodeDoneRef.current = false;
+    setIsExploding(true);
+    if (explodeTimerRef.current) window.clearTimeout(explodeTimerRef.current);
+    explodeTimerRef.current = window.setTimeout(() => {
+      explodeTimerRef.current = null;
+      setIsExploding(false);
+      explodeDoneRef.current = true;
+      maybeNavigate();
+    }, KAPOW_EXPLODE_DURATION_MS);
   };
 
   const strokeLayer = (content: ReactNode) =>
@@ -315,54 +209,60 @@ export default function HeaderLogo() {
     ) : null;
 
   const renderStrokePaths = (
-    refGroup: React.MutableRefObject<(SVGPathElement | null)[]>,
+    refGroup: React.RefObject<(SVGPathElement | null)[]>,
     className: string,
   ) =>
-    MORPH_VARIANTS[initialIndex].paths.map((pathValue, index) => (
+    Array.from({ length: MORPH_VARIANTS[paintIndex].paths.length }, (_, index) => (
       <path
         key={`${className}-${index}`}
         ref={(node) => {
           refGroup.current[index] = node;
         }}
-        d={pathValue}
         fillRule="evenodd"
         suppressHydrationWarning
-        data-chasecee-logo-path-index={index}
         className={className}
       />
     ));
 
-  const borderLayer = strokeLayer(
-    <svg
-      aria-hidden
-      className="logo-stroke-overlay pointer-events-none overflow-visible"
-      width={LOGO_VIEW_WIDTH}
-      height={LOGO_VIEW_HEIGHT}
-      viewBox={`0 0 ${LOGO_VIEW_WIDTH} ${LOGO_VIEW_HEIGHT}`}
-      fill="none"
-      overflow="visible"
-    >
-      {renderStrokePaths(borderPathRefs, "logo-border-path")}
-    </svg>,
-  );
+  const borderPortal =
+    strokeBox && borderRoot
+      ? createPortal(
+          strokeLayer(
+            <svg
+              aria-hidden
+              className="logo-stroke-overlay pointer-events-none overflow-visible"
+              width={LOGO_VIEW_WIDTH}
+              height={LOGO_VIEW_HEIGHT}
+              viewBox={`0 0 ${LOGO_VIEW_WIDTH} ${LOGO_VIEW_HEIGHT}`}
+              fill="none"
+              overflow="visible"
+            >
+              {renderStrokePaths(borderPathRefs, "logo-border-path")}
+            </svg>,
+          ),
+          borderRoot,
+        )
+      : null;
 
-  const borderInnerLayer = strokeLayer(
-    <svg
-      aria-hidden
-      className="logo-stroke-overlay pointer-events-none overflow-visible"
-      width={LOGO_VIEW_WIDTH}
-      height={LOGO_VIEW_HEIGHT}
-      viewBox={`0 0 ${LOGO_VIEW_WIDTH} ${LOGO_VIEW_HEIGHT}`}
-      fill="none"
-      overflow="visible"
-    >
-      {renderStrokePaths(borderInnerPathRefs, "logo-border-inner-path")}
-    </svg>,
-  );
-
-  const borderPortal = borderLayer && borderRoot ? createPortal(borderLayer, borderRoot) : null;
   const borderInnerPortal =
-    borderInnerLayer && borderInnerRoot ? createPortal(borderInnerLayer, borderInnerRoot) : null;
+    strokeBox && borderInnerRoot
+      ? createPortal(
+          strokeLayer(
+            <svg
+              aria-hidden
+              className="logo-stroke-overlay pointer-events-none overflow-visible"
+              width={LOGO_VIEW_WIDTH}
+              height={LOGO_VIEW_HEIGHT}
+              viewBox={`0 0 ${LOGO_VIEW_WIDTH} ${LOGO_VIEW_HEIGHT}`}
+              fill="none"
+              overflow="visible"
+            >
+              {renderStrokePaths(borderInnerPathRefs, "logo-border-inner-path")}
+            </svg>,
+          ),
+          borderInnerRoot,
+        )
+      : null;
 
   return (
     <>
@@ -373,8 +273,7 @@ export default function HeaderLogo() {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onPointerDown={(event) => {
-          if (event.button !== 0) return;
-          if (prefersReducedMotion) return;
+          if (event.button !== 0 || prefersReducedMotion) return;
           setIsHovered(true);
         }}
         onPointerCancel={() => {
@@ -395,16 +294,14 @@ export default function HeaderLogo() {
             <div className="logo-wordmark-core relative z-5 h-full w-full overflow-visible">
               <div className="logo-wordmark absolute top-0 left-0 w-full origin-center [transform:translateY(0%)_skew(-3.5deg,-4deg)]">
                 <ChaseCeeLogo
-                  initialIndex={initialIndex}
-                  currentIndex={currentIndex}
-                  activeStep={activeStep}
-                  activePhase={activePhase}
-                  isExploding={isExploding}
+                  initialIndex={paintIndex}
+                  active={active}
+                  exploding={isExploding}
                   restDurationMs={restDurationMs}
-                  kapowRestEpoch={kapowRestEpoch}
+                  morphDurationMs={morphDurationMs}
                   easeBezier={easeBezier}
                   kapowStartOffsetMs={kapowStartOffsetMs}
-                  onStepEnd={handleStepEnd}
+                  onIndexChange={handleIndexChange}
                   mirrorPathRefs={mirrorPathRefs}
                 />
               </div>
