@@ -2,21 +2,18 @@
 
 import { navigate } from "astro:transitions/client";
 import {
-  createPortal,
-} from "react-dom";
-import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import ChaseCeeLogo, { type MorphStep } from "./logo/ChaseCeeLogo";
-import LogoKapowBackground from "./logo/LogoKapowBackground";
-import { MORPH_VARIANTS } from "./logo/variants/morphData.js";
-import { STICKER_PATHS, STICKER_VARIANT_IDS } from "./logo/variants/stickerData";
 import { LOGO_VIEW_HEIGHT, LOGO_VIEW_WIDTH } from "./logo/silhouette";
+import { MORPH_VARIANTS } from "./logo/variants/morphData.js";
 
 const parseCssDurationMs = (raw: string) => {
   const value = raw.trim();
@@ -30,7 +27,7 @@ const STORAGE_KEY = "chasecee:logo-font";
 const KAPOW_EXPLODE_DURATION_MS = 440;
 const FONT_CYCLE = [0, 5, 2, 3, 4] as const;
 
-type StickerBox = {
+type StrokeBox = {
   left: number;
   top: number;
   width: number;
@@ -45,9 +42,10 @@ const isHomePath = () => {
 const readStoredIndex = () => {
   if (typeof window === "undefined") return 0;
   const storedId = localStorage.getItem(STORAGE_KEY);
-  const storedIndex = STICKER_VARIANT_IDS.findIndex((id) => id === storedId);
+  const storedIndex = MORPH_VARIANTS.findIndex((variant) => variant.id === storedId);
   if (storedIndex === -1) return FONT_CYCLE[0];
   if (storedIndex === 1) return FONT_CYCLE[1];
+  if (!FONT_CYCLE.includes(storedIndex as (typeof FONT_CYCLE)[number])) return FONT_CYCLE[0];
   return storedIndex;
 };
 
@@ -60,14 +58,13 @@ export default function HeaderLogo() {
   const morphDoneRef = useRef(true);
   const explodeDoneRef = useRef(true);
   const currentIndexRef = useRef(readStoredIndex());
-  const stickerStrokeRef = useRef<SVGPathElement | null>(null);
-  const stickerFillRef = useRef<SVGPathElement | null>(null);
-  const stickerStrokeAnimateRef = useRef<SVGAnimateElement | null>(null);
-  const stickerFillAnimateRef = useRef<SVGAnimateElement | null>(null);
+  const borderPathRefs = useRef<(SVGPathElement | null)[]>([]);
+  const borderInnerPathRefs = useRef<(SVGPathElement | null)[]>([]);
+  const mirrorPathRefs = useMemo(() => [borderPathRefs, borderInnerPathRefs], []);
   const kapowContainerRef = useRef<HTMLDivElement | null>(null);
-  const [stickerBox, setStickerBox] = useState<StickerBox | null>(null);
-  const [stickerStrokeRoot, setStickerStrokeRoot] = useState<HTMLElement | null>(null);
-  const [stickerFillRoot, setStickerFillRoot] = useState<HTMLElement | null>(null);
+  const [strokeBox, setStrokeBox] = useState<StrokeBox | null>(null);
+  const [borderRoot, setBorderRoot] = useState<HTMLElement | null>(null);
+  const [borderInnerRoot, setBorderInnerRoot] = useState<HTMLElement | null>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [initialIndex] = useState(readStoredIndex);
   const [currentIndex, setCurrentIndex] = useState(readStoredIndex);
@@ -113,9 +110,7 @@ export default function HeaderLogo() {
     const fromIndex = currentIndexRef.current;
     const cycleIndex = FONT_CYCLE.indexOf(fromIndex as (typeof FONT_CYCLE)[number]);
     const toIndex =
-      cycleIndex === -1
-        ? FONT_CYCLE[0]
-        : FONT_CYCLE[(cycleIndex + 1) % FONT_CYCLE.length];
+      cycleIndex === -1 ? FONT_CYCLE[0] : FONT_CYCLE[(cycleIndex + 1) % FONT_CYCLE.length];
     morphDoneRef.current = false;
     setActivePhase(null);
     const step: MorphStep = {
@@ -138,29 +133,9 @@ export default function HeaderLogo() {
     }, restDurationMs);
   }, [activeStep, prefersReducedMotion, restDurationMs, startStep, stopRest]);
 
-  const applyStickerStep = useCallback((step: MorphStep) => {
-    const from = STICKER_PATHS[step.fromIndex];
-    const to = STICKER_PATHS[step.toIndex];
-    const duration = `${step.durationMs}ms`;
-    if (stickerStrokeRef.current) stickerStrokeRef.current.setAttribute("d", from);
-    if (stickerFillRef.current) stickerFillRef.current.setAttribute("d", from);
-    if (stickerStrokeAnimateRef.current) {
-      stickerStrokeAnimateRef.current.setAttribute("dur", duration);
-      stickerStrokeAnimateRef.current.setAttribute("from", from);
-      stickerStrokeAnimateRef.current.setAttribute("to", to);
-      stickerStrokeAnimateRef.current.beginElement();
-    }
-    if (stickerFillAnimateRef.current) {
-      stickerFillAnimateRef.current.setAttribute("dur", duration);
-      stickerFillAnimateRef.current.setAttribute("from", from);
-      stickerFillAnimateRef.current.setAttribute("to", to);
-      stickerFillAnimateRef.current.beginElement();
-    }
-  }, []);
-
   useEffect(() => {
-    setStickerStrokeRoot(document.getElementById("logo-sticker-stroke-root"));
-    setStickerFillRoot(document.getElementById("logo-sticker-fill-root"));
+    setBorderRoot(document.getElementById("logo-border-root"));
+    setBorderInnerRoot(document.getElementById("logo-border-inner-root"));
   }, []);
 
   useLayoutEffect(() => {
@@ -171,7 +146,7 @@ export default function HeaderLogo() {
     const sync = () => {
       const headerRect = header.getBoundingClientRect();
       const kapowRect = kapow.getBoundingClientRect();
-      setStickerBox({
+      setStrokeBox({
         left: kapowRect.left - headerRect.left,
         top: kapowRect.top - headerRect.top,
         width: kapowRect.width,
@@ -198,9 +173,7 @@ export default function HeaderLogo() {
     if (typeof window === "undefined") return;
 
     const styles = getComputedStyle(document.documentElement);
-    setRestDurationMs(
-      parseCssDurationMs(styles.getPropertyValue("--logo-rest-duration")) ?? 720,
-    );
+    setRestDurationMs(parseCssDurationMs(styles.getPropertyValue("--logo-rest-duration")) ?? 720);
     setMorphDurationMs(
       parseCssDurationMs(styles.getPropertyValue("--logo-morph-duration")) ?? 140,
     );
@@ -218,12 +191,7 @@ export default function HeaderLogo() {
         explodeTimerRef.current = null;
       }
     };
-  }, []);
-
-  useEffect(() => {
-    if (!activeStep) return;
-    applyStickerStep(activeStep);
-  }, [activeStep, applyStickerStep]);
+  }, [stopRest]);
 
   useEffect(() => {
     hoverRef.current = isHovered;
@@ -237,12 +205,6 @@ export default function HeaderLogo() {
       startRest();
     }
   }, [isHovered, activeStep, prefersReducedMotion, startRest, stopRest]);
-
-  useEffect(() => {
-    const path = STICKER_PATHS[currentIndex];
-    if (stickerStrokeRef.current) stickerStrokeRef.current.setAttribute("d", path);
-    if (stickerFillRef.current) stickerFillRef.current.setAttribute("d", path);
-  }, [currentIndex]);
 
   const handleStepEnd = useCallback(
     (step: MorphStep) => {
@@ -279,90 +241,77 @@ export default function HeaderLogo() {
     }
   };
 
-  const stickerLayer = (content: ReactNode) =>
-    stickerBox ? (
+  const strokeLayer = (content: ReactNode) =>
+    strokeBox ? (
       <div
         className="pointer-events-none absolute"
         style={{
-          left: stickerBox.left,
-          top: stickerBox.top,
-          width: stickerBox.width,
-          height: stickerBox.height,
+          left: strokeBox.left,
+          top: strokeBox.top,
+          width: strokeBox.width,
+          height: strokeBox.height,
         }}
       >
-        <div className="logo-wordmark absolute top-1/2 left-0 w-full origin-top-left [transform:translateY(-50%)_skew(-3.5deg,-4deg)]">
+        <div className="logo-wordmark absolute top-0 left-0 w-full origin-center [transform:translateY(0%)_skew(-3.5deg,-4deg)]">
           {content}
         </div>
       </div>
     ) : null;
 
-  const stickerStrokeLayer = stickerLayer(
+  const renderStrokePaths = (
+    refGroup: React.MutableRefObject<(SVGPathElement | null)[]>,
+    className: string,
+  ) =>
+    MORPH_VARIANTS[initialIndex].paths.map((pathValue, index) => (
+      <path
+        key={`${className}-${index}`}
+        ref={(node) => {
+          refGroup.current[index] = node;
+        }}
+        d={pathValue}
+        fillRule="evenodd"
+        suppressHydrationWarning
+        data-chasecee-logo-path-index={index}
+        className={className}
+      />
+    ));
+
+  const borderLayer = strokeLayer(
     <svg
       aria-hidden
-      className="logo-sticker-overlay pointer-events-none overflow-visible"
+      className="logo-stroke-overlay pointer-events-none overflow-visible"
       width={LOGO_VIEW_WIDTH}
       height={LOGO_VIEW_HEIGHT}
       viewBox={`0 0 ${LOGO_VIEW_WIDTH} ${LOGO_VIEW_HEIGHT}`}
       fill="none"
       overflow="visible"
     >
-      <path
-        ref={stickerStrokeRef}
-        d={STICKER_PATHS[currentIndex]}
-        className="fill-none stroke-neutral-500/50 dark:stroke-neutral-600"
-        strokeWidth="calc(var(--site-border-width) * 2)"
-        vectorEffect="non-scaling-stroke"
-      >
-        <animate
-          ref={stickerStrokeAnimateRef}
-          attributeName="d"
-          begin="indefinite"
-          dur="360ms"
-          fill="freeze"
-        />
-      </path>
+      {renderStrokePaths(borderPathRefs, "logo-border-path")}
     </svg>,
   );
 
-  const stickerFillLayer = stickerLayer(
+  const borderInnerLayer = strokeLayer(
     <svg
       aria-hidden
-      className="logo-sticker-overlay pointer-events-none overflow-visible"
+      className="logo-stroke-overlay pointer-events-none overflow-visible"
       width={LOGO_VIEW_WIDTH}
       height={LOGO_VIEW_HEIGHT}
       viewBox={`0 0 ${LOGO_VIEW_WIDTH} ${LOGO_VIEW_HEIGHT}`}
       fill="none"
       overflow="visible"
     >
-      <path
-        ref={stickerFillRef}
-        d={STICKER_PATHS[currentIndex]}
-        className="fill-neutral-50 dark:fill-neutral-900"
-      >
-        <animate
-          ref={stickerFillAnimateRef}
-          attributeName="d"
-          begin="indefinite"
-          dur="360ms"
-          fill="freeze"
-        />
-      </path>
+      {renderStrokePaths(borderInnerPathRefs, "logo-border-inner-path")}
     </svg>,
   );
 
-  const stickerStrokePortal =
-    stickerStrokeLayer && stickerStrokeRoot
-      ? createPortal(stickerStrokeLayer, stickerStrokeRoot)
-      : null;
-  const stickerFillPortal =
-    stickerFillLayer && stickerFillRoot
-      ? createPortal(stickerFillLayer, stickerFillRoot)
-      : null;
+  const borderPortal = borderLayer && borderRoot ? createPortal(borderLayer, borderRoot) : null;
+  const borderInnerPortal =
+    borderInnerLayer && borderInnerRoot ? createPortal(borderInnerLayer, borderInnerRoot) : null;
 
   return (
     <>
-      {stickerStrokePortal}
-      {stickerFillPortal}
+      {borderPortal}
+      {borderInnerPortal}
       <a
         onClick={handleLogoClick}
         onMouseEnter={() => setIsHovered(true)}
@@ -373,15 +322,18 @@ export default function HeaderLogo() {
         <div className="sr-only">Chase Cee Logo</div>
         <div
           ref={kapowContainerRef}
-          className="logo-kapow-container relative min-h-[var(--site-header-height)] w-[15rem] overflow-visible [--kapow-offset-x:0px] [--kapow-offset-y:2.5%] before:absolute before:-inset-x-[18px] before:-inset-y-[15px] before:content-['']"
+          className="logo-kapow-container relative min-h-[var(--site-header-height)] w-[15rem] overflow-visible before:absolute before:-inset-x-[18px] before:-inset-y-[15px] before:content-['']"
         >
-          <div className="logo-wordmark absolute top-1/2 left-0 w-full origin-top-left [transform:translateY(-50%)_skew(-3.5deg,-4deg)]">
-            <div className="logo-wordmark-core relative z-5 w-full overflow-visible">
-              <LogoKapowBackground activePhase={activePhase} isExploding={isExploding} />
+          <div className="logo-wordmark-core relative z-5 h-full w-full overflow-visible">
+            <div className="logo-wordmark absolute top-0 left-0 w-full origin-center [transform:translateY(0%)_skew(-3.5deg,-4deg)]">
               <ChaseCeeLogo
                 initialIndex={initialIndex}
+                currentIndex={currentIndex}
                 activeStep={activeStep}
+                activePhase={activePhase}
+                isExploding={isExploding}
                 onStepEnd={handleStepEnd}
+                mirrorPathRefs={mirrorPathRefs}
               />
             </div>
           </div>

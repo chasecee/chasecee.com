@@ -100,7 +100,7 @@ export default function ProjectHero({
       <div className="relative z-10 flex flex-col items-start gap-6">
         <h1 className="sr-only">{cleanName}</h1>
         {clippedLogo ? (
-          <div className="relative w-full max-w-[80%] ">
+          <div className="relative w-full">
             <div
               className="pointer-events-none select-none opacity-0 [&_svg]:h-auto [&_svg]:w-full"
               aria-hidden="true"

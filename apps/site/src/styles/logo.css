@@ -1,0 +1,114 @@
+:root {
+  --logo-padding-stroke: 1.25rem;
+  --logo-border-stroke: calc(var(--logo-padding-stroke) + 4 * var(--site-border-width));
+  --logo-rest-duration: 720ms;
+  --logo-morph-duration: 140ms;
+}
+
+.logo-kapow-path {
+  @apply fill-transparent stroke-current text-yellow-400 opacity-0 transition-[opacity,color,fill,stroke,transform] duration-[180ms] will-change-[transform,opacity];
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.logo-kapow-path--active {
+  opacity: 1;
+}
+
+.logo-kapow-path--phase-0 {
+  @apply text-yellow-400;
+}
+
+.logo-kapow-path--phase-1 {
+  @apply text-red-500;
+}
+
+.logo-kapow-path--phase-2 {
+  @apply text-orange-500;
+}
+
+.logo-kapow-path--phase-3 {
+  @apply text-purple-500;
+}
+
+.logo-kapow-path--explode {
+  animation: logo-kapow-path-explode 440ms ease forwards;
+  @apply fill-current stroke-current;
+}
+
+@keyframes logo-kapow-path-explode {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(3);
+  }
+}
+
+.logo-stroke-overlay {
+  @apply block h-auto w-full max-w-none;
+  overflow: visible;
+  shape-rendering: geometricPrecision;
+}
+
+.logo-border-path,
+.logo-border-inner-path {
+  fill: none;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
+}
+
+.logo-border-path {
+  stroke: rgb(115 115 115 / 0.5);
+  stroke-width: var(--logo-border-stroke);
+}
+
+.logo-border-inner-path {
+  stroke: var(--color-neutral-50);
+  stroke-width: var(--logo-padding-stroke);
+}
+
+@media (prefers-color-scheme: dark) {
+  .logo-border-path {
+    stroke: var(--color-neutral-600);
+  }
+
+  .logo-border-inner-path {
+    stroke: var(--color-neutral-900);
+  }
+}
+
+.header__title {
+  .logo-wordmark-svg,
+  .logo-stroke-overlay {
+    overflow: visible;
+    shape-rendering: geometricPrecision;
+  }
+
+  .logo-wordmark-svg {
+    @apply relative z-5 block h-auto w-full max-w-none;
+  }
+
+  .logo-wordmark-core {
+    overflow: visible;
+  }
+
+  .logo-wordmark-path {
+    @apply fill-current;
+  }
+
+  &:active {
+    .logo-wordmark {
+      @apply text-[rgb(255_105_180)];
+    }
+
+    .logo-kapow-path {
+      @apply text-yellow-400;
+    }
+  }
+}

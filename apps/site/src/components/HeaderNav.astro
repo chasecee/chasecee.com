@@ -16,7 +16,7 @@ const isMusicPath =
 const baseClass = "header_item no-underline transition-colors group relative";
 ---
 
-<div class="header_menu flex flex-row items-center gap-3 sm:gap-5 md:gap-10">
+<div class="header_menu flex flex-row justify-end md:justify-center items-center gap-3 sm:gap-5 md:gap-10 grow">
   <a
     href="/"
     class:list={[baseClass, normalizedActivePath === "/" ? "item_active" : "item_inactive"]}

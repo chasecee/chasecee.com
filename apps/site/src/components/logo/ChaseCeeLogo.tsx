@@ -2,6 +2,13 @@
 
 import * as React from "react";
 import { MORPH_POINT_COUNT, MORPH_VARIANTS } from "./variants/morphData.js";
+import {
+  interpolatePoints,
+  KAPOW_POINT_COUNT,
+  KAPOW_VARIANT_PATHS,
+  KAPOW_VARIANT_POINTS,
+  pointsToQuadraticPath,
+} from "./kapowMorph";
 import { LOGO_VIEW_HEIGHT, LOGO_VIEW_WIDTH } from "./silhouette";
 
 const STORAGE_KEY = "chasecee:logo-font";
@@ -16,48 +23,14 @@ export type MorphStep = {
 
 interface ChaseCeeLogoProps extends React.SVGProps<SVGSVGElement> {
   initialIndex: number;
+  currentIndex: number;
   activeStep: MorphStep | null;
+  activePhase: number | null;
+  isExploding: boolean;
   onStepEnd: (step: MorphStep) => void;
+  mirrorPathRefs?: Array<React.RefObject<(SVGPathElement | null)[]>>;
+  pathClassName?: string;
 }
-
-const interpolate = (
-  from: readonly number[],
-  to: readonly number[],
-  progress: number,
-) => from.map((value, index) => value + (to[index] - value) * progress);
-
-const mid = (ax: number, ay: number, bx: number, by: number) => ({
-  x: (ax + bx) / 2,
-  y: (ay + by) / 2,
-});
-
-const fmt = (value: number) => Number(value.toFixed(2));
-
-const toPath = (points: readonly number[]) => {
-  let path = "";
-  const contourSize = MORPH_POINT_COUNT * 2;
-
-  for (let offset = 0; offset < points.length; offset += contourSize) {
-    const firstX = points[offset];
-    const firstY = points[offset + 1];
-    const secondX = points[offset + 2];
-    const secondY = points[offset + 3];
-    const start = mid(firstX, firstY, secondX, secondY);
-    path += `M${fmt(start.x)} ${fmt(start.y)}`;
-
-    for (let point = 1; point < MORPH_POINT_COUNT; point++) {
-      const index = offset + point * 2;
-      const next = offset + ((point + 1) % MORPH_POINT_COUNT) * 2;
-      const controlX = points[index];
-      const controlY = points[index + 1];
-      const end = mid(controlX, controlY, points[next], points[next + 1]);
-      path += `Q${fmt(controlX)} ${fmt(controlY)} ${fmt(end.x)} ${fmt(end.y)}`;
-    }
-    path += "Z";
-  }
-
-  return path;
-};
 
 const ease = (progress: number) => {
   const overshoot = 0.38;
@@ -76,16 +49,32 @@ const persistVariant = (index: number) => {
 
 export default function ChaseCeeLogo({
   initialIndex,
+  currentIndex,
   activeStep,
+  activePhase,
+  isExploding,
   onStepEnd,
+  mirrorPathRefs,
+  pathClassName,
   className,
   ...props
 }: ChaseCeeLogoProps) {
+  const kapowPathRef = React.useRef<SVGPathElement | null>(null);
   const pathRefs = React.useRef<(SVGPathElement | null)[]>([]);
   const frameRef = React.useRef(0);
   const stepRef = React.useRef<MorphStep | null>(null);
   const onStepEndRef = React.useRef(onStepEnd);
   onStepEndRef.current = onStepEnd;
+
+  const setPathValue = React.useCallback(
+    (index: number, pathValue: string) => {
+      pathRefs.current[index]?.setAttribute("d", pathValue);
+      mirrorPathRefs?.forEach((groupRef) => {
+        groupRef.current[index]?.setAttribute("d", pathValue);
+      });
+    },
+    [mirrorPathRefs],
+  );
 
   const stop = React.useCallback(() => {
     if (!frameRef.current) return;
@@ -96,10 +85,11 @@ export default function ChaseCeeLogo({
   React.useEffect(() => {
     stop();
     const variant = MORPH_VARIANTS[initialIndex];
+    kapowPathRef.current?.setAttribute("d", KAPOW_VARIANT_PATHS[initialIndex]);
     variant.paths.forEach((pathValue, index) => {
-      pathRefs.current[index]?.setAttribute("d", pathValue);
+      setPathValue(index, pathValue);
     });
-  }, [initialIndex, stop]);
+  }, [initialIndex, setPathValue, stop]);
 
   React.useEffect(() => {
     stop();
@@ -113,13 +103,26 @@ export default function ChaseCeeLogo({
       const elapsed = now - startedAt;
       const raw = Math.min(elapsed / activeStep.durationMs, 1);
       const progress = ease(raw);
+      const kapowPoints = interpolatePoints(
+        KAPOW_VARIANT_POINTS[activeStep.fromIndex],
+        KAPOW_VARIANT_POINTS[activeStep.toIndex],
+        progress,
+      );
+      kapowPathRef.current?.setAttribute(
+        "d",
+        pointsToQuadraticPath(kapowPoints, KAPOW_POINT_COUNT),
+      );
       from.glyphs.forEach((points, index) => {
-        const d = toPath(interpolate(points, to.glyphs[index], progress));
-        pathRefs.current[index]?.setAttribute("d", d);
+        const d = pointsToQuadraticPath(
+          interpolatePoints(points, to.glyphs[index], progress),
+          MORPH_POINT_COUNT,
+        );
+        setPathValue(index, d);
       });
       if (raw >= 1) {
+        kapowPathRef.current?.setAttribute("d", KAPOW_VARIANT_PATHS[activeStep.toIndex]);
         to.paths.forEach((pathValue, index) => {
-          pathRefs.current[index]?.setAttribute("d", pathValue);
+          setPathValue(index, pathValue);
         });
         persistVariant(activeStep.toIndex);
         stepRef.current = null;
@@ -132,9 +135,18 @@ export default function ChaseCeeLogo({
 
     frameRef.current = window.requestAnimationFrame(tick);
     return stop;
-  }, [activeStep, stop]);
+  }, [activeStep, setPathValue, stop]);
 
   React.useEffect(() => stop, [stop]);
+
+  const kapowClassName = [
+    "logo-kapow-path",
+    activePhase !== null || isExploding ? "logo-kapow-path--active" : "",
+    activePhase !== null ? `logo-kapow-path--phase-${activePhase}` : "",
+    isExploding ? "logo-kapow-path--phase-0 logo-kapow-path--explode" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <svg
@@ -148,6 +160,12 @@ export default function ChaseCeeLogo({
       className={["logo-wordmark-svg", className].filter(Boolean).join(" ")}
       {...props}
     >
+      <path
+        ref={kapowPathRef}
+        d={KAPOW_VARIANT_PATHS[currentIndex]}
+        suppressHydrationWarning
+        className={kapowClassName}
+      />
       {MORPH_VARIANTS[initialIndex].paths.map((pathValue, index) => (
         <path
           key={index}
@@ -157,7 +175,8 @@ export default function ChaseCeeLogo({
           d={pathValue}
           suppressHydrationWarning
           fillRule="evenodd"
-          className="logo-wordmark-path"
+          data-chasecee-logo-path-index={index}
+          className={["logo-wordmark-path", pathClassName].filter(Boolean).join(" ")}
         />
       ))}
     </svg>

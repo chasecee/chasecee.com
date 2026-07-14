@@ -6,9 +6,7 @@
     "dev": "astro dev --force",
     "build": "astro build",
     "preview": "astro preview",
-    "typegen": "cd ../admin && bunx sanity typegen generate",
-    "logo:bake": "bun scripts/bake-logo-stickers.ts",
-    "kapow:halftone": "bun scripts/bake-kapow-halftone.ts"
+    "typegen": "cd ../admin && bunx sanity typegen generate"
   },
   "browserslist": [
     "chrome >= 91",
