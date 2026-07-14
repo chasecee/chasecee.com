@@ -32,10 +32,10 @@
   mask-size: var(--logo-kapow-halftone-size) var(--logo-kapow-halftone-size);
   -webkit-mask-repeat: repeat;
   mask-repeat: repeat;
-  -webkit-mask-position: 0 0;
-  mask-position: 0 0;
-  -webkit-mask-origin: fill-box;
-  mask-origin: fill-box;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-origin: view-box;
+  mask-origin: view-box;
   -webkit-mask-clip: no-clip;
   mask-clip: no-clip;
 }
