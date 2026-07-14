@@ -19,11 +19,13 @@
     "music:apply": "bun scripts/music-apply.ts",
     "blueprints:plan": "bunx sanity@latest blueprints plan",
     "blueprints:deploy": "bunx sanity@latest blueprints deploy",
-    "blueprints:destroy": "bunx sanity@latest blueprints destroy"
+    "blueprints:destroy": "bunx sanity@latest blueprints destroy",
+    "logo:bake": "bun run --filter site logo:bake",
+    "kapow:halftone": "bun run --filter site kapow:halftone"
   },
   "dependencies": {
     "@chasecee/sanity-kit": "github:chasecee/sanity-kit",
-    "@sanity/blueprints": "^0.21.0"
+    "@sanity/blueprints": "^0.22.0"
   },
   "devDependencies": {}
 }

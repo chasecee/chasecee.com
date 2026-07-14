@@ -40,7 +40,8 @@ body.pt-8 {
 
   --background-image-gradient-radial: radial-gradient(var(--tw-gradient-stops));
 
-  --logo-cycle-duration: 1080ms;
+  --logo-rest-duration: 720ms;
+  --logo-morph-duration: 140ms;
 
   --border-width-site: var(--site-border-width);
   --ring-width-site: var(--site-border-width);
@@ -249,13 +250,12 @@ body.pt-8 {
 }
 
 .logo-kapow {
-  @apply absolute z-0 top-1/2 left-1/2 h-auto w-full max-w-none opacity-0 origin-center overflow-visible text-yellow-400 transition-colors duration-[180ms] will-change-[transform,opacity];
+  @apply absolute z-0 top-1/2 left-1/2 h-auto w-full max-w-none opacity-0 origin-center overflow-visible text-yellow-400 transition-[opacity,color] duration-[180ms] will-change-[transform,opacity];
   transform: translate(
       calc(-50% + var(--kapow-offset-x, 0px)),
       calc(-50% + var(--kapow-offset-y, 0px))
     )
-    rotate(var(--kapow-rotate, 0deg)) scaleX(var(--kapow-scale-x, 1))
-    scale(var(--kapow-pop-scale, 1));
+    rotate(var(--kapow-rotate, 0deg)) scaleX(var(--kapow-scale-x, 1)) scale(1);
 
   path {
     @apply fill-transparent stroke-current transition-[fill,stroke] duration-[180ms];
@@ -265,29 +265,81 @@ body.pt-8 {
   }
 }
 
+.logo-kapow--active {
+  opacity: 1;
+  -webkit-mask-image: var(--kapow-halftone-mask);
+  mask-image: var(--kapow-halftone-mask);
+  -webkit-mask-size: var(--kapow-halftone-tile-size) var(--kapow-halftone-tile-size);
+  mask-size: var(--kapow-halftone-tile-size) var(--kapow-halftone-tile-size);
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+  -webkit-mask-position: 0 0;
+  mask-position: 0 0;
+}
+
+.logo-kapow--phase-0 {
+  @apply text-yellow-400;
+}
+
+.logo-kapow--phase-1 {
+  @apply text-red-500;
+}
+
+.logo-kapow--phase-2 {
+  @apply text-orange-500;
+}
+
+.logo-kapow--phase-3 {
+  @apply text-purple-500;
+}
+
 .logo-kapow--explode {
+  animation: logo-kapow-explode 440ms ease forwards;
+
   path {
     @apply fill-current stroke-current;
   }
 }
 
-.logo-kapow-container {
-  overflow: clip;
-  overflow-clip-margin: 9rem;
+@keyframes logo-kapow-explode {
+  0% {
+    opacity: 1;
+    transform: translate(
+        calc(-50% + var(--kapow-offset-x, 0px)),
+        calc(-50% + var(--kapow-offset-y, 0px))
+      )
+      rotate(var(--kapow-rotate, 0deg)) scaleX(var(--kapow-scale-x, 1)) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(
+        calc(-50% + var(--kapow-offset-x, 0px)),
+        calc(-50% + var(--kapow-offset-y, 0px))
+      )
+      rotate(var(--kapow-rotate, 0deg)) scaleX(var(--kapow-scale-x, 1))
+      scale(3);
+  }
 }
 
-.logo-sticker-overlay__stroke {
-  @apply fill-none stroke-neutral-500/50 dark:stroke-neutral-600;
-}
-
-.logo-sticker-overlay__fill {
-  @apply fill-neutral-50 dark:fill-neutral-900;
+.logo-sticker-overlay {
+  @apply block h-auto w-full max-w-none;
+  overflow: visible;
+  shape-rendering: geometricPrecision;
 }
 
 .header__title {
-  .logo-wordmark-svg {
-    @apply block h-auto  max-w-full z-5 relative;
+  .logo-wordmark-svg,
+  .logo-sticker-overlay {
+    overflow: visible;
     shape-rendering: geometricPrecision;
+  }
+
+  .logo-wordmark-svg {
+    @apply relative z-5 block h-auto w-full max-w-none;
+  }
+
+  .logo-wordmark-core {
+    overflow: visible;
   }
 
   .logo-wordmark-path {
@@ -301,10 +353,6 @@ body.pt-8 {
 
     .logo-kapow {
       @apply text-yellow-400;
-    }
-
-    .logo-kapow path {
-      @apply fill-current stroke-current;
     }
   }
 }

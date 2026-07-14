@@ -1,34 +1,24 @@
 "use client";
 
 import * as React from "react";
-import {
-  MORPH_POINT_COUNT,
-  MORPH_VARIANTS as BASE_MORPH_VARIANTS,
-} from "./variants/morphData.js";
+import { MORPH_POINT_COUNT, MORPH_VARIANTS } from "./variants/morphData.js";
 import { LOGO_VIEW_HEIGHT, LOGO_VIEW_WIDTH } from "./silhouette";
 
-const ADDITIONAL_FONT_IDS = [
-  "archivoBlack",
-  "bungee",
-  "changaOne",
-  "fredoka",
-  "ibmPlexSansCondensed",
-  "oswald",
-  "playfairDisplayBlack",
-  "soraExtraBold",
-  "teko",
-  "workSansBlack",
-] as const;
-const MORPH_VARIANTS = [
-  ...BASE_MORPH_VARIANTS,
-  ...ADDITIONAL_FONT_IDS.map((id, index) => ({
-    ...BASE_MORPH_VARIANTS[index % BASE_MORPH_VARIANTS.length],
-    id,
-  })),
-] as const;
-const BASE_VARIANT_COUNT = BASE_MORPH_VARIANTS.length;
 const STORAGE_KEY = "chasecee:logo-font";
 const PATHS_STORAGE_KEY = "chasecee:logo-paths";
+
+export type MorphStep = {
+  id: number;
+  fromIndex: number;
+  toIndex: number;
+  durationMs: number;
+};
+
+interface ChaseCeeLogoProps extends React.SVGProps<SVGSVGElement> {
+  initialIndex: number;
+  activeStep: MorphStep | null;
+  onStepEnd: (step: MorphStep) => void;
+}
 
 const interpolate = (
   from: readonly number[],
@@ -69,165 +59,102 @@ const toPath = (points: readonly number[]) => {
   return path;
 };
 
-const ease = (progress: number) =>
-  progress < 0.5
-    ? 4 * progress * progress * progress
-    : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-
-const parseCssDurationMs = (raw: string) => {
-  const value = raw.trim();
-  if (!value) return null;
-  if (value.endsWith("ms")) return Number.parseFloat(value);
-  if (value.endsWith("s")) return Number.parseFloat(value) * 1000;
-  return null;
+const ease = (progress: number) => {
+  const overshoot = 0.38;
+  return (
+    1 +
+    (overshoot + 1) * Math.pow(progress - 1, 3) +
+    overshoot * Math.pow(progress - 1, 2)
+  );
 };
 
-export type LogoGlyphs = readonly (readonly number[])[];
-export type MorphFrame = {
-  fromBaseIndex: number;
-  toBaseIndex: number;
-  progress: number;
+const persistVariant = (index: number) => {
+  const variant = MORPH_VARIANTS[index];
+  localStorage.setItem(STORAGE_KEY, variant.id);
+  localStorage.setItem(PATHS_STORAGE_KEY, JSON.stringify(variant.paths));
 };
 
-interface ChaseCeeLogoProps extends React.SVGProps<SVGSVGElement> {
-  active?: boolean;
-  onGlyphs?: (glyphs: LogoGlyphs) => void;
-  onMorphFrame?: (frame: MorphFrame) => void;
-  ref?: React.Ref<SVGSVGElement>;
-}
-
-const ChaseCeeLogo = ({
-  active = false,
-  onGlyphs,
-  onMorphFrame,
+export default function ChaseCeeLogo({
+  initialIndex,
+  activeStep,
+  onStepEnd,
   className,
-  ref,
   ...props
-}: ChaseCeeLogoProps) => {
+}: ChaseCeeLogoProps) {
   const pathRefs = React.useRef<(SVGPathElement | null)[]>([]);
-  const frameRef = React.useRef<number>(0);
-  const variantRef = React.useRef(0);
-  const initializedRef = React.useRef(false);
-  const onGlyphsRef = React.useRef(onGlyphs);
-  const onMorphFrameRef = React.useRef(onMorphFrame);
-  onGlyphsRef.current = onGlyphs;
-  onMorphFrameRef.current = onMorphFrame;
+  const frameRef = React.useRef(0);
+  const stepRef = React.useRef<MorphStep | null>(null);
+  const onStepEndRef = React.useRef(onStepEnd);
+  onStepEndRef.current = onStepEnd;
+
+  const stop = React.useCallback(() => {
+    if (!frameRef.current) return;
+    window.cancelAnimationFrame(frameRef.current);
+    frameRef.current = 0;
+  }, []);
 
   React.useEffect(() => {
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const logoCycleMs =
-      parseCssDurationMs(
-        getComputedStyle(document.documentElement).getPropertyValue(
-          "--logo-cycle-duration",
-        ),
-      ) ?? 1080;
-    const stepMs = logoCycleMs / 3;
-
-    const draw = (
-      glyphs: LogoGlyphs,
-      paths?: readonly string[],
-    ) => {
-      glyphs.forEach((points, index) => {
-        pathRefs.current[index]?.setAttribute("d", paths?.[index] ?? toPath(points));
-      });
-      onGlyphsRef.current?.(glyphs);
-    };
-
-    const stop = () => window.cancelAnimationFrame(frameRef.current);
-
-    const persist = (index: number) => {
-      const variant = MORPH_VARIANTS[index];
-      localStorage.setItem(STORAGE_KEY, variant.id);
-      localStorage.setItem(PATHS_STORAGE_KEY, JSON.stringify(variant.paths));
-    };
-
-    const commit = (index: number) => {
-      const variant = MORPH_VARIANTS[index];
-      variantRef.current = index;
-      draw(variant.glyphs, variant.paths);
-      persist(index);
-      const baseIndex = index % BASE_VARIANT_COUNT;
-      onMorphFrameRef.current?.({
-        fromBaseIndex: baseIndex,
-        toBaseIndex: baseIndex,
-        progress: 1,
-      });
-    };
-
-    if (!initializedRef.current) {
-      const storedId = localStorage.getItem(STORAGE_KEY);
-      const storedIndex = MORPH_VARIANTS.findIndex(({ id }) => id === storedId);
-      variantRef.current = storedIndex === -1 ? 0 : storedIndex;
-      initializedRef.current = true;
-    }
-
     stop();
+    const variant = MORPH_VARIANTS[initialIndex];
+    variant.paths.forEach((pathValue, index) => {
+      pathRefs.current[index]?.setAttribute("d", pathValue);
+    });
+  }, [initialIndex, stop]);
 
-    if (active && !reducedMotion.matches) {
-      const startedAt = performance.now();
-      const startIndex = variantRef.current;
+  React.useEffect(() => {
+    stop();
+    if (!activeStep) return;
+    stepRef.current = activeStep;
+    const from = MORPH_VARIANTS[activeStep.fromIndex];
+    const to = MORPH_VARIANTS[activeStep.toIndex];
+    const startedAt = performance.now();
 
-      const tick = (now: number) => {
-        const elapsed = now - startedAt;
-        const step =
-          (startIndex + Math.floor(elapsed / stepMs)) %
-          MORPH_VARIANTS.length;
-        const next = (step + 1) % MORPH_VARIANTS.length;
-        const rawProgress = (elapsed % stepMs) / stepMs;
-        const progress = ease(Math.min(rawProgress / 0.62, 1));
-        const from = MORPH_VARIANTS[step];
-        const to = MORPH_VARIANTS[next];
-        const nearest = progress < 0.5 ? step : next;
-
-        if (nearest !== variantRef.current) {
-          variantRef.current = nearest;
-          persist(nearest);
-        }
-
-        if (progress === 1) {
-          draw(to.glyphs, to.paths);
-        } else {
-          draw(
-            from.glyphs.map((points, index) =>
-              interpolate(points, to.glyphs[index], progress),
-            ),
-          );
-        }
-        onMorphFrameRef.current?.({
-          fromBaseIndex: step % BASE_VARIANT_COUNT,
-          toBaseIndex: next % BASE_VARIANT_COUNT,
-          progress,
+    const tick = (now: number) => {
+      const elapsed = now - startedAt;
+      const raw = Math.min(elapsed / activeStep.durationMs, 1);
+      const progress = ease(raw);
+      from.glyphs.forEach((points, index) => {
+        const d = toPath(interpolate(points, to.glyphs[index], progress));
+        pathRefs.current[index]?.setAttribute("d", d);
+      });
+      if (raw >= 1) {
+        to.paths.forEach((pathValue, index) => {
+          pathRefs.current[index]?.setAttribute("d", pathValue);
         });
-        frameRef.current = window.requestAnimationFrame(tick);
-      };
-
+        persistVariant(activeStep.toIndex);
+        stepRef.current = null;
+        frameRef.current = 0;
+        onStepEndRef.current(activeStep);
+        return;
+      }
       frameRef.current = window.requestAnimationFrame(tick);
-      return stop;
-    }
+    };
 
-    commit(variantRef.current);
+    frameRef.current = window.requestAnimationFrame(tick);
     return stop;
-  }, [active]);
+  }, [activeStep, stop]);
+
+  React.useEffect(() => stop, [stop]);
 
   return (
     <svg
-      ref={ref}
       xmlns="http://www.w3.org/2000/svg"
       width={LOGO_VIEW_WIDTH}
       height={LOGO_VIEW_HEIGHT}
       viewBox={`0 0 ${LOGO_VIEW_WIDTH} ${LOGO_VIEW_HEIGHT}`}
       fill="none"
+      overflow="visible"
       data-chasecee-logo
       className={["logo-wordmark-svg", className].filter(Boolean).join(" ")}
       {...props}
     >
-      {MORPH_VARIANTS[0].glyphs.map((_, index) => (
+      {MORPH_VARIANTS[initialIndex].paths.map((pathValue, index) => (
         <path
           key={index}
           ref={(node) => {
             pathRefs.current[index] = node;
           }}
-          d={MORPH_VARIANTS[0].paths[index]}
+          d={pathValue}
           suppressHydrationWarning
           fillRule="evenodd"
           className="logo-wordmark-path"
@@ -235,6 +162,4 @@ const ChaseCeeLogo = ({
       ))}
     </svg>
   );
-};
-
-export default ChaseCeeLogo;
+}
