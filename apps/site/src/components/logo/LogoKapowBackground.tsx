@@ -1,12 +1,65 @@
-export default function LogoKapowBackground() {
+import type { CSSProperties } from "react";
+
+interface LogoKapowBackgroundProps {
+  activeIndex: number | null;
+  isHovered: boolean;
+  explodeProgress: number;
+}
+
+const kapowOpacity = (
+  index: number,
+  activeIndex: number | null,
+  isHovered: boolean,
+  explodeProgress: number,
+) => {
+  if (explodeProgress > 0) return Math.max(0, 1 - explodeProgress);
+  if (!isHovered || activeIndex === null) return 0;
+  return activeIndex === index ? 1 : 0;
+};
+
+const kapowScale = (explodeProgress: number) =>
+  explodeProgress > 0 ? 1 + 2 * explodeProgress : 1;
+
+const kapowColorClass = (
+  index: number,
+  activeIndex: number | null,
+  explodeProgress: number,
+) => {
+  if (explodeProgress > 0) return "text-yellow-400";
+  if (activeIndex === index) {
+    if (index === 0) return "text-yellow-400";
+    if (index === 1) return "text-red-500";
+    return "text-orange-500";
+  }
+  return "text-yellow-400";
+};
+
+const kapowStyle = (
+  index: number,
+  activeIndex: number | null,
+  isHovered: boolean,
+  explodeProgress: number,
+): CSSProperties =>
+  ({
+    opacity: kapowOpacity(index, activeIndex, isHovered, explodeProgress),
+    "--kapow-pop-scale": kapowScale(explodeProgress),
+  }) as CSSProperties;
+
+export default function LogoKapowBackground({
+  activeIndex,
+  isHovered,
+  explodeProgress,
+}: LogoKapowBackgroundProps) {
+  const exploding = explodeProgress > 0;
   return (
     <span
-      className="pointer-events-none absolute inset-0 z-0 translate-y-2"
+      className="pointer-events-none absolute -inset-10 z-0"
       aria-hidden="true"
     >
       <svg
         viewBox="0 0 360 180"
-        className="logo-kapow logo-kapow-one [--kapow-rotate:-8deg]"
+        className={`logo-kapow [--kapow-rotate:-8deg] ${kapowColorClass(0, activeIndex, explodeProgress)} ${exploding ? "logo-kapow--explode" : ""}`}
+        style={kapowStyle(0, activeIndex, isHovered, explodeProgress)}
         overflow="visible"
       >
         <g transform="translate(20 14) scale(1 0.7)">
@@ -15,7 +68,8 @@ export default function LogoKapowBackground() {
       </svg>
       <svg
         viewBox="0 0 360 180"
-        className="logo-kapow logo-kapow-two [--kapow-rotate:9deg] [--kapow-scale-x:-1]"
+        className={`logo-kapow [--kapow-rotate:9deg] [--kapow-scale-x:-1] ${kapowColorClass(1, activeIndex, explodeProgress)} ${exploding ? "logo-kapow--explode" : ""}`}
+        style={kapowStyle(1, activeIndex, isHovered, explodeProgress)}
         overflow="visible"
       >
         <g transform="translate(20 16) scale(1 0.7)">
@@ -24,7 +78,8 @@ export default function LogoKapowBackground() {
       </svg>
       <svg
         viewBox="0 0 360 180"
-        className="logo-kapow logo-kapow-three [--kapow-rotate:2deg]"
+        className={`logo-kapow [--kapow-rotate:2deg] ${kapowColorClass(2, activeIndex, explodeProgress)} ${exploding ? "logo-kapow--explode" : ""}`}
+        style={kapowStyle(2, activeIndex, isHovered, explodeProgress)}
         overflow="visible"
       >
         <g transform="translate(20 15) scale(1 0.7)">

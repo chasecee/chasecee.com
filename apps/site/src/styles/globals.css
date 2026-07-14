@@ -41,14 +41,6 @@ body.pt-8 {
   --background-image-gradient-radial: radial-gradient(var(--tw-gradient-stops));
 
   --logo-cycle-duration: 1080ms;
-  --animate-logo-kapow-one: logo-kapow-one var(--logo-cycle-duration)
-    steps(1, end) infinite;
-  --animate-logo-kapow-two: logo-kapow-two var(--logo-cycle-duration)
-    steps(1, end) infinite;
-  --animate-logo-kapow-three: logo-kapow-three var(--logo-cycle-duration)
-    steps(1, end) infinite;
-  --animate-logo-kapow-explode: logo-kapow-explode 440ms
-    cubic-bezier(0.2, 0.8, 0.15, 1) forwards;
 
   --border-width-site: var(--site-border-width);
   --ring-width-site: var(--site-border-width);
@@ -257,73 +249,49 @@ body.pt-8 {
 }
 
 .logo-kapow {
-  @apply absolute top-1/2 left-1/2 h-auto w-[228%] max-w-none opacity-0 origin-center overflow-visible text-yellow-400 transition-colors duration-[180ms] will-change-[transform,opacity];
+  @apply absolute z-0 top-1/2 left-1/2 h-auto w-full max-w-none opacity-0 origin-center overflow-visible text-yellow-400 transition-colors duration-[180ms] will-change-[transform,opacity];
   transform: translate(
       calc(-50% + var(--kapow-offset-x, 0px)),
       calc(-50% + var(--kapow-offset-y, 0px))
     )
-    rotate(var(--kapow-rotate, 0deg)) scaleX(var(--kapow-scale-x, 1));
+    rotate(var(--kapow-rotate, 0deg)) scaleX(var(--kapow-scale-x, 1))
+    scale(var(--kapow-pop-scale, 1));
 
   path {
-    @apply fill-transparent stroke-transparent transition-[fill,stroke] duration-[180ms];
+    @apply fill-transparent stroke-current transition-[fill,stroke] duration-[180ms];
     stroke-width: 4;
     stroke-linecap: round;
     stroke-linejoin: round;
   }
 }
 
+.logo-kapow--explode {
+  path {
+    @apply fill-current stroke-current;
+  }
+}
+
 .logo-kapow-container {
   overflow: clip;
   overflow-clip-margin: 9rem;
+}
 
-  &:hover {
-    .logo-kapow-one {
-      @apply animate-logo-kapow-one text-yellow-400;
-    }
-    .logo-kapow-two {
-      @apply animate-logo-kapow-two text-red-500;
-    }
-    .logo-kapow-three {
-      @apply animate-logo-kapow-three text-orange-500;
-    }
-  }
+.logo-sticker-overlay__stroke {
+  @apply fill-none stroke-neutral-500/50 dark:stroke-neutral-600;
+}
 
-  &.logo-kapow-exploding .logo-kapow {
-    @apply animate-logo-kapow-explode text-yellow-400;
-
-    path {
-      @apply fill-current stroke-current;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    &:hover .logo-kapow-one,
-    &:hover .logo-kapow-two,
-    &:hover .logo-kapow-three {
-      animation: none;
-    }
-
-    &.logo-kapow-exploding .logo-kapow {
-      @apply opacity-100;
-      animation: none;
-    }
-
-  }
+.logo-sticker-overlay__fill {
+  @apply fill-neutral-50 dark:fill-neutral-900;
 }
 
 .header__title {
   .logo-wordmark-svg {
-    @apply block h-auto max-w-full;
+    @apply block h-auto  max-w-full z-5 relative;
+    shape-rendering: geometricPrecision;
   }
 
   .logo-wordmark-path {
     @apply fill-current;
-  }
-
-  &:hover {
-    .logo-kapow path {
-      @apply stroke-current;
-    }
   }
 
   &:active {
@@ -338,61 +306,6 @@ body.pt-8 {
     .logo-kapow path {
       @apply fill-current stroke-current;
     }
-  }
-}
-
-@keyframes logo-kapow-one {
-  0% {
-    opacity: 1;
-  }
-  33.333%,
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes logo-kapow-two {
-  0%,
-  33.332% {
-    opacity: 0;
-  }
-  33.333%,
-  66.666% {
-    opacity: 1;
-  }
-  66.667%,
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes logo-kapow-three {
-  0%,
-  66.666% {
-    opacity: 0;
-  }
-  66.667%,
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes logo-kapow-explode {
-  0% {
-    opacity: 1;
-    transform: translate(
-        calc(-50% + var(--kapow-offset-x, 0px)),
-        calc(-50% + var(--kapow-offset-y, 0px))
-      )
-      rotate(var(--kapow-rotate, 0deg)) scaleX(var(--kapow-scale-x, 1)) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(
-        calc(-50% + var(--kapow-offset-x, 0px)),
-        calc(-50% + var(--kapow-offset-y, 0px))
-      )
-      rotate(var(--kapow-rotate, 0deg)) scaleX(var(--kapow-scale-x, 1)) scale(3);
   }
 }
 
