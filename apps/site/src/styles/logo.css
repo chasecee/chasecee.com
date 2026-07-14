@@ -3,6 +3,7 @@
   --logo-border-stroke: calc(var(--logo-padding-stroke) + 4 * var(--site-border-width));
   --logo-rest-duration: 720ms;
   --logo-morph-duration: 140ms;
+  --logo-kapow-halftone-size: 8px;
 }
 
 .logo-kapow-unskew {
@@ -23,6 +24,20 @@
 
 .logo-kapow-path--active {
   opacity: 1;
+  fill: currentColor;
+  stroke: transparent;
+  -webkit-mask-image: url("/halftone/halftone-circle-r2-s4-punch.svg");
+  mask-image: url("/halftone/halftone-circle-r2-s4-punch.svg");
+  -webkit-mask-size: var(--logo-kapow-halftone-size) var(--logo-kapow-halftone-size);
+  mask-size: var(--logo-kapow-halftone-size) var(--logo-kapow-halftone-size);
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+  -webkit-mask-position: 0 0;
+  mask-position: 0 0;
+  -webkit-mask-origin: fill-box;
+  mask-origin: fill-box;
+  -webkit-mask-clip: no-clip;
+  mask-clip: no-clip;
 }
 
 .logo-kapow-path--phase-0 {
