@@ -62,7 +62,7 @@ export default function Header({ activePath }: HeaderProps) {
 
   return (
     <div className="sticky top-2 inset-x-0 z-40 md:top-4">
-      <header className="header md:h-16 container h-16 flex items-center rounded-xl ring-[.125rem] ring-neutral-500/50 bg-neutral-100/10 py-2 dark:ring-neutral-600 dark:bg-neutral-900/90">
+      <header className="header container h-(--header-height) flex items-center rounded-xl border-site border-neutral-500/50 bg-neutral-50 py-2 dark:border-neutral-600 dark:bg-neutral-900">
         <div className="flex w-1/3 shrink justify-start">
           <a
             onClick={handleLogoClick}
@@ -72,11 +72,15 @@ export default function Header({ activePath }: HeaderProps) {
             <div className="sr-only">Chase Cee Logo</div>
             <div
               ref={logoKapowRef}
-              className="logo-kapow-container relative isolate max-w-[100px]"
+              className="logo-kapow-container relative max-w-[8rem] [--kapow-offset-x:0px] [--kapow-offset-y:2.5%] before:absolute before:-inset-x-[18px] before:-inset-y-[15px] before:content-['']"
             >
-              <LogoKapowBackground />
-              <div className="logo-wordmark relative z-10">
+              <div
+                aria-hidden
+                className="logo-bulge pointer-events-none absolute -inset-[1rem] z-[-1] rounded-[1rem] border-site border-solid border-neutral-500/50 [transform:skew(-7deg,-6deg)] dark:border-neutral-600"
+              />
+              <div className="logo-wordmark relative z-10 -m-[1rem] rounded-[1rem] border-site border-transparent bg-neutral-50 bg-clip-padding p-2 [transform:skew(-7deg,-6deg)] dark:bg-neutral-900">
                 <ChaseCeeLogo />
+                <LogoKapowBackground />
               </div>
             </div>
           </a>

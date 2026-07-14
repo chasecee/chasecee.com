@@ -3,10 +3,11 @@
 @import "./typography.css";
 
 :root {
-  --site-header-height: 4rem;
+  --site-header-height: 3rem;
   --site-header-pad: 1rem;
   --site-scroll-gap: 1rem;
   --site-draft-offset: 0rem;
+  --site-border-width: 0.25rem;
   --site-scroll-offset: calc(
     var(--site-header-height) + var(--site-header-pad) + var(--site-scroll-gap) +
       var(--site-draft-offset)
@@ -27,7 +28,7 @@ body.pt-8 {
   scroll-margin-top: var(--site-scroll-offset);
 }
 
-@theme {
+@theme inline {
   --font-sans: var(--font-rubik), ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --transition-delay-400: 400ms;
@@ -38,6 +39,16 @@ body.pt-8 {
   --radius-sm: calc(var(--radius) - 4px);
 
   --background-image-gradient-radial: radial-gradient(var(--tw-gradient-stops));
+
+  --animate-logo-kapow-one: logo-kapow-one 630ms steps(1, end) infinite;
+  --animate-logo-kapow-two: logo-kapow-two 630ms steps(1, end) infinite;
+  --animate-logo-kapow-three: logo-kapow-three 630ms steps(1, end) infinite;
+  --animate-logo-kapow-explode: logo-kapow-explode 440ms
+    cubic-bezier(0.2, 0.8, 0.15, 1) forwards;
+  --animate-logo-wordmark-flash: logo-wordmark-flash 400ms ease-in-out infinite;
+
+  --border-width-site: var(--site-border-width);
+  --ring-width-site: var(--site-border-width);
 }
 
 @utility container {
@@ -237,111 +248,81 @@ body.pt-8 {
   }
 }
 
-.logo-kapow-bg {
-  @apply pointer-events-none absolute inset-0 z-0;
-  transform: translateY(0.5rem);
+.logo-kapow {
+  @apply absolute top-1/2 left-1/2 h-auto w-[285%] max-w-none opacity-0 origin-center overflow-visible text-yellow-400 transition-colors duration-[180ms] will-change-[transform,opacity];
+  transform: translate(
+      calc(-50% + var(--kapow-offset-x, 0px)),
+      calc(-50% + var(--kapow-offset-y, 0px))
+    )
+    rotate(var(--kapow-rotate, 0deg)) scaleX(var(--kapow-scale-x, 1));
+
+  path {
+    @apply fill-transparent stroke-transparent transition-[fill,stroke] duration-[180ms];
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
 }
 
 .logo-kapow-container {
-  --kapow-offset-x: 0px;
-  --kapow-offset-y: 0px;
+  &:hover {
+    .logo-kapow-one {
+      @apply animate-logo-kapow-one text-yellow-400;
+    }
+    .logo-kapow-two {
+      @apply animate-logo-kapow-two text-red-500;
+    }
+    .logo-kapow-three {
+      @apply animate-logo-kapow-three text-orange-500;
+    }
+  }
+
+  &.logo-kapow-exploding .logo-kapow {
+    @apply animate-logo-kapow-explode text-yellow-400;
+
+    path {
+      @apply fill-current stroke-current;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &:hover .logo-kapow-one,
+    &:hover .logo-kapow-two,
+    &:hover .logo-kapow-three {
+      animation: none;
+    }
+
+    &.logo-kapow-exploding .logo-kapow {
+      @apply opacity-100;
+      animation: none;
+    }
+  }
 }
 
-.logo-kapow-container::before {
-  content: "";
-  position: absolute;
-  inset: -14px -18px;
-}
+.header__title {
+  &:hover {
+    .logo-kapow path {
+      @apply stroke-current;
+    }
 
-.logo-kapow {
-  @apply absolute top-1/2 left-1/2 h-auto w-[285%] opacity-0;
-  color: rgb(250 204 21);
-  overflow: visible;
-  transform-origin: center;
-  transform: translate(
-      calc(-50% + var(--kapow-offset-x)),
-      calc(-50% + var(--kapow-offset-y))
-    )
-    rotate(var(--kapow-rotate, 0deg)) scaleX(var(--kapow-scale-x, 1));
-  transition: color 180ms ease;
-  will-change: transform, opacity;
-}
+    .logo-wordmark {
+      @apply animate-logo-wordmark-flash;
+    }
+  }
 
-.logo-kapow path {
-  fill: transparent;
-  stroke: transparent;
-  stroke-width: 4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  transition: fill 180ms ease, stroke 180ms ease;
-}
+  &:active {
+    .logo-wordmark {
+      @apply text-[rgb(255_105_180)];
+    }
 
-.logo-kapow-one {
-  --kapow-rotate: -8deg;
-}
+    .logo-kapow {
+      @apply text-yellow-400;
+    }
 
-.logo-kapow-two {
-  --kapow-rotate: 9deg;
-  --kapow-scale-x: -1;
-}
-
-.logo-kapow-three {
-  --kapow-rotate: 2deg;
-}
-
-.logo-kapow-container:hover .logo-kapow-one {
-  color: rgb(250 204 21);
-  animation: logo-kapow-one 630ms steps(1, end) infinite;
-}
-
-.logo-kapow-container:hover .logo-kapow-two {
-  color: rgb(239 68 68);
-  animation: logo-kapow-two 630ms steps(1, end) infinite;
-}
-
-.logo-kapow-container:hover .logo-kapow-three {
-  color: rgb(249 115 22);
-  animation: logo-kapow-three 630ms steps(1, end) infinite;
-}
-
-.logo-kapow-container.logo-kapow-exploding .logo-kapow {
-  color: rgb(250 204 21);
-  animation: logo-kapow-explode 440ms cubic-bezier(0.2, 0.8, 0.15, 1) forwards;
-}
-
-.logo-kapow-container.logo-kapow-exploding .logo-kapow path {
-  fill: currentColor;
-  stroke: currentColor;
-}
-
-.header__title:hover .logo-kapow path {
-  stroke: currentColor;
-}
-
-.logo-wordmark {
-  filter: none;
-}
-
-.logo-wordmark-fill {
-  fill: currentColor;
-}
-
-.header__title:hover .logo-wordmark {
-  animation: logo-wordmark-flash 400ms ease-in-out infinite;
-  filter: none;
-}
-
-.header__title:active .logo-wordmark {
-  color: rgb(255 105 180);
-}
-
-.header__title:active .logo-kapow {
-  color: rgb(250 204 21);
-}
-
-.header__title:active .logo-kapow path {
-  fill: currentColor;
-  stroke: currentColor;
+    .logo-kapow path {
+      @apply fill-current stroke-current;
+    }
+  }
 }
 
 @keyframes logo-kapow-one {
@@ -393,33 +374,22 @@ body.pt-8 {
   0% {
     opacity: 1;
     transform: translate(
-        calc(-50% + var(--kapow-offset-x)),
-        calc(-50% + var(--kapow-offset-y))
+        calc(-50% + var(--kapow-offset-x, 0px)),
+        calc(-50% + var(--kapow-offset-y, 0px))
       )
       rotate(var(--kapow-rotate, 0deg)) scaleX(var(--kapow-scale-x, 1)) scale(1);
   }
   100% {
     opacity: 0;
     transform: translate(
-        calc(-50% + var(--kapow-offset-x)),
-        calc(-50% + var(--kapow-offset-y))
+        calc(-50% + var(--kapow-offset-x, 0px)),
+        calc(-50% + var(--kapow-offset-y, 0px))
       )
       rotate(var(--kapow-rotate, 0deg)) scaleX(var(--kapow-scale-x, 1)) scale(3);
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .logo-kapow-container:hover .logo-kapow-one,
-  .logo-kapow-container:hover .logo-kapow-two,
-  .logo-kapow-container:hover .logo-kapow-three {
-    animation: none;
-  }
-  .logo-kapow-container.logo-kapow-exploding .logo-kapow {
-    animation: none;
-    opacity: 1;
-  }
-}
-.content {
+.prose-flow {
   img {
     max-width: 100%;
     height: auto;

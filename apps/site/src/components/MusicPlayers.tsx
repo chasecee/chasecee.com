@@ -120,8 +120,7 @@ export default function MusicPlayers({
 
   return (
     <section
-      className="not-prose mx-auto mt-10 w-full"
-      style={{ maxWidth: "min(var(--prose-measure), 100%)" }}
+      className="measure not-prose mt-10"
       data-sanity={embedsDataAttribute}
     >
       {tabs.length > 1 && (

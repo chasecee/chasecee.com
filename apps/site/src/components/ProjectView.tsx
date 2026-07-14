@@ -61,8 +61,8 @@ export default function ProjectView({
       <div
         className={
           hasSiteMini
-            ? "prose-full my-8 grid gap-8 md:gap-12 md:grid-cols-[minmax(0,var(--project-lead-col))_1fr]"
-            : "prose-full my-8"
+            ? "w-full my-8 grid gap-8 md:gap-12 md:grid-cols-[minmax(0,var(--project-lead-col))_1fr]"
+            : "w-full my-8"
         }
       >
         <div className="flex min-w-0 flex-col">
@@ -72,7 +72,7 @@ export default function ProjectView({
             hasSiteMini={hasSiteMini}
           />
           {leadInContent.length > 0 && (
-            <div className="content" data-sanity={leadInDataAttribute}>
+            <div data-sanity={leadInDataAttribute}>
               <Body
                 value={leadInContent}
                 draftMode={draftMode}
@@ -96,7 +96,7 @@ export default function ProjectView({
         )}
       </div>
       {content.length > 0 && (
-        <div className="content" data-sanity={contentDataAttribute}>
+        <div data-sanity={contentDataAttribute}>
           <Body
             value={content}
             draftMode={draftMode}

@@ -326,6 +326,76 @@ export type SanityImageHotspot = {
   width?: number;
 };
 
+export type Page = {
+  _id: string;
+  _type: "page";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  content?: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      blank?: boolean;
+      _type: "link";
+      _key: string;
+    } | {
+      reference?: ProjectReference | PageReference | MusicReference;
+      _type: "internalLink";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  } | {
+    _key: string;
+  } & Columns | {
+    _key: string;
+  } & Embed | {
+    _key: string;
+  } & Spotify | {
+    _key: string;
+  } & Gallery | {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+    _key: string;
+  } | {
+    media?: MediaMedia;
+    _type: "media";
+    _key: string;
+  } | {
+    asset?: SanityFileAssetReference;
+    media?: unknown;
+    alt?: string;
+    poster?: Poster;
+    width?: number;
+    height?: number;
+    _type: "videoFile";
+    _key: string;
+  }>;
+  title?: string;
+  subtitle?: string;
+  slug?: Slug;
+  orderRank?: string;
+};
+
+export type Slug = {
+  _type: "slug";
+  current?: string;
+  source?: string;
+};
+
 export type Music = {
   _id: string;
   _type: "music";
@@ -406,71 +476,6 @@ export type Music = {
   } & Embed | {
     _key: string;
   } & Spotify>;
-  orderRank?: string;
-};
-
-export type Slug = {
-  _type: "slug";
-  current?: string;
-  source?: string;
-};
-
-export type Page = {
-  _id: string;
-  _type: "page";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  content?: Array<{
-    children?: Array<{
-      marks?: Array<string>;
-      text?: string;
-      _type: "span";
-      _key: string;
-    }>;
-    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
-    listItem?: "bullet" | "number";
-    markDefs?: Array<{
-      href?: string;
-      _type: "link";
-      _key: string;
-    }>;
-    level?: number;
-    _type: "block";
-    _key: string;
-  } | {
-    _key: string;
-  } & Columns | {
-    _key: string;
-  } & Embed | {
-    _key: string;
-  } & Spotify | {
-    _key: string;
-  } & Gallery | {
-    asset?: SanityImageAssetReference;
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    alt?: string;
-    _type: "image";
-    _key: string;
-  } | {
-    media?: MediaMedia;
-    _type: "media";
-    _key: string;
-  } | {
-    asset?: SanityFileAssetReference;
-    media?: unknown;
-    alt?: string;
-    poster?: Poster;
-    width?: number;
-    height?: number;
-    _type: "videoFile";
-    _key: string;
-  }>;
-  title?: string;
-  subtitle?: string;
-  slug?: Slug;
   orderRank?: string;
 };
 
@@ -632,7 +637,7 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = Ratio | SanityFileAssetReference | MediaMedia | SanityImageAssetReference | Poster | Columns | SiteMini | Spotify | Embed | Skills | ProjectReference | PageReference | MusicReference | Project | Color | Code | SanityImageCrop | SanityImageHotspot | Music | Slug | Page | Gallery | GalleryVideo | GalleryImage | RgbaColor | HsvaColor | HslaColor | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type AllSanitySchemaTypes = Ratio | SanityFileAssetReference | MediaMedia | SanityImageAssetReference | Poster | Columns | SiteMini | Spotify | Embed | Skills | ProjectReference | PageReference | MusicReference | Project | Color | Code | SanityImageCrop | SanityImageHotspot | Page | Slug | Music | Gallery | GalleryVideo | GalleryImage | RgbaColor | HsvaColor | HslaColor | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 
 // Source: ../site/sanity/queries.ts
 // Variable: PROJECT_QUERY
@@ -1835,7 +1840,14 @@ export type PAGE_QUERY_RESULT = {
     style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
     listItem?: "bullet" | "number";
     markDefs: Array<{
+      reference?: MusicReference | PageReference | ProjectReference;
+      _type: "internalLink";
+      _key: string;
+      slug: string | null;
+      refType: "music" | "page" | "project" | null;
+    } | {
       href?: string;
+      blank?: boolean;
       _type: "link";
       _key: string;
     }> | null;
@@ -2159,19 +2171,4 @@ export type PAGE_QUERY_RESULT = {
     markDefs: null;
   }> | null;
 } | null;
-
-// Query TypeMap
-import "@sanity/client";
-declare module "@sanity/client" {
-  interface SanityQueries {
-    "*[_type == \"project\" && slug.current == $slug][0]{\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  name,\n  \"slug\": slug.current,\n  \"image\": image.asset->url,\n  subtitle,\n  svgcode,\n  url,\n  archived,\n  orderRank,\n  \"leadIn\": leadIn[]{\n  ...,\n  markDefs[]{\n  ...,\n  _type == \"internalLink\" => {\n    \"slug\": @.reference->slug.current,\n    \"refType\": @.reference->_type\n  },\n  _type == \"link\" => {\n    ...,\n  }\n},\n  _type == \"media\" => {\n  ...,\n  media{\n    ...,\n    asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n}\n  }\n},\n  _type == \"videoFile\" => {\n  ...,\n  asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n  poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n},\n  _type == \"gallery\" => {\n  ...,\n  images[]{\n    ...,\n    _type == \"galleryVideo\" => {\n      ...,\n      asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n      poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n    }\n  }\n},\n  _type == \"columns\" => {\n    ...,\n    columns[]{\n      ...,\n      content[]{\n        ...,\n        markDefs[]{\n  ...,\n  _type == \"internalLink\" => {\n    \"slug\": @.reference->slug.current,\n    \"refType\": @.reference->_type\n  },\n  _type == \"link\" => {\n    ...,\n  }\n},\n        _type == \"media\" => {\n  ...,\n  media{\n    ...,\n    asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n}\n  }\n},\n        _type == \"videoFile\" => {\n  ...,\n  asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n  poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n},\n        _type == \"gallery\" => {\n  ...,\n  images[]{\n    ...,\n    _type == \"galleryVideo\" => {\n      ...,\n      asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n      poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n    }\n  }\n}\n      }\n    }\n  }\n},\n  \"content\": content[]{\n  ...,\n  markDefs[]{\n  ...,\n  _type == \"internalLink\" => {\n    \"slug\": @.reference->slug.current,\n    \"refType\": @.reference->_type\n  },\n  _type == \"link\" => {\n    ...,\n  }\n},\n  _type == \"media\" => {\n  ...,\n  media{\n    ...,\n    asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n}\n  }\n},\n  _type == \"videoFile\" => {\n  ...,\n  asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n  poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n},\n  _type == \"gallery\" => {\n  ...,\n  images[]{\n    ...,\n    _type == \"galleryVideo\" => {\n      ...,\n      asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n      poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n    }\n  }\n},\n  _type == \"columns\" => {\n    ...,\n    columns[]{\n      ...,\n      content[]{\n        ...,\n        markDefs[]{\n  ...,\n  _type == \"internalLink\" => {\n    \"slug\": @.reference->slug.current,\n    \"refType\": @.reference->_type\n  },\n  _type == \"link\" => {\n    ...,\n  }\n},\n        _type == \"media\" => {\n  ...,\n  media{\n    ...,\n    asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n}\n  }\n},\n        _type == \"videoFile\" => {\n  ...,\n  asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n  poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n},\n        _type == \"gallery\" => {\n  ...,\n  images[]{\n    ...,\n    _type == \"galleryVideo\" => {\n      ...,\n      asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n      poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n    }\n  }\n}\n      }\n    }\n  }\n}\n}": PROJECT_QUERY_RESULT;
-    "*[_type == \"project\"] | order(orderRank) {\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  name,\n  \"slug\": slug.current,\n  \"image\": image.asset->url,\n  archived,\n  type,\n  svgcode,\n  subtitle,\n  color,\n  displayType,\n  embedUrl,\n  aspectRatio,\n  url\n}": PROJECTS_QUERY_RESULT;
-    "*[_type == \"project\" && type == \"personal\"] | order(orderRank) {\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  name,\n  \"slug\": slug.current,\n  \"image\": image.asset->url,\n  archived,\n  type,\n  svgcode,\n  subtitle,\n  color,\n  displayType,\n  embedUrl,\n  aspectRatio,\n  url\n}": PERSONAL_PROJECTS_QUERY_RESULT;
-    "*[_type == \"project\" && type == \"client\"] | order(orderRank) {\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  name,\n  \"slug\": slug.current,\n  \"image\": image.asset->url,\n  archived,\n  type,\n  svgcode,\n  subtitle,\n  color,\n  displayType,\n  embedUrl,\n  aspectRatio,\n  url\n}": CLIENT_PROJECTS_QUERY_RESULT;
-    "*[_type == \"music\"] | order(orderRank) {\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  \"slug\": coalesce(slug.current, _id),\n  bandName,\n  albumName,\n  releaseYear,\n  \"albumArt\": albumArt.asset->url,\n  \"albumArtAlt\": albumArt.alt,\n  links,\n  embeds\n}": MUSIC_LIST_QUERY_RESULT;
-    "*[_type == \"music\" && (slug.current == $slug || _id == $slug)][0] {\n  _id,\n  _type,\n  \"isDraft\": _id in path(\"drafts.**\") || _originalId in path(\"drafts.**\"),\n  _createdAt,\n  \"slug\": coalesce(slug.current, _id),\n  bandName,\n  albumName,\n  releaseYear,\n  \"albumArt\": albumArt.asset->url,\n  \"albumArtAlt\": albumArt.alt,\n  links,\n  embeds,\n  \"content\": content[]{\n  ...,\n  markDefs[]{\n  ...,\n  _type == \"internalLink\" => {\n    \"slug\": @.reference->slug.current,\n    \"refType\": @.reference->_type\n  },\n  _type == \"link\" => {\n    ...,\n  }\n},\n  _type == \"media\" => {\n  ...,\n  media{\n    ...,\n    asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n}\n  }\n},\n  _type == \"videoFile\" => {\n  ...,\n  asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n  poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n},\n  _type == \"gallery\" => {\n  ...,\n  images[]{\n    ...,\n    _type == \"galleryVideo\" => {\n      ...,\n      asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n      poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n    }\n  }\n},\n  _type == \"columns\" => {\n    ...,\n    columns[]{\n      ...,\n      content[]{\n        ...,\n        markDefs[]{\n  ...,\n  _type == \"internalLink\" => {\n    \"slug\": @.reference->slug.current,\n    \"refType\": @.reference->_type\n  },\n  _type == \"link\" => {\n    ...,\n  }\n},\n        _type == \"media\" => {\n  ...,\n  media{\n    ...,\n    asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n}\n  }\n},\n        _type == \"videoFile\" => {\n  ...,\n  asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n  poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n},\n        _type == \"gallery\" => {\n  ...,\n  images[]{\n    ...,\n    _type == \"galleryVideo\" => {\n      ...,\n      asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n      poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n    }\n  }\n}\n      }\n    }\n  }\n}\n}": MUSIC_BY_SLUG_QUERY_RESULT;
-    "*[_type == \"page\"]{\n  _id,\n  _createdAt,\n  title,\n  \"slug\": slug.current\n}": PAGES_QUERY_RESULT;
-    "*[_type == \"page\" && slug.current == $slug][0]{\n  _id,\n  _createdAt,\n  title,\n  subtitle,\n  \"slug\": slug.current,\n  content[]{\n  ...,\n  markDefs[]{\n  ...,\n  _type == \"internalLink\" => {\n    \"slug\": @.reference->slug.current,\n    \"refType\": @.reference->_type\n  },\n  _type == \"link\" => {\n    ...,\n  }\n},\n  _type == \"media\" => {\n  ...,\n  media{\n    ...,\n    asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n}\n  }\n},\n  _type == \"videoFile\" => {\n  ...,\n  asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n  poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n},\n  _type == \"gallery\" => {\n  ...,\n  images[]{\n    ...,\n    _type == \"galleryVideo\" => {\n      ...,\n      asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n      poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n    }\n  }\n},\n  _type == \"columns\" => {\n    ...,\n    columns[]{\n      ...,\n      content[]{\n        ...,\n        markDefs[]{\n  ...,\n  _type == \"internalLink\" => {\n    \"slug\": @.reference->slug.current,\n    \"refType\": @.reference->_type\n  },\n  _type == \"link\" => {\n    ...,\n  }\n},\n        _type == \"media\" => {\n  ...,\n  media{\n    ...,\n    asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n}\n  }\n},\n        _type == \"videoFile\" => {\n  ...,\n  asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n  poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n},\n        _type == \"gallery\" => {\n  ...,\n  images[]{\n    ...,\n    _type == \"galleryVideo\" => {\n      ...,\n      asset->{\n  _id,\n  url,\n  mimeType,\n  originalFilename,\n  size\n},\n      poster{\n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata{\n      dimensions\n    }\n  }\n}\n    }\n  }\n}\n      }\n    }\n  }\n}\n}": PAGE_QUERY_RESULT;
-  }
-}
 

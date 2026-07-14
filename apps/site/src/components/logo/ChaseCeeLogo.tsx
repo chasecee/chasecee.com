@@ -12,10 +12,7 @@ const SvgComponent = (props: React.SVGProps<SVGSVGElement>) => (
     className="h-auto max-w-full"
     {...props}
   >
-    <path
-      className="logo-wordmark-fill"
-      d={LOGO_WORDMARK_PATH}
-    />
+    <path d={LOGO_WORDMARK_PATH} />
   </svg>
 );
 export default SvgComponent;

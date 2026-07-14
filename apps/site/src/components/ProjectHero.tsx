@@ -72,7 +72,7 @@ export default function ProjectHero({
     <header
       className={
         hasLogo
-          ? `not-prose relative flex flex-col max-w-[var(--prose-measure)] mx-auto ${showDraftBadge ? "ring-2 ring-amber-300 ring-inset" : ""} ${className}`
+          ? `measure not-prose relative flex flex-col ${showDraftBadge ? "ring-2 ring-amber-300 ring-inset" : ""} ${className}`
           : `not-prose relative flex h-full min-h-72 flex-col justify-end overflow-hidden p-8 text-white ${showDraftBadge ? "ring-2 ring-amber-300 ring-inset" : ""} ${className}`
       }
     >

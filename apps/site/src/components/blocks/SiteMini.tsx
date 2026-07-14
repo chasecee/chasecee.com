@@ -136,7 +136,7 @@ export default function SiteMini({
     >
       <div
         ref={shellRef}
-        className={`site-mini rounded-xl ring-[0.125rem] ring-neutral-500/50 ${dragEnabled ? "" : "site-mini-native"}`}
+        className={`site-mini rounded-xl ring-site ring-neutral-500/50 ${dragEnabled ? "" : "site-mini-native"}`}
       >
         <iframe
           ref={iframeRef}

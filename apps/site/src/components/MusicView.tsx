@@ -70,9 +70,8 @@ export default function MusicView({
       )}
 
       {item.albumArt && (
-        <div className="prose-flow">
-          <div className="prose-wide">
-            <img
+        <div className="measure-wide">
+          <img
             src={withSanityImageParams(item.albumArt, {
               w: 1600,
               fit: "max",
@@ -83,7 +82,6 @@ export default function MusicView({
             height={1200}
             className={`w-full ${showDraftBadge ? "ring-2 ring-amber-300 ring-offset-2 ring-offset-neutral-100 dark:ring-offset-neutral-900" : ""}`}
           />
-          </div>
         </div>
       )}
 

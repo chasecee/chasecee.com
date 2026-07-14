@@ -2,6 +2,7 @@
   --prose-size: 1.25rem;
   --prose-leading: 1.75;
   --prose-measure: 46rem;
+  --prose-measure-wide: var(--prose-measure);
   --prose-weight-normal: 300;
   --prose-weight-bold: 700;
   --prose-gap: 2em;
@@ -16,9 +17,14 @@
   --prose-blockquote-border: rgb(0 0 0 / 0.2);
   --project-lead-col: 32rem;
 }
-@media (width >= theme(--breakpoint-lg)) {
+@media (width >= theme(--breakpoint-md)) {
   :root {
-    --prose-gap: 2em;
+    --prose-measure-wide: calc(var(--prose-measure) * 1.25);
+  }
+}
+@media (width >= theme(--breakpoint-xl)) {
+  :root {
+    --prose-measure-wide: calc(var(--prose-measure) * 1.5);
   }
 }
 
@@ -105,11 +111,6 @@
   }
 }
 
-.prose-flow,
-.prose-flow .content {
-  max-width: none;
-}
-
 .prose-flow :where(p, h1, h2, h3, h4, h5, h6, ul, ol, blockquote, pre):not(
   :where(.not-prose, .not-prose *)
 ) {
@@ -117,16 +118,21 @@
   margin-inline: auto;
 }
 
-.prose-flow > .prose-wide,
-.prose-flow .content > .prose-wide,
-.prose-flow > .content {
-  @apply min-w-(--prose-measure) max-w-(--prose-measure) md:max-w-[calc(var(--prose-measure)*1.25)] lg:max-w-[min(var(--prose-measure)*1.5,calc(100vh-var(--site-scroll-offset)))];
+.measure {
+  width: min(var(--prose-measure), 100%);
   margin-inline: auto;
 }
 
-.prose-flow > .prose-full,
-.prose-flow .content > .prose-full {
-  max-width: none;
-  width: 100%;
+.measure-wide {
+  width: min(var(--prose-measure-wide), 100%);
+  margin-inline: auto;
+}
+
+.measure-fit {
+  width: min(
+    100%,
+    var(--prose-measure-wide),
+    calc((100svh - var(--site-scroll-offset, 5rem)) * var(--media-ar, 1))
+  );
   margin-inline: auto;
 }

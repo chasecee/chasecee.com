@@ -1,9 +1,12 @@
 export default function LogoKapowBackground() {
   return (
-    <span className="logo-kapow-bg" aria-hidden="true">
+    <span
+      className="pointer-events-none absolute inset-0 z-0 translate-y-2"
+      aria-hidden="true"
+    >
       <svg
         viewBox="0 0 360 180"
-        className="logo-kapow logo-kapow-one"
+        className="logo-kapow logo-kapow-one [--kapow-rotate:-8deg]"
         overflow="visible"
       >
         <g transform="translate(20 14) scale(1 0.7)">
@@ -12,7 +15,7 @@ export default function LogoKapowBackground() {
       </svg>
       <svg
         viewBox="0 0 360 180"
-        className="logo-kapow logo-kapow-two"
+        className="logo-kapow logo-kapow-two [--kapow-rotate:9deg] [--kapow-scale-x:-1]"
         overflow="visible"
       >
         <g transform="translate(20 16) scale(1 0.7)">
@@ -21,7 +24,7 @@ export default function LogoKapowBackground() {
       </svg>
       <svg
         viewBox="0 0 360 180"
-        className="logo-kapow logo-kapow-three"
+        className="logo-kapow logo-kapow-three [--kapow-rotate:2deg]"
         overflow="visible"
       >
         <g transform="translate(20 15) scale(1 0.7)">

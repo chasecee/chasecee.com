@@ -21,7 +21,7 @@ export default function ViewSwitcher() {
   if (!active) return null;
 
   return (
-    <div className="mx-auto w-full" style={{ maxWidth: "min(var(--prose-measure), 100%)" }}>
+    <div className="measure">
       <h3>My Skillset</h3>
       <div className="not-prose">
         {categories.length > 1 && (
