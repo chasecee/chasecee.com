@@ -3,10 +3,8 @@
 import * as React from "react";
 import { MORPH_POINT_COUNT, MORPH_VARIANTS } from "./variants/morphData.js";
 import {
-  interpolateNumber,
   interpolatePoints,
   KAPOW_POINT_COUNT,
-  KAPOW_VARIANT_ROUNDNESS,
   KAPOW_VARIANT_PATHS,
   KAPOW_VARIANT_POINTS,
   pointsToKapowPath,
@@ -30,6 +28,8 @@ interface ChaseCeeLogoProps extends React.SVGProps<SVGSVGElement> {
   activeStep: MorphStep | null;
   activePhase: number | null;
   isExploding: boolean;
+  restDurationMs: number;
+  kapowRestEpoch: number;
   onStepEnd: (step: MorphStep) => void;
   mirrorPathRefs?: Array<React.RefObject<(SVGPathElement | null)[]>>;
   pathClassName?: string;
@@ -56,6 +56,8 @@ export default function ChaseCeeLogo({
   activeStep,
   activePhase,
   isExploding,
+  restDurationMs,
+  kapowRestEpoch,
   onStepEnd,
   mirrorPathRefs,
   pathClassName,
@@ -65,8 +67,10 @@ export default function ChaseCeeLogo({
   const kapowPathRef = React.useRef<SVGPathElement | null>(null);
   const underlayPathRefs = React.useRef<(SVGPathElement | null)[]>([]);
   const pathRefs = React.useRef<(SVGPathElement | null)[]>([]);
-  const frameRef = React.useRef(0);
+  const fontFrameRef = React.useRef(0);
+  const kapowFrameRef = React.useRef(0);
   const stepRef = React.useRef<MorphStep | null>(null);
+  const kapowIndexRef = React.useRef(0);
   const onStepEndRef = React.useRef(onStepEnd);
   onStepEndRef.current = onStepEnd;
 
@@ -81,31 +85,35 @@ export default function ChaseCeeLogo({
     [mirrorPathRefs],
   );
 
-  const stop = React.useCallback(() => {
-    if (!frameRef.current) return;
-    window.cancelAnimationFrame(frameRef.current);
-    frameRef.current = 0;
+  const stopFont = React.useCallback(() => {
+    if (!fontFrameRef.current) return;
+    window.cancelAnimationFrame(fontFrameRef.current);
+    fontFrameRef.current = 0;
+  }, []);
+
+  const stopKapow = React.useCallback(() => {
+    if (!kapowFrameRef.current) return;
+    window.cancelAnimationFrame(kapowFrameRef.current);
+    kapowFrameRef.current = 0;
+  }, []);
+
+  const setKapowPath = React.useCallback((index: number) => {
+    kapowPathRef.current?.setAttribute(
+      "d",
+      pointsToKapowPath(KAPOW_VARIANT_POINTS[index], KAPOW_POINT_COUNT, 0),
+    );
   }, []);
 
   React.useEffect(() => {
     if (activeStep) return;
-    stop();
     const variant = MORPH_VARIANTS[currentIndex];
-    kapowPathRef.current?.setAttribute(
-      "d",
-      pointsToKapowPath(
-        KAPOW_VARIANT_POINTS[currentIndex],
-        KAPOW_POINT_COUNT,
-        KAPOW_VARIANT_ROUNDNESS[currentIndex],
-      ),
-    );
     variant.paths.forEach((pathValue, index) => {
       setPathValue(index, pathValue);
     });
-  }, [activeStep, currentIndex, setPathValue, stop]);
+  }, [activeStep, currentIndex, setPathValue]);
 
   React.useEffect(() => {
-    stop();
+    stopFont();
     if (!activeStep) return;
     stepRef.current = activeStep;
     const from = MORPH_VARIANTS[activeStep.fromIndex];
@@ -116,20 +124,6 @@ export default function ChaseCeeLogo({
       const elapsed = now - startedAt;
       const raw = Math.min(elapsed / activeStep.durationMs, 1);
       const progress = ease(raw);
-      const kapowPoints = interpolatePoints(
-        KAPOW_VARIANT_POINTS[activeStep.fromIndex],
-        KAPOW_VARIANT_POINTS[activeStep.toIndex],
-        progress,
-      );
-      const kapowRoundness = interpolateNumber(
-        KAPOW_VARIANT_ROUNDNESS[activeStep.fromIndex],
-        KAPOW_VARIANT_ROUNDNESS[activeStep.toIndex],
-        progress,
-      );
-      kapowPathRef.current?.setAttribute(
-        "d",
-        pointsToKapowPath(kapowPoints, KAPOW_POINT_COUNT, kapowRoundness),
-      );
       from.glyphs.forEach((points, index) => {
         const d = pointsToQuadraticPath(
           interpolatePoints(points, to.glyphs[index], progress),
@@ -138,37 +132,92 @@ export default function ChaseCeeLogo({
         setPathValue(index, d);
       });
       if (raw >= 1) {
-        kapowPathRef.current?.setAttribute(
-          "d",
-          pointsToKapowPath(
-            KAPOW_VARIANT_POINTS[activeStep.toIndex],
-            KAPOW_POINT_COUNT,
-            KAPOW_VARIANT_ROUNDNESS[activeStep.toIndex],
-          ),
-        );
         to.paths.forEach((pathValue, index) => {
           setPathValue(index, pathValue);
         });
         persistVariant(activeStep.toIndex);
         stepRef.current = null;
-        frameRef.current = 0;
+        fontFrameRef.current = 0;
         onStepEndRef.current(activeStep);
         return;
       }
-      frameRef.current = window.requestAnimationFrame(tick);
+      fontFrameRef.current = window.requestAnimationFrame(tick);
     };
 
-    frameRef.current = window.requestAnimationFrame(tick);
-    return stop;
-  }, [activeStep, setPathValue, stop]);
+    fontFrameRef.current = window.requestAnimationFrame(tick);
+    return stopFont;
+  }, [activeStep, setPathValue, stopFont]);
 
-  React.useEffect(() => stop, [stop]);
+  React.useEffect(() => {
+    if (kapowRestEpoch === 0) return;
+
+    stopKapow();
+    const kapowCount = KAPOW_VARIANT_POINTS.length;
+    const fromKapow = kapowIndexRef.current % kapowCount;
+    const toKapow = (fromKapow + 1) % kapowCount;
+    const startedAt = performance.now();
+    let settled = false;
+
+    const settle = (index: number) => {
+      if (settled) return;
+      settled = true;
+      kapowIndexRef.current = index;
+      setKapowPath(index);
+      kapowFrameRef.current = 0;
+    };
+
+    const tick = (now: number) => {
+      const elapsed = now - startedAt;
+      const raw = Math.min(elapsed / restDurationMs, 1);
+      const progress = Math.min(ease(raw), 1);
+      kapowPathRef.current?.setAttribute(
+        "d",
+        pointsToKapowPath(
+          interpolatePoints(
+            KAPOW_VARIANT_POINTS[fromKapow],
+            KAPOW_VARIANT_POINTS[toKapow],
+            progress,
+          ),
+          KAPOW_POINT_COUNT,
+          0,
+        ),
+      );
+      if (raw >= 1) {
+        settle(toKapow);
+        return;
+      }
+      kapowFrameRef.current = window.requestAnimationFrame(tick);
+    };
+
+    kapowFrameRef.current = window.requestAnimationFrame(tick);
+    return () => {
+      stopKapow();
+      settle(toKapow);
+    };
+  }, [kapowRestEpoch, restDurationMs, setKapowPath, stopKapow]);
+
+  React.useEffect(
+    () => () => {
+      stopFont();
+      stopKapow();
+    },
+    [stopFont, stopKapow],
+  );
+
+  const phaseIndex =
+    activePhase !== null
+      ? activePhase
+      : activeStep
+        ? activeStep.fromIndex % 4
+        : isExploding
+          ? 0
+          : null;
 
   const kapowClassName = [
     "logo-kapow-path",
-    activePhase !== null || isExploding || activeStep ? "logo-kapow-path--active" : "",
-    activePhase !== null ? `logo-kapow-path--phase-${activePhase}` : "",
-    isExploding ? "logo-kapow-path--phase-0 logo-kapow-path--explode" : "",
+    phaseIndex !== null || isExploding || activeStep ? "logo-kapow-path--active" : "",
+    phaseIndex !== null ? `logo-kapow-path--phase-${phaseIndex}` : "",
+    isExploding ? "logo-kapow-path--explode" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -185,12 +234,14 @@ export default function ChaseCeeLogo({
       className={["logo-wordmark-svg", className].filter(Boolean).join(" ")}
       {...props}
     >
-      <path
-        ref={kapowPathRef}
-        d={KAPOW_VARIANT_PATHS[currentIndex]}
-        suppressHydrationWarning
-        className={kapowClassName}
-      />
+      <g className="logo-kapow-unskew">
+        <path
+          ref={kapowPathRef}
+          d={KAPOW_VARIANT_PATHS[0]}
+          suppressHydrationWarning
+          className={kapowClassName}
+        />
+      </g>
       {MORPH_VARIANTS[initialIndex].paths.map((pathValue, index) => (
         <path
           key={`underlay-${index}`}
@@ -199,7 +250,6 @@ export default function ChaseCeeLogo({
           }}
           d={pathValue}
           suppressHydrationWarning
-          fill="none"
           data-chasecee-logo-path-index={index}
           className="logo-wordmark-underlay-path"
         />

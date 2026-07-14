@@ -74,6 +74,7 @@ export default function HeaderLogo() {
   const [restDurationMs, setRestDurationMs] = useState(720);
   const [morphDurationMs, setMorphDurationMs] = useState(140);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [kapowRestEpoch, setKapowRestEpoch] = useState(0);
   const currentFontId = MORPH_VARIANTS[currentIndex]?.id ?? MORPH_VARIANTS[0].id;
 
   const maybeNavigate = useCallback(() => {
@@ -126,6 +127,7 @@ export default function HeaderLogo() {
     if (activeStep || prefersReducedMotion || pendingNavigateRef.current) return;
     stopRest();
     setActivePhase(currentIndexRef.current % 4);
+    setKapowRestEpoch((epoch) => epoch + 1);
     restTimerRef.current = window.setTimeout(() => {
       restTimerRef.current = null;
       if (!hoverRef.current || pendingNavigateRef.current) return;
@@ -360,6 +362,8 @@ export default function HeaderLogo() {
                 activeStep={activeStep}
                 activePhase={activePhase}
                 isExploding={isExploding}
+                restDurationMs={restDurationMs}
+                kapowRestEpoch={kapowRestEpoch}
                 onStepEnd={handleStepEnd}
                 mirrorPathRefs={mirrorPathRefs}
               />

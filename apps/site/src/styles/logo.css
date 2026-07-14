@@ -5,12 +5,18 @@
   --logo-morph-duration: 140ms;
 }
 
+.logo-kapow-unskew {
+  transform: skew(3.5deg, 4deg);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
 .logo-kapow-path {
   @apply fill-transparent stroke-current text-yellow-400 opacity-0 transition-[opacity,color,fill,stroke,transform] duration-[200ms] will-change-[transform,opacity];
   stroke-width: 4;
-  stroke-linecap: round;
+  stroke-linecap: butt;
   stroke-linejoin: miter;
-  stroke-miterlimit: 1;
+  stroke-miterlimit: 32;
   transform-box: fill-box;
   transform-origin: center;
 }
@@ -104,11 +110,12 @@
   }
 
   .logo-wordmark-underlay-path {
-    fill: none;
-    stroke: var(--color-neutral-900);
-    stroke-width: calc(var(--site-border-width) * 2);
+    fill: #000;
+    stroke: #000;
+    stroke-width: calc(var(--site-border-width) * 3);
     stroke-linejoin: round;
     stroke-linecap: round;
+    paint-order: stroke fill;
   }
 
   &:active {

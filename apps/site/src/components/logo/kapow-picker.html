@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kapow Picker</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        padding: 32px;
+        background: #101010;
+        color: #f5f5f5;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+      }
+
+      main {
+        width: min(1100px, 100%);
+        margin: 0 auto;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 22px;
+        font-weight: 600;
+      }
+
+      .lede {
+        margin: 0 0 28px;
+        color: #999;
+        max-width: 52ch;
+        line-height: 1.45;
+      }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 24px;
+      }
+
+      button {
+        appearance: none;
+        border: 1px solid #555;
+        background: #1a1a1a;
+        color: #f5f5f5;
+        padding: 8px 14px;
+        font: inherit;
+        font-size: 13px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        border-color: #888;
+      }
+
+      button.primary {
+        border-color: #facc15;
+        color: #facc15;
+      }
+
+      .count {
+        color: #999;
+        font-size: 13px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 16px;
+      }
+
+      .card {
+        position: relative;
+        border: 1px solid #333;
+        background: #161616;
+        padding: 14px;
+        cursor: pointer;
+      }
+
+      .card:hover {
+        border-color: #666;
+      }
+
+      .card.selected {
+        border-color: #facc15;
+        background: #1c1a10;
+      }
+
+      .card header {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .card input {
+        margin-top: 3px;
+        accent-color: #facc15;
+      }
+
+      .meta {
+        min-width: 0;
+      }
+
+      .meta strong {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .meta span {
+        display: block;
+        margin-top: 2px;
+        color: #888;
+        font-size: 11px;
+        line-height: 1.35;
+      }
+
+      .stage {
+        position: relative;
+        height: 110px;
+        display: grid;
+        place-items: center;
+        overflow: visible;
+        background: #0c0c0c;
+        border: 1px solid #2a2a2a;
+      }
+
+      .stage svg {
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+      }
+
+      .kapow {
+        fill: none;
+        stroke: #4ade80;
+        stroke-width: 3.5;
+        stroke-linejoin: miter;
+        stroke-linecap: butt;
+        stroke-miterlimit: 32;
+      }
+
+      .word {
+        fill: #f5f5f5;
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+        transform: skew(-3.5deg, -4deg);
+        transform-origin: center;
+        transform-box: fill-box;
+      }
+
+      pre {
+        margin: 28px 0 0;
+        padding: 16px;
+        border: 1px solid #333;
+        background: #0c0c0c;
+        color: #ddd;
+        font-size: 11px;
+        line-height: 1.45;
+        overflow: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+        min-height: 4rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Kapow picker</h1>
+      <p class="lede">
+        Twelve fixed 24-point bursts. Check the ones that feel fun next to the
+        wordmark. Copy selected params when you are ready — those can replace the
+        current kapow variants.
+      </p>
+
+      <div class="toolbar">
+        <button type="button" id="select-none">Clear</button>
+        <button type="button" id="select-all">Select all</button>
+        <button type="button" class="primary" id="copy">Copy selected JSON</button>
+        <span class="count" id="count">0 selected</span>
+      </div>
+
+      <div class="grid" id="grid"></div>
+      <pre id="out">Select favorites to preview JSON here.</pre>
+    </main>
+
+    <script>
+      const VIEW_W = 402;
+      const VIEW_H = 85;
+      const POINT_COUNT = 24;
+      const TAU = Math.PI * 2;
+      const CX = VIEW_W / 2;
+      const CY = VIEW_H / 2;
+
+      const noise = (index, seed) => {
+        const value = Math.sin(index * 12.9898 + seed * 78.233) * 43758.5453;
+        return value - Math.floor(value);
+      };
+
+      const round = (value) => Number(value.toFixed(2));
+
+      const pointsToPath = (points) => {
+        let path = `M${round(points[0])} ${round(points[1])}`;
+        for (let i = 1; i < POINT_COUNT; i++) {
+          path += `L${round(points[i * 2])} ${round(points[i * 2 + 1])}`;
+        }
+        return path + "Z";
+      };
+
+      const fromRadii = (radii, xScale, yScale, phase) => {
+        const points = [];
+        for (let i = 0; i < POINT_COUNT; i++) {
+          const t = (i / POINT_COUNT) * TAU + phase;
+          const r = radii[i];
+          points.push(round(CX + Math.cos(t) * r * xScale));
+          points.push(round(CY + Math.sin(t) * r * yScale));
+        }
+        return points;
+      };
+
+      const tipValley = ({
+        base,
+        tip,
+        valley,
+        xScale,
+        yScale,
+        phase,
+        seed,
+        tipJitter = 0,
+        valleyJitter = 0,
+        tipBoostEvery = 0,
+        tipBoost = 0,
+      }) => {
+        const radii = [];
+        for (let i = 0; i < POINT_COUNT; i++) {
+          const isTip = i % 2 === 0;
+          let r = isTip ? base + tip : base - valley;
+          if (isTip && tipBoostEvery > 0 && (i / 2) % tipBoostEvery === 0) {
+            r += tipBoost;
+          }
+          if (isTip) r += (noise(i + 1, seed) * 2 - 1) * tipJitter;
+          else r += (noise(i + 17, seed) * 2 - 1) * valleyJitter;
+          radii.push(r);
+        }
+        return fromRadii(radii, xScale, yScale, phase);
+      };
+
+      const candidates = [
+        {
+          id: "classic-burst",
+          name: "Classic burst",
+          note: "Even comic tips, deep valleys",
+          build: () =>
+            tipValley({
+              base: 140,
+              tip: 48,
+              valley: 28,
+              xScale: 1.05,
+              yScale: 0.34,
+              phase: 0.15,
+              seed: 11,
+              tipJitter: 2,
+              valleyJitter: 1,
+            }),
+        },
+        {
+          id: "needle-storm",
+          name: "Needle storm",
+          note: "Long thin spikes",
+          build: () =>
+            tipValley({
+              base: 132,
+              tip: 62,
+              valley: 18,
+              xScale: 1.08,
+              yScale: 0.3,
+              phase: 0.4,
+              seed: 23,
+              tipJitter: 6,
+              valleyJitter: 2,
+            }),
+        },
+        {
+          id: "chunky-boom",
+          name: "Chunky boom",
+          note: "Shorter fat spikes",
+          build: () =>
+            tipValley({
+              base: 148,
+              tip: 28,
+              valley: 34,
+              xScale: 1.02,
+              yScale: 0.38,
+              phase: 0.8,
+              seed: 37,
+              tipJitter: 3,
+              valleyJitter: 2,
+            }),
+        },
+        {
+          id: "accent-spikes",
+          name: "Accent spikes",
+          note: "Every 3rd tip overshoots",
+          build: () =>
+            tipValley({
+              base: 138,
+              tip: 36,
+              valley: 24,
+              xScale: 1.06,
+              yScale: 0.32,
+              phase: 1.1,
+              seed: 41,
+              tipJitter: 2,
+              valleyJitter: 1,
+              tipBoostEvery: 3,
+              tipBoost: 34,
+            }),
+        },
+        {
+          id: "saw-blade",
+          name: "Saw blade",
+          note: "Asymmetric tip/valley steps",
+          build: () => {
+            const radii = [];
+            for (let i = 0; i < POINT_COUNT; i++) {
+              const t = i / POINT_COUNT;
+              const saw = ((t * 12) % 1) * 70;
+              radii.push(120 + saw + (noise(i, 53) * 2 - 1) * 4);
+            }
+            return fromRadii(radii, 1.04, 0.33, 0.2);
+          },
+        },
+        {
+          id: "petal-burst",
+          name: "Petal burst",
+          note: "Wide soft-ish lobes via tip pairs",
+          build: () => {
+            const radii = [];
+            for (let i = 0; i < POINT_COUNT; i++) {
+              const lobe = Math.abs(Math.sin((i / POINT_COUNT) * Math.PI * 6));
+              radii.push(118 + lobe * 58 + (noise(i, 67) * 2 - 1) * 3);
+            }
+            return fromRadii(radii, 1.05, 0.36, 0.05);
+          },
+        },
+        {
+          id: "lightning",
+          name: "Lightning",
+          note: "Chaotic radii, still closed",
+          build: () => {
+            const radii = [];
+            for (let i = 0; i < POINT_COUNT; i++) {
+              const jagged = noise(i, 71) > 0.55 ? 58 : noise(i, 72) > 0.4 ? 22 : -12;
+              radii.push(136 + jagged + (noise(i, 73) * 2 - 1) * 8);
+            }
+            return fromRadii(radii, 1.07, 0.31, 0.9);
+          },
+        },
+        {
+          id: "flat-comic",
+          name: "Flat comic",
+          note: "Very horizontal stamp",
+          build: () =>
+            tipValley({
+              base: 150,
+              tip: 40,
+              valley: 26,
+              xScale: 1.12,
+              yScale: 0.22,
+              phase: 0.3,
+              seed: 79,
+              tipJitter: 3,
+              valleyJitter: 1,
+            }),
+        },
+        {
+          id: "rounder-burst",
+          name: "Rounder burst",
+          note: "Less flattened, more circular",
+          build: () =>
+            tipValley({
+              base: 118,
+              tip: 42,
+              valley: 22,
+              xScale: 0.92,
+              yScale: 0.55,
+              phase: 0.55,
+              seed: 83,
+              tipJitter: 2,
+              valleyJitter: 1,
+            }),
+        },
+        {
+          id: "double-hit",
+          name: "Double hit",
+          note: "Paired tip lengths",
+          build: () => {
+            const radii = [];
+            for (let i = 0; i < POINT_COUNT; i++) {
+              const isTip = i % 2 === 0;
+              const pair = Math.floor(i / 4) % 2 === 0;
+              if (!isTip) {
+                radii.push(118 + (noise(i, 89) * 2 - 1) * 2);
+                continue;
+              }
+              radii.push((pair ? 188 : 152) + (noise(i, 90) * 2 - 1) * 4);
+            }
+            return fromRadii(radii, 1.05, 0.33, 0.1);
+          },
+        },
+        {
+          id: "shard-ring",
+          name: "Shard ring",
+          note: "Uneven tip lengths around the ring",
+          build: () => {
+            const tipLens = [70, 34, 52, 28, 64, 30, 48, 36, 58, 26, 44, 40];
+            const radii = [];
+            for (let i = 0; i < POINT_COUNT; i++) {
+              if (i % 2 === 0) radii.push(130 + tipLens[i / 2]);
+              else radii.push(112 + (noise(i, 97) * 2 - 1) * 3);
+            }
+            return fromRadii(radii, 1.06, 0.32, 0.25);
+          },
+        },
+        {
+          id: "staccato",
+          name: "Staccato",
+          note: "Tight valleys, punchy tips",
+          build: () =>
+            tipValley({
+              base: 136,
+              tip: 54,
+              valley: 40,
+              xScale: 1.04,
+              yScale: 0.3,
+              phase: 1.7,
+              seed: 101,
+              tipJitter: 5,
+              valleyJitter: 3,
+              tipBoostEvery: 4,
+              tipBoost: 18,
+            }),
+        },
+      ];
+
+      const selected = new Set();
+      const grid = document.getElementById("grid");
+      const out = document.getElementById("out");
+      const countEl = document.getElementById("count");
+
+      const serialize = () =>
+        candidates
+          .filter((c) => selected.has(c.id))
+          .map((c) => {
+            const points = c.build();
+            return {
+              id: c.id,
+              name: c.name,
+              note: c.note,
+              pointCount: POINT_COUNT,
+              path: pointsToPath(points),
+              points,
+            };
+          });
+
+      const renderOut = () => {
+        countEl.textContent = `${selected.size} selected`;
+        const data = serialize();
+        out.textContent =
+          data.length === 0
+            ? "Select favorites to preview JSON here."
+            : JSON.stringify(data, null, 2);
+      };
+
+      const toggle = (id, on) => {
+        if (on) selected.add(id);
+        else selected.delete(id);
+        const card = grid.querySelector(`[data-id="${id}"]`);
+        card?.classList.toggle("selected", on);
+        const input = card?.querySelector("input");
+        if (input) input.checked = on;
+        renderOut();
+      };
+
+      for (const candidate of candidates) {
+        const points = candidate.build();
+        const path = pointsToPath(points);
+        const card = document.createElement("label");
+        card.className = "card";
+        card.dataset.id = candidate.id;
+        card.innerHTML = `
+          <header>
+            <input type="checkbox" />
+            <div class="meta">
+              <strong>${candidate.name}</strong>
+              <span>${candidate.note}</span>
+            </div>
+          </header>
+          <div class="stage">
+            <svg viewBox="0 0 ${VIEW_W} ${VIEW_H}" overflow="visible">
+              <path class="kapow" d="${path}"></path>
+              <text class="word" x="${CX}" y="${CY + 10}" text-anchor="middle">CHASE CEE</text>
+            </svg>
+          </div>
+        `;
+        const input = card.querySelector("input");
+        input.addEventListener("change", () => toggle(candidate.id, input.checked));
+        grid.appendChild(card);
+      }
+
+      document.getElementById("select-none").addEventListener("click", () => {
+        for (const id of [...selected]) toggle(id, false);
+      });
+
+      document.getElementById("select-all").addEventListener("click", () => {
+        for (const c of candidates) toggle(c.id, true);
+      });
+
+      document.getElementById("copy").addEventListener("click", async () => {
+        const data = serialize();
+        if (!data.length) return;
+        await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+        const btn = document.getElementById("copy");
+        const prev = btn.textContent;
+        btn.textContent = "Copied";
+        setTimeout(() => {
+          btn.textContent = prev;
+        }, 1200);
+      });
+    </script>
+  </body>
+</html>
