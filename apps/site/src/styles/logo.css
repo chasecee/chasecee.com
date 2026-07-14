@@ -20,12 +20,6 @@
   stroke-miterlimit: 32;
   transform-box: fill-box;
   transform-origin: center;
-}
-
-.logo-kapow-path--active {
-  opacity: 1;
-  fill: currentColor;
-  stroke: transparent;
   -webkit-mask-image: url("/halftone/halftone-circle-r2-s4-punch.svg");
   mask-image: url("/halftone/halftone-circle-r2-s4-punch.svg");
   -webkit-mask-size: var(--logo-kapow-halftone-size) var(--logo-kapow-halftone-size);
@@ -38,6 +32,12 @@
   mask-origin: view-box;
   -webkit-mask-clip: no-clip;
   mask-clip: no-clip;
+}
+
+.logo-kapow-path--active {
+  opacity: 1;
+  fill: currentColor;
+  stroke: transparent;
 }
 
 .logo-kapow-path--phase-0 {

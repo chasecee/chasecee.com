@@ -12,7 +12,6 @@ export type {
   ColorPalette,
   ButtonProps,
   ProjectCardProps,
-  ErrorDisplayProps,
 } from "./UI";
 export type {
   LinkField,

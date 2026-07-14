@@ -1,23 +1,17 @@
-"use client";
-
-import { startTransition, useId, useMemo, useState } from "react";
-import { useSkillsData } from "@/src/hooks/useSkillsData";
+import { startTransition, useId, useState } from "react";
+import type { Skill } from "@/types";
 import ListView from "./ListView";
-import { ErrorDisplay } from "./ErrorDisplay";
 import { sortSkills } from "./utils";
 
-export default function ViewSwitcher() {
-  const { data: skillsData, error } = useSkillsData();
+export default function ViewSwitcher({ skills }: { skills: Skill }) {
   const reactId = useId();
-  const categories = useMemo(
-    () => (skillsData?.children ? sortSkills([...skillsData.children]) : []),
-    [skillsData?.children],
+  const [categories] = useState(() =>
+    sortSkills([...(skills.children ?? [])]),
   );
-  const [activeName, setActiveName] = useState<string | null>(null);
+  const [activeName, setActiveName] = useState(categories[0]?.name ?? null);
   const active =
     categories.find((category) => category.name === activeName) ?? categories[0];
 
-  if (error) return <ErrorDisplay error={error} />;
   if (!active) return null;
 
   return (

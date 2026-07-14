@@ -10,6 +10,11 @@ import {
   pointsToKapowPath,
   pointsToQuadraticPath,
 } from "./kapowMorph";
+import {
+  DEFAULT_MORPH_BEZIER,
+  sampleCubicBezier,
+  type EaseBezier,
+} from "./morphEase";
 import { LOGO_VIEW_HEIGHT, LOGO_VIEW_WIDTH } from "./silhouette";
 
 const STORAGE_KEY = "chasecee:logo-font";
@@ -30,19 +35,12 @@ interface ChaseCeeLogoProps extends React.SVGProps<SVGSVGElement> {
   isExploding: boolean;
   restDurationMs: number;
   kapowRestEpoch: number;
+  easeBezier?: EaseBezier;
+  kapowStartOffsetMs?: number;
   onStepEnd: (step: MorphStep) => void;
   mirrorPathRefs?: Array<React.RefObject<(SVGPathElement | null)[]>>;
   pathClassName?: string;
 }
-
-const ease = (progress: number) => {
-  const overshoot = 0.38;
-  return (
-    1 +
-    (overshoot + 1) * Math.pow(progress - 1, 3) +
-    overshoot * Math.pow(progress - 1, 2)
-  );
-};
 
 const persistVariant = (index: number) => {
   const variant = MORPH_VARIANTS[index];
@@ -58,6 +56,8 @@ export default function ChaseCeeLogo({
   isExploding,
   restDurationMs,
   kapowRestEpoch,
+  easeBezier = DEFAULT_MORPH_BEZIER,
+  kapowStartOffsetMs = 0,
   onStepEnd,
   mirrorPathRefs,
   pathClassName,
@@ -71,7 +71,13 @@ export default function ChaseCeeLogo({
   const kapowFrameRef = React.useRef(0);
   const stepRef = React.useRef<MorphStep | null>(null);
   const kapowIndexRef = React.useRef(0);
+  const easeBezierRef = React.useRef(easeBezier);
+  const kapowStartOffsetRef = React.useRef(kapowStartOffsetMs);
+  const restDurationRef = React.useRef(restDurationMs);
   const onStepEndRef = React.useRef(onStepEnd);
+  easeBezierRef.current = easeBezier;
+  kapowStartOffsetRef.current = kapowStartOffsetMs;
+  restDurationRef.current = restDurationMs;
   onStepEndRef.current = onStepEnd;
 
   const setPathValue = React.useCallback(
@@ -123,7 +129,7 @@ export default function ChaseCeeLogo({
     const tick = (now: number) => {
       const elapsed = now - startedAt;
       const raw = Math.min(elapsed / activeStep.durationMs, 1);
-      const progress = ease(raw);
+      const progress = sampleCubicBezier(raw, easeBezierRef.current);
       from.glyphs.forEach((points, index) => {
         const d = pointsToQuadraticPath(
           interpolatePoints(points, to.glyphs[index], progress),
@@ -156,20 +162,18 @@ export default function ChaseCeeLogo({
     const fromKapow = kapowIndexRef.current % kapowCount;
     const toKapow = (fromKapow + 1) % kapowCount;
     const startedAt = performance.now();
-    let settled = false;
-
-    const settle = (index: number) => {
-      if (settled) return;
-      settled = true;
-      kapowIndexRef.current = index;
-      setKapowPath(index);
-      kapowFrameRef.current = 0;
-    };
+    let completed = false;
 
     const tick = (now: number) => {
+      const restMs = restDurationRef.current;
       const elapsed = now - startedAt;
-      const raw = Math.min(elapsed / restDurationMs, 1);
-      const progress = Math.min(ease(raw), 1);
+      const offset = Math.min(
+        Math.max(kapowStartOffsetRef.current, 0),
+        Math.max(restMs - 1, 0),
+      );
+      const morphMs = Math.max(restMs - offset, 1);
+      const raw = Math.min(Math.max(elapsed - offset, 0) / morphMs, 1);
+      const progress = Math.min(sampleCubicBezier(raw, easeBezierRef.current), 1);
       kapowPathRef.current?.setAttribute(
         "d",
         pointsToKapowPath(
@@ -182,8 +186,11 @@ export default function ChaseCeeLogo({
           0,
         ),
       );
-      if (raw >= 1) {
-        settle(toKapow);
+      if (elapsed - offset >= morphMs) {
+        completed = true;
+        kapowIndexRef.current = toKapow;
+        setKapowPath(toKapow);
+        kapowFrameRef.current = 0;
         return;
       }
       kapowFrameRef.current = window.requestAnimationFrame(tick);
@@ -192,9 +199,11 @@ export default function ChaseCeeLogo({
     kapowFrameRef.current = window.requestAnimationFrame(tick);
     return () => {
       stopKapow();
-      settle(toKapow);
+      if (!completed) {
+        setKapowPath(fromKapow);
+      }
     };
-  }, [kapowRestEpoch, restDurationMs, setKapowPath, stopKapow]);
+  }, [kapowRestEpoch, setKapowPath, stopKapow]);
 
   React.useEffect(
     () => () => {

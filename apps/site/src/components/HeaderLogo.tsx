@@ -12,6 +12,11 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import ChaseCeeLogo, { type MorphStep } from "./logo/ChaseCeeLogo";
+import LogoMorphDevControls from "./logo/LogoMorphDevControls";
+import {
+  DEFAULT_MORPH_BEZIER,
+  type EaseBezier,
+} from "./logo/morphEase";
 import { LOGO_VIEW_HEIGHT, LOGO_VIEW_WIDTH } from "./logo/silhouette";
 import { MORPH_VARIANTS } from "./logo/variants/morphData.js";
 
@@ -25,7 +30,7 @@ const parseCssDurationMs = (raw: string) => {
 
 const STORAGE_KEY = "chasecee:logo-font";
 const KAPOW_EXPLODE_DURATION_MS = 440;
-const FONT_CYCLE = [0, 5, 2, 3, 4] as const;
+const FONT_CYCLE = [0, 6, 9, 5, 3, 7, 8, 2, 4] as const;
 
 type StrokeBox = {
   left: number;
@@ -75,6 +80,11 @@ export default function HeaderLogo() {
   const [morphDurationMs, setMorphDurationMs] = useState(140);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [kapowRestEpoch, setKapowRestEpoch] = useState(0);
+  const [easeBezier, setEaseBezier] = useState<EaseBezier>(() => [
+    ...DEFAULT_MORPH_BEZIER,
+  ]);
+  const [kapowStartOffsetMs, setKapowStartOffsetMs] = useState(0);
+  const [forceHover, setForceHover] = useState(false);
   const currentFontId = MORPH_VARIANTS[currentIndex]?.id ?? MORPH_VARIANTS[0].id;
 
   const maybeNavigate = useCallback(() => {
@@ -123,6 +133,10 @@ export default function HeaderLogo() {
     setActiveStep(step);
   }, [activeStep, morphDurationMs, prefersReducedMotion]);
 
+  const stopKapow = useCallback(() => {
+    setKapowRestEpoch(0);
+  }, []);
+
   const startRest = useCallback(() => {
     if (activeStep || prefersReducedMotion || pendingNavigateRef.current) return;
     stopRest();
@@ -143,11 +157,12 @@ export default function HeaderLogo() {
       setIsHovered(false);
       setActivePhase(null);
       stopRest();
+      stopKapow();
     };
     onSwap();
     document.addEventListener("astro:after-swap", onSwap);
     return () => document.removeEventListener("astro:after-swap", onSwap);
-  }, [stopRest]);
+  }, [stopRest, stopKapow]);
 
   useLayoutEffect(() => {
     const paths = MORPH_VARIANTS[currentIndexRef.current]?.paths;
@@ -223,9 +238,11 @@ export default function HeaderLogo() {
   }, [stopRest]);
 
   useEffect(() => {
-    hoverRef.current = isHovered;
-    if (!isHovered) {
+    const hovered = isHovered || forceHover;
+    hoverRef.current = hovered;
+    if (!hovered) {
       stopRest();
+      stopKapow();
       setActivePhase(null);
       return;
     }
@@ -233,7 +250,15 @@ export default function HeaderLogo() {
     if (!activeStep && !restTimerRef.current && !prefersReducedMotion) {
       startRest();
     }
-  }, [isHovered, activeStep, prefersReducedMotion, startRest, stopRest]);
+  }, [
+    isHovered,
+    forceHover,
+    activeStep,
+    prefersReducedMotion,
+    startRest,
+    stopRest,
+    stopKapow,
+  ]);
 
   const handleStepEnd = useCallback(
     (step: MorphStep) => {
@@ -261,8 +286,9 @@ export default function HeaderLogo() {
     if (prefersReducedMotion) return;
     event.preventDefault();
     setIsHovered(false);
-    hoverRef.current = false;
+    hoverRef.current = forceHover;
     stopRest();
+    stopKapow();
     setActivePhase(null);
     pendingNavigateRef.current = !isHomePath();
     startExplosion();
@@ -342,40 +368,66 @@ export default function HeaderLogo() {
     <>
       {borderPortal}
       {borderInnerPortal}
-      <a
-        onClick={handleLogoClick}
+      <div
+        className="relative"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className="header__title group relative flex flex-row items-center gap-2"
-        href="/"
+        onPointerDown={(event) => {
+          if (event.button !== 0) return;
+          if (prefersReducedMotion) return;
+          setIsHovered(true);
+        }}
+        onPointerCancel={() => {
+          if (forceHover) return;
+          setIsHovered(false);
+        }}
       >
-        <div className="sr-only">Chase Cee Logo</div>
-        <div
-          ref={kapowContainerRef}
-          className="logo-kapow-container relative min-h-[var(--site-header-height)] w-[12rem] md:w-[15rem] overflow-visible before:absolute before:-inset-x-[18px] before:-inset-y-[15px] before:content-['']"
+        <a
+          onClick={handleLogoClick}
+          className="header__title group relative flex flex-row items-center gap-2"
+          href="/"
         >
-          <div className="logo-wordmark-core relative z-5 h-full w-full overflow-visible">
-            <div className="logo-wordmark absolute top-0 left-0 w-full origin-center [transform:translateY(0%)_skew(-3.5deg,-4deg)]">
-              <ChaseCeeLogo
-                initialIndex={initialIndex}
-                currentIndex={currentIndex}
-                activeStep={activeStep}
-                activePhase={activePhase}
-                isExploding={isExploding}
-                restDurationMs={restDurationMs}
-                kapowRestEpoch={kapowRestEpoch}
-                onStepEnd={handleStepEnd}
-                mirrorPathRefs={mirrorPathRefs}
-              />
+          <div className="sr-only">Chase Cee Logo</div>
+          <div
+            ref={kapowContainerRef}
+            className="logo-kapow-container relative min-h-[var(--site-header-height)] w-[12rem] md:w-[15rem] overflow-visible before:absolute before:-inset-x-[18px] before:-inset-y-[15px] before:content-['']"
+          >
+            <div className="logo-wordmark-core relative z-5 h-full w-full overflow-visible">
+              <div className="logo-wordmark absolute top-0 left-0 w-full origin-center [transform:translateY(0%)_skew(-3.5deg,-4deg)]">
+                <ChaseCeeLogo
+                  initialIndex={initialIndex}
+                  currentIndex={currentIndex}
+                  activeStep={activeStep}
+                  activePhase={activePhase}
+                  isExploding={isExploding}
+                  restDurationMs={restDurationMs}
+                  kapowRestEpoch={kapowRestEpoch}
+                  easeBezier={easeBezier}
+                  kapowStartOffsetMs={kapowStartOffsetMs}
+                  onStepEnd={handleStepEnd}
+                  mirrorPathRefs={mirrorPathRefs}
+                />
+              </div>
             </div>
+            {import.meta.env.DEV && (
+              <span className="pointer-events-none absolute top-1/2 left-full z-20 ml-2 -translate-y-1/2 rounded border border-neutral-500/60 bg-neutral-50/90 px-2 py-1 font-mono text-[10px] leading-none text-neutral-700 dark:border-neutral-600 dark:bg-neutral-900/90 dark:text-neutral-200">
+                {currentFontId}
+              </span>
+            )}
           </div>
-          {import.meta.env.DEV && (
-            <span className="pointer-events-none absolute top-1/2 left-full z-20 ml-2 -translate-y-1/2 rounded border border-neutral-500/60 bg-neutral-50/90 px-2 py-1 font-mono text-[10px] leading-none text-neutral-700 dark:border-neutral-600 dark:bg-neutral-900/90 dark:text-neutral-200">
-              {currentFontId}
-            </span>
-          )}
-        </div>
-      </a>
+        </a>
+        {import.meta.env.DEV && (
+          <LogoMorphDevControls
+            bezier={easeBezier}
+            kapowStartOffsetMs={kapowStartOffsetMs}
+            restDurationMs={restDurationMs}
+            forceHover={forceHover}
+            onBezierChange={setEaseBezier}
+            onKapowStartOffsetChange={setKapowStartOffsetMs}
+            onForceHoverChange={setForceHover}
+          />
+        )}
+      </div>
     </>
   );
 }

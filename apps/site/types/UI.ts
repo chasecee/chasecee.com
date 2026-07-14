@@ -21,7 +21,3 @@ export interface ProjectCardProps {
   project: import("./Project").Project;
   index?: number;
 }
-
-export interface ErrorDisplayProps {
-  error: string;
-}

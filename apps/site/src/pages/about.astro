@@ -3,6 +3,7 @@ import SiteLayout from "@/src/layouts/SiteLayout.astro";
 import Container from "@/src/components/Container.astro";
 import ProfilePic from "@/src/components/about/ProfilePic";
 import ViewSwitcher from "@/src/components/about/skills/ViewSwitcher";
+import skills from "@/src/data/skills.json";
 
 export const prerender = false;
 ---
@@ -49,7 +50,7 @@ export const prerender = false;
       </p>
 
       <div class="mb-10">
-        <ViewSwitcher client:visible />
+        <ViewSwitcher client:visible skills={skills} />
       </div>
 
       <p>
