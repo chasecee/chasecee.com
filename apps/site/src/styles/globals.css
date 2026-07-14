@@ -257,7 +257,7 @@ body.pt-8 {
 }
 
 .logo-kapow {
-  @apply absolute top-1/2 left-1/2 h-auto w-[285%] max-w-none opacity-0 origin-center overflow-visible text-yellow-400 transition-colors duration-[180ms] will-change-[transform,opacity];
+  @apply absolute top-1/2 left-1/2 h-auto w-[228%] max-w-none opacity-0 origin-center overflow-visible text-yellow-400 transition-colors duration-[180ms] will-change-[transform,opacity];
   transform: translate(
       calc(-50% + var(--kapow-offset-x, 0px)),
       calc(-50% + var(--kapow-offset-y, 0px))
@@ -273,6 +273,9 @@ body.pt-8 {
 }
 
 .logo-kapow-container {
+  overflow: clip;
+  overflow-clip-margin: 9rem;
+
   &:hover {
     .logo-kapow-one {
       @apply animate-logo-kapow-one text-yellow-400;
