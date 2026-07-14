@@ -13,14 +13,22 @@ interface OGImageOptions {
 }
 
 async function loadAssets() {
-  const [rubikRegular, rubikBold, backgroundImageBuffer] = await Promise.all([
-    readFile(join(process.cwd(), "assets/rubik-latin-400.woff")),
-    readFile(join(process.cwd(), "assets/rubik-latin-800.woff")),
-    readFile(join(process.cwd(), "assets/bg.png")),
-  ]);
+  const [antonRegular, rubikRegular, rubikBold, backgroundImageBuffer] =
+    await Promise.all([
+      readFile(join(process.cwd(), "assets/anton-regular.ttf")),
+      readFile(join(process.cwd(), "assets/rubik-latin-400.woff")),
+      readFile(join(process.cwd(), "assets/rubik-latin-800.woff")),
+      readFile(join(process.cwd(), "assets/bg.png")),
+    ]);
 
   return {
     fonts: [
+      {
+        name: "Anton",
+        data: antonRegular,
+        weight: 400 as const,
+        style: "normal" as const,
+      },
       {
         name: "Rubik",
         data: rubikRegular,
@@ -56,12 +64,12 @@ function homeContent() {
         props: {
           style: {
             fontSize: 108,
-            fontWeight: 800,
+            fontWeight: 400,
             color: "#ffffff",
             margin: 0,
             marginBottom: 20,
             lineHeight: 1.1,
-            fontFamily: "Rubik",
+            fontFamily: "Anton",
           },
           children: "Let's build.",
         },
@@ -89,12 +97,12 @@ function pageContent(title: string) {
           props: {
             style: {
               fontSize: 108,
-              fontWeight: 800,
+              fontWeight: 400,
               color: "#ffffff",
               margin: 0,
               marginBottom: 20,
               lineHeight: 1.1,
-              fontFamily: "Rubik",
+              fontFamily: "Anton",
             },
             children: title,
           },
@@ -138,12 +146,12 @@ function projectContent(title: string) {
           props: {
             style: {
               fontSize: 64,
-              fontWeight: 800,
+              fontWeight: 400,
               color: "#ffffff",
               margin: 0,
               marginBottom: 20,
               lineHeight: 1.1,
-              fontFamily: "Rubik",
+              fontFamily: "Anton",
               maxWidth: "60%",
             },
             children: title,

@@ -1,18 +1,180 @@
-import * as React from "react";
+"use client";
 
-const LOGO_WORDMARK_PATH =
-  "M8.056 84.753v-9.035h9.035v9.035H8.056Zm7.53 0v-9.035h9.035v9.035h-9.035Zm7.529 0v-9.035h9.035v9.035h-9.035ZM.526 77.223V68.19h9.036v9.034H.527Zm30.118 0V68.19h9.035v9.034h-9.034ZM.526 69.695V60.66h9.036v9.035H.527Zm30.118 0V60.66h9.035v9.035h-9.034ZM.526 62.164V53.13h9.036v9.034H.527Zm0-7.529v-9.034h9.036v9.034H.527Zm0-7.53v-9.034h9.036v9.034H.527Zm0-7.528v-9.035h9.036v9.034H.527Zm0-7.53v-9.035h9.036v9.035H.527Zm0-7.53v-9.034h9.036v9.034H.527Zm30.118 0v-9.034h9.035v9.034h-9.034ZM.526 16.989V7.953h9.036v9.035H.527Zm30.118 0V7.953h9.035v9.035h-9.034ZM8.056 9.458V.425h9.035v9.034H8.056Zm7.53 0V.425h9.035v9.034h-9.035Zm7.529 0V.425h9.035v9.034h-9.035ZM53.276 84.753v-9.035h9.036v9.035h-9.035Zm30.118 0v-9.035h9.035v9.035h-9.034Zm-30.118-7.53V68.19h9.036v9.034h-9.035Zm30.118 0V68.19h9.035v9.034h-9.034Zm-30.118-7.529V60.66h9.036v9.035h-9.035Zm30.118 0V60.66h9.035v9.035h-9.034Zm-30.118-7.53V53.13h9.036v9.034h-9.035Zm30.118 0V53.13h9.035v9.034h-9.034Zm-30.118-7.529v-9.034h9.036v9.034h-9.035Zm30.118 0v-9.034h9.035v9.034h-9.034Zm-30.118-7.53v-9.034h9.036v9.034h-9.035Zm7.53 0v-9.034h9.035v9.034h-9.035Zm7.53 0v-9.034h9.035v9.034h-9.035Zm7.529 0v-9.034H84.9v9.034h-9.035Zm7.53 0v-9.034h9.034v9.034h-9.034Zm-30.118-7.528v-9.035h9.035v9.034h-9.035Zm30.117 0v-9.035h9.035v9.034h-9.034Zm-30.118-7.53v-9.035h9.036v9.035h-9.035Zm30.118 0v-9.035h9.035v9.035h-9.034Zm-30.118-7.53v-9.034h9.036v9.034h-9.035Zm30.118 0v-9.034h9.035v9.034h-9.034Zm-30.118-7.529V7.953h9.036v9.035h-9.035Zm30.118 0V7.953h9.035v9.035h-9.034Zm-30.118-7.53V.425h9.036v9.034h-9.035Zm30.118 0V.425h9.035v9.034h-9.034ZM106.026 84.753v-9.035h9.036v9.035h-9.036Zm30.118 0v-9.035h9.035v9.035h-9.035Zm-30.118-7.53V68.19h9.036v9.034h-9.036Zm30.118 0V68.19h9.035v9.034h-9.035Zm-30.118-7.529V60.66h9.036v9.035h-9.036Zm30.118 0V60.66h9.035v9.035h-9.035Zm-30.118-7.53V53.13h9.036v9.034h-9.036Zm7.53 0V53.13h9.035v9.034h-9.035Zm7.529 0V53.13h9.036v9.034h-9.036Zm7.53 0V53.13h9.035v9.034h-9.035Zm7.529 0V53.13h9.035v9.034h-9.035Zm-30.118-7.529v-9.034h9.036v9.034h-9.036Zm30.118 0v-9.034h9.035v9.034h-9.035Zm-30.118-7.53v-9.034h9.036v9.034h-9.036Zm30.118 0v-9.034h9.035v9.034h-9.035Zm-30.118-7.528v-9.035h9.036v9.034h-9.036Zm30.118 0v-9.035h9.035v9.034h-9.035Zm-30.118-7.53v-9.035h9.036v9.035h-9.036Zm30.118 0v-9.035h9.035v9.035h-9.035Zm-26.353-7.53v-9.034h9.035v9.034h-9.035Zm22.588 0v-9.034h9.036v9.034h-9.036Zm-18.823-7.529V7.953h9.035v9.035h-9.035Zm15.059 0V7.953h9.035v9.035h-9.035Zm-11.294-7.53V.425h9.035v9.034h-9.035Zm7.529 0V.425h9.035v9.034h-9.035ZM166.306 84.753v-9.035h9.035v9.035h-9.035Zm7.529 0v-9.035h9.036v9.035h-9.036Zm7.53 0v-9.035h9.035v9.035h-9.035Zm-22.589-7.53V68.19h9.036v9.034h-9.036Zm30.118 0V68.19h9.035v9.034h-9.035Zm-30.118-7.529V60.66h9.036v9.035h-9.036Zm30.118 0V60.66h9.035v9.035h-9.035Zm-30.118-7.53V53.13h9.036v9.034h-9.036Zm30.118 0V53.13h9.035v9.034h-9.035Zm-7.529-7.529v-9.034h9.035v9.034h-9.035Zm-7.53-7.53v-9.034h9.036v9.034h-9.036Zm-7.529-7.528v-9.035h9.035v9.034h-9.035Zm-7.53-7.53v-9.035h9.036v9.035h-9.036Zm0-7.53v-9.034h9.036v9.034h-9.036Zm30.118 0v-9.034h9.035v9.034h-9.035Zm-30.118-7.529V7.953h9.036v9.035h-9.036Zm30.118 0V7.953h9.035v9.035h-9.035Zm-22.588-7.53V.425h9.035v9.034h-9.035Zm7.529 0V.425h9.036v9.034h-9.036Zm7.53 0V.425h9.035v9.034h-9.035ZM211.526 84.753v-9.035h9.036v9.035h-9.036Zm7.53 0v-9.035h9.035v9.035h-9.035Zm7.529 0v-9.035h9.036v9.035h-9.036Zm7.53 0v-9.035h9.035v9.035h-9.035Zm-22.589-7.53V68.19h9.036v9.034h-9.036Zm0-7.529V60.66h9.036v9.035h-9.036Zm0-7.53V53.13h9.036v9.034h-9.036Zm0-7.529v-9.034h9.036v9.034h-9.036Zm0-7.53v-9.034h9.036v9.034h-9.036Zm7.53 0v-9.034h9.035v9.034h-9.035Zm7.529 0v-9.034h9.036v9.034h-9.036Zm7.53 0v-9.034h9.035v9.034h-9.035Zm-22.589-7.528v-9.035h9.036v9.034h-9.036Zm0-7.53v-9.035h9.036v9.035h-9.036Zm0-7.53v-9.034h9.036v9.034h-9.036Zm0-7.529V7.953h9.036v9.035h-9.036Zm0-7.53V.425h9.036v9.034h-9.036Zm7.53 0V.425h9.035v9.034h-9.035Zm7.529 0V.425h9.036v9.034h-9.036Zm7.53 0V.425h9.035v9.034h-9.035ZM283.056 84.753v-9.035h9.035v9.035h-9.035Zm7.529 0v-9.035h9.036v9.035h-9.036Zm7.53 0v-9.035h9.035v9.035h-9.035Zm-22.589-7.53V68.19h9.036v9.034h-9.036Zm30.118 0V68.19h9.035v9.034h-9.035Zm-30.118-7.529V60.66h9.036v9.035h-9.036Zm30.118 0V60.66h9.035v9.035h-9.035Zm-30.118-7.53V53.13h9.036v9.034h-9.036Zm0-7.529v-9.034h9.036v9.034h-9.036Zm0-7.53v-9.034h9.036v9.034h-9.036Zm0-7.528v-9.035h9.036v9.034h-9.036Zm0-7.53v-9.035h9.036v9.035h-9.036Zm0-7.53v-9.034h9.036v9.034h-9.036Zm30.118 0v-9.034h9.035v9.034h-9.035Zm-30.118-7.529V7.953h9.036v9.035h-9.036Zm30.118 0V7.953h9.035v9.035h-9.035Zm-22.588-7.53V.425h9.035v9.034h-9.035Zm7.529 0V.425h9.036v9.034h-9.036Zm7.53 0V.425h9.035v9.034h-9.035ZM328.276 84.753v-9.035h9.036v9.035h-9.036Zm7.53 0v-9.035h9.035v9.035h-9.035Zm7.529 0v-9.035h9.036v9.035h-9.036Zm7.53 0v-9.035h9.035v9.035h-9.035Zm-22.589-7.53V68.19h9.036v9.034h-9.036Zm0-7.529V60.66h9.036v9.035h-9.036Zm0-7.53V53.13h9.036v9.034h-9.036Zm0-7.529v-9.034h9.036v9.034h-9.036Zm0-7.53v-9.034h9.036v9.034h-9.036Zm7.53 0v-9.034h9.035v9.034h-9.035Zm7.529 0v-9.034h9.036v9.034h-9.036Zm7.53 0v-9.034h9.035v9.034h-9.035Zm-22.589-7.528v-9.035h9.036v9.034h-9.036Zm0-7.53v-9.035h9.036v9.035h-9.036Zm0-7.53v-9.034h9.036v9.034h-9.036Zm0-7.529V7.953h9.036v9.035h-9.036Zm0-7.53V.425h9.036v9.034h-9.036Zm7.53 0V.425h9.035v9.034h-9.035Zm7.529 0V.425h9.036v9.034h-9.036Zm7.53 0V.425h9.035v9.034h-9.035ZM369.651 84.753v-9.035h9.036v9.035h-9.036Zm7.53 0v-9.035h9.035v9.035h-9.035Zm7.529 0v-9.035h9.036v9.035h-9.036Zm7.53 0v-9.035h9.035v9.035h-9.035Zm-22.589-7.53V68.19h9.036v9.034h-9.036Zm0-7.529V60.66h9.036v9.035h-9.036Zm0-7.53V53.13h9.036v9.034h-9.036Zm0-7.529v-9.034h9.036v9.034h-9.036Zm0-7.53v-9.034h9.036v9.034h-9.036Zm7.53 0v-9.034h9.035v9.034h-9.035Zm7.529 0v-9.034h9.036v9.034h-9.036Zm7.53 0v-9.034h9.035v9.034h-9.035Zm-22.589-7.528v-9.035h9.036v9.034h-9.036Zm0-7.53v-9.035h9.036v9.035h-9.036Zm0-7.53v-9.034h9.036v9.034h-9.036Zm0-7.529V7.953h9.036v9.035h-9.036Zm0-7.53V.425h9.036v9.034h-9.036Zm7.53 0V.425h9.035v9.034h-9.035Zm7.529 0V.425h9.036v9.034h-9.036Zm7.53 0V.425h9.035v9.034h-9.035Z";
-const SvgComponent = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={402}
-    height={85}
-    viewBox="0 0 402 85"
-    fill="currentColor"
-    className="h-auto max-w-full"
-    {...props}
-  >
-    <path d={LOGO_WORDMARK_PATH} />
-  </svg>
-);
-export default SvgComponent;
+import * as React from "react";
+import {
+  MORPH_CYCLE_MS,
+  MORPH_POINT_COUNT,
+  MORPH_VARIANTS as BASE_MORPH_VARIANTS,
+} from "./variants/morphData.js";
+
+const WIDTH = 402;
+const HEIGHT = 85;
+const ADDITIONAL_FONT_IDS = [
+  "archivoBlack",
+  "bungee",
+  "changaOne",
+  "fredoka",
+  "ibmPlexSansCondensed",
+  "oswald",
+  "playfairDisplayBlack",
+  "soraExtraBold",
+  "teko",
+  "workSansBlack",
+] as const;
+const MORPH_VARIANTS = [
+  ...BASE_MORPH_VARIANTS,
+  ...ADDITIONAL_FONT_IDS.map((id, index) => ({
+    ...BASE_MORPH_VARIANTS[index % BASE_MORPH_VARIANTS.length],
+    id,
+  })),
+] as const;
+const STEP_MS = MORPH_CYCLE_MS / MORPH_VARIANTS.length;
+const STORAGE_KEY = "chasecee:logo-font";
+const PATHS_STORAGE_KEY = "chasecee:logo-paths";
+
+const interpolate = (
+  from: readonly number[],
+  to: readonly number[],
+  progress: number,
+) => from.map((value, index) => value + (to[index] - value) * progress);
+
+const toPath = (points: readonly number[]) => {
+  let path = "";
+  const contourSize = MORPH_POINT_COUNT * 2;
+
+  for (let offset = 0; offset < points.length; offset += contourSize) {
+    path += `M${points[offset]} ${points[offset + 1]}`;
+    for (let point = 1; point < MORPH_POINT_COUNT; point++) {
+      const index = offset + point * 2;
+      path += `L${points[index]} ${points[index + 1]}`;
+    }
+    path += "Z";
+  }
+
+  return path;
+};
+
+const ease = (progress: number) =>
+  progress < 0.5
+    ? 4 * progress * progress * progress
+    : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+interface ChaseCeeLogoProps extends React.SVGProps<SVGSVGElement> {
+  active?: boolean;
+}
+
+const ChaseCeeLogo = ({
+  active = false,
+  className,
+  ...props
+}: ChaseCeeLogoProps) => {
+  const pathRefs = React.useRef<(SVGPathElement | null)[]>([]);
+  const frameRef = React.useRef<number>(0);
+  const variantRef = React.useRef(0);
+  const initializedRef = React.useRef(false);
+
+  React.useEffect(() => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    const draw = (
+      glyphs: readonly (readonly number[])[],
+      paths?: readonly string[],
+    ) => {
+      glyphs.forEach((points, index) => {
+        pathRefs.current[index]?.setAttribute("d", paths?.[index] ?? toPath(points));
+      });
+    };
+
+    const stop = () => window.cancelAnimationFrame(frameRef.current);
+
+    const persist = (index: number) => {
+      const variant = MORPH_VARIANTS[index];
+      localStorage.setItem(STORAGE_KEY, variant.id);
+      localStorage.setItem(PATHS_STORAGE_KEY, JSON.stringify(variant.paths));
+    };
+
+    const commit = (index: number) => {
+      const variant = MORPH_VARIANTS[index];
+      variantRef.current = index;
+      draw(variant.glyphs, variant.paths);
+      persist(index);
+    };
+
+    if (!initializedRef.current) {
+      const storedId = localStorage.getItem(STORAGE_KEY);
+      const storedIndex = MORPH_VARIANTS.findIndex(({ id }) => id === storedId);
+      variantRef.current = storedIndex === -1 ? 0 : storedIndex;
+      initializedRef.current = true;
+    }
+
+    stop();
+
+    if (active && !reducedMotion.matches) {
+      const startedAt = performance.now();
+      const startIndex = variantRef.current;
+
+      const tick = (now: number) => {
+        const elapsed = now - startedAt;
+        const step =
+          (startIndex + Math.floor(elapsed / STEP_MS)) %
+          MORPH_VARIANTS.length;
+        const next = (step + 1) % MORPH_VARIANTS.length;
+        const rawProgress = (elapsed % STEP_MS) / STEP_MS;
+        const progress = ease(Math.min(rawProgress / 0.62, 1));
+        const from = MORPH_VARIANTS[step];
+        const to = MORPH_VARIANTS[next];
+        const nearest = progress < 0.5 ? step : next;
+
+        if (nearest !== variantRef.current) {
+          variantRef.current = nearest;
+          persist(nearest);
+        }
+
+        if (progress === 1) {
+          draw(to.glyphs, to.paths);
+        } else {
+          draw(
+            from.glyphs.map((points, index) =>
+              interpolate(points, to.glyphs[index], progress),
+            ),
+          );
+        }
+        frameRef.current = window.requestAnimationFrame(tick);
+      };
+
+      frameRef.current = window.requestAnimationFrame(tick);
+      return stop;
+    }
+
+    commit(variantRef.current);
+    return stop;
+  }, [active]);
+
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={WIDTH}
+      height={HEIGHT}
+      viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+      fill="none"
+      data-chasecee-logo
+      className={["logo-wordmark-svg", className].filter(Boolean).join(" ")}
+      {...props}
+    >
+      {MORPH_VARIANTS[0].glyphs.map((_, index) => (
+        <path
+          key={index}
+          ref={(node) => {
+            pathRefs.current[index] = node;
+          }}
+          d={MORPH_VARIANTS[0].paths[index]}
+          suppressHydrationWarning
+          fillRule="evenodd"
+          className="logo-wordmark-path"
+        />
+      ))}
+    </svg>
+  );
+};
+
+export default ChaseCeeLogo;

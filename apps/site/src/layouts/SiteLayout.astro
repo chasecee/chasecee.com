@@ -80,6 +80,23 @@ const editUrl = presentationEditUrl(STUDIO_URL, Astro.url.href);
     <div id="sanity-preview-root">
       <slot />
     </div>
+    <script is:inline define:vars={{ navOrder: ["/", "/about", "/music"] }}>
+      document.addEventListener("astro:before-preparation", (event) => {
+        const normalizePath = (url) => {
+          const path = url.pathname.replace(/\/+$/, "") || "/";
+          if (path === "/about" || path.startsWith("/about/")) return "/about";
+          if (path === "/music" || path.startsWith("/music/")) return "/music";
+          return "/";
+        };
+
+        const fromPath = normalizePath(event.from);
+        const toPath = normalizePath(event.to);
+        const fromIndex = navOrder.indexOf(fromPath);
+        const toIndex = navOrder.indexOf(toPath);
+        if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return;
+        event.direction = toIndex > fromIndex ? "forward" : "back";
+      });
+    </script>
     {draftMode && <SanityVisualEditing client:only="react" />}
   </body>
 </html>

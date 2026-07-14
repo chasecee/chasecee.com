@@ -1,0 +1,44 @@
+---
+import LucideIcon from "./icons/LucideIcon.astro";
+import { GithubIcon, LinkedInIcon } from "./icons";
+import { LUCIDE_ICONS } from "./icons/lucide";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<div class:list={["flex items-center gap-3 pt-px sm:gap-4", className]}>
+  <a
+    href="https://github.com/chasecee/"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="header_item transition-colors hover:opacity-30"
+    title="GitHub"
+  >
+    <span class="sr-only">GitHub</span>
+    <GithubIcon size={16} />
+  </a>
+  <a
+    href="https://www.linkedin.com/in/chasechristensen-1/"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="header_item transition-colors hover:opacity-30"
+    title="LinkedIn"
+  >
+    <span class="sr-only">LinkedIn</span>
+    <LinkedInIcon size={16} />
+  </a>
+  <a
+    href="/ChaseChristensen-Resume-2025.pdf"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="header_item flex transition-colors hover:opacity-30"
+    title="Resume"
+  >
+    <span class="sr-only">Resume</span>
+    <LucideIcon icon={LUCIDE_ICONS.fileText} size={16} />
+  </a>
+</div>

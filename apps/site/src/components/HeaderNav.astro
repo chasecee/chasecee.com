@@ -1,0 +1,38 @@
+---
+import NavActiveIndicator from "./NavActiveIndicator.astro";
+
+interface Props {
+  activePath: string;
+}
+
+const { activePath } = Astro.props;
+const normalizedActivePath =
+  activePath !== "/" && activePath.endsWith("/")
+    ? activePath.slice(0, -1)
+    : activePath;
+const isMusicPath =
+  normalizedActivePath === "/music" ||
+  normalizedActivePath.startsWith("/music/");
+const baseClass = "header_item no-underline transition-colors group relative";
+---
+
+<div class="header_menu flex flex-row items-center gap-3 sm:gap-5 md:gap-10">
+  <a
+    href="/"
+    class:list={[baseClass, normalizedActivePath === "/" ? "item_active" : "item_inactive"]}
+  >
+    Work
+    {normalizedActivePath === "/" && <NavActiveIndicator />}
+  </a>
+  <a
+    href="/about"
+    class:list={[baseClass, normalizedActivePath === "/about" ? "item_active" : "item_inactive"]}
+  >
+    About
+    {normalizedActivePath === "/about" && <NavActiveIndicator />}
+  </a>
+  <a href="/music" class:list={[baseClass, isMusicPath ? "item_active" : "item_inactive"]}>
+    Music
+    {isMusicPath && <NavActiveIndicator />}
+  </a>
+</div>

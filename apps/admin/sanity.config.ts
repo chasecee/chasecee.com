@@ -17,7 +17,7 @@ import {
 } from "sanity/presentation";
 import {
   DocumentLayout,
-  StudioNavbar,
+  StudioToolMenu,
   withPublishShortcut,
   resolveProductionUrlAsync,
   getSiteBaseUrl,
@@ -205,7 +205,7 @@ export default defineConfig({
   ],
   studio: {
     components: {
-      navbar: StudioNavbar,
+      toolMenu: StudioToolMenu,
     },
   },
   document: {

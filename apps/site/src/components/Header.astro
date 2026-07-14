@@ -1,0 +1,44 @@
+---
+import HeaderLogo from "./HeaderLogo";
+import HeaderNav from "./HeaderNav.astro";
+import SocialLinks from "./SocialLinks.astro";
+
+interface Props {
+  activePath: string;
+}
+
+const { activePath } = Astro.props;
+---
+
+<div class="sticky top-2 inset-x-0 z-40 md:top-4" transition:name="site-header" transition:animate="none">
+  <header class="header container h-(--header-height) flex items-center rounded-xl border-site border-neutral-500/50 bg-neutral-50 py-2 dark:border-neutral-600 dark:bg-neutral-900">
+    <div class="flex shrink-0 justify-start md:w-1/3">
+      <HeaderLogo client:load transition:persist="header-logo" />
+      <script is:inline data-astro-rerun>
+        (() => {
+          const stored = localStorage.getItem("chasecee:logo-paths");
+          if (!stored) return;
+
+          try {
+            const paths = JSON.parse(stored);
+            const nodes = document.querySelectorAll(
+              "[data-chasecee-logo] .logo-wordmark-path",
+            );
+            if (paths.length !== nodes.length) return;
+            nodes.forEach((node, index) => node.setAttribute("d", paths[index]));
+          } catch {
+            localStorage.removeItem("chasecee:logo-paths");
+          }
+        })();
+      </script>
+    </div>
+
+    <div class="flex flex-1 justify-end md:w-1/3 md:flex-none md:justify-center">
+      <HeaderNav activePath={activePath} />
+    </div>
+
+    <div class="hidden shrink justify-end md:flex md:w-1/3">
+      <SocialLinks />
+    </div>
+  </header>
+</div>

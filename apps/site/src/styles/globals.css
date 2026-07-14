@@ -7,7 +7,7 @@
   --site-header-pad: 1rem;
   --site-scroll-gap: 1rem;
   --site-draft-offset: 0rem;
-  --site-border-width: 0.25rem;
+  --site-border-width: 0.125rem;
   --site-scroll-offset: calc(
     var(--site-header-height) + var(--site-header-pad) + var(--site-scroll-gap) +
       var(--site-draft-offset)
@@ -40,12 +40,15 @@ body.pt-8 {
 
   --background-image-gradient-radial: radial-gradient(var(--tw-gradient-stops));
 
-  --animate-logo-kapow-one: logo-kapow-one 630ms steps(1, end) infinite;
-  --animate-logo-kapow-two: logo-kapow-two 630ms steps(1, end) infinite;
-  --animate-logo-kapow-three: logo-kapow-three 630ms steps(1, end) infinite;
+  --logo-cycle-duration: 1080ms;
+  --animate-logo-kapow-one: logo-kapow-one var(--logo-cycle-duration)
+    steps(1, end) infinite;
+  --animate-logo-kapow-two: logo-kapow-two var(--logo-cycle-duration)
+    steps(1, end) infinite;
+  --animate-logo-kapow-three: logo-kapow-three var(--logo-cycle-duration)
+    steps(1, end) infinite;
   --animate-logo-kapow-explode: logo-kapow-explode 440ms
     cubic-bezier(0.2, 0.8, 0.15, 1) forwards;
-  --animate-logo-wordmark-flash: logo-wordmark-flash 400ms ease-in-out infinite;
 
   --border-width-site: var(--site-border-width);
   --ring-width-site: var(--site-border-width);
@@ -235,16 +238,21 @@ body.pt-8 {
   height: 100%;
 }
 .header_menu .header_item {
-  .header_item_bar {
-    @apply relative;
-  }
-  &.item_active {
-    .header_item_bar {
-      @apply bg-current;
-    }
-  }
   &:not(.item_active):hover {
     @apply opacity-50;
+  }
+}
+
+::view-transition-old(nav-active-indicator),
+::view-transition-new(nav-active-indicator) {
+  animation-duration: 220ms;
+  animation-timing-function: ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(nav-active-indicator),
+  ::view-transition-new(nav-active-indicator) {
+    animation: none;
   }
 }
 
@@ -296,17 +304,22 @@ body.pt-8 {
       @apply opacity-100;
       animation: none;
     }
+
   }
 }
 
 .header__title {
+  .logo-wordmark-svg {
+    @apply block h-auto max-w-full;
+  }
+
+  .logo-wordmark-path {
+    @apply fill-current;
+  }
+
   &:hover {
     .logo-kapow path {
       @apply stroke-current;
-    }
-
-    .logo-wordmark {
-      @apply animate-logo-wordmark-flash;
     }
   }
 
@@ -332,15 +345,6 @@ body.pt-8 {
   33.333%,
   100% {
     opacity: 0;
-  }
-}
-
-@keyframes logo-wordmark-flash {
-  0% {
-    color: rgb(255 255 255);
-  }
-  100% {
-    color: rgb(255 105 180);
   }
 }
 

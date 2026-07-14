@@ -1,5 +1,6 @@
 ---
-import Header from "@/src/components/Header";
+import Header from "@/src/components/Header.astro";
+import SocialLinks from "@/src/components/SocialLinks.astro";
 import LucideIcon from "@/src/components/icons/LucideIcon.astro";
 import { LUCIDE_ICONS } from "@/src/components/icons/lucide";
 import StudioEgg from "@/src/components/StudioEgg.astro";
@@ -26,11 +27,7 @@ const studioHref = studioDocumentUrl(sanityDocument);
 
 <div class={`root min-h-screen w-full ${className} pt-4 md:pt-8`}>
   <div class="container">
-    <Header
-      client:load
-      transition:persist="site-header"
-      activePath={Astro.url.pathname}
-    />
+    <Header activePath={Astro.url.pathname} />
     <main>
       <slot />
     </main>
@@ -77,6 +74,9 @@ const studioHref = studioDocumentUrl(sanityDocument);
     }
     <footer class="site-footer mt-10 py-10">
       <div class="prose max-w-none">
+        <div class="mb-4 flex justify-end md:hidden">
+          <SocialLinks />
+        </div>
         <div class="flex w-full flex-col items-start gap-2 sm:flex-row sm:flex-nowrap sm:items-center sm:justify-between sm:gap-4">
           <p
             class="footer__text text-uppercase group m-0 flex flex-row items-center gap-[0.5ch] whitespace-nowrap"
