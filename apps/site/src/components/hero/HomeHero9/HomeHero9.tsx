@@ -5,10 +5,10 @@ const HomeHero9 = () => {
   return (
     <>
       <div className="relative inset-0 z-[1] -mx-6">
-        <div className="relative h-[90svh] min-h-[40rem] w-full lg:h-[92vh]">
-          <div className="absolute top-0 left-0 h-[calc(100%+10svh)] w-full">
+        <div className="relative h-[90svh] lg:min-h-[30rem] w-full lg:h-[calc(100vh-calc(var(--site-scroll-offset)*2))]">
+       
             <PhysicsCanvas />
-          </div>
+          
 
           <div className="pointer-events-none absolute top-0 left-0 z-20 flex h-full w-full items-center justify-center">
             <HeroText />
