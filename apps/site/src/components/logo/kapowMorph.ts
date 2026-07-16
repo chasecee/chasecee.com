@@ -7,7 +7,7 @@ const midpoint = (ax: number, ay: number, bx: number, by: number) => ({
 
 const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
 
-const round = (value: number) => Number(value.toFixed(2));
+const round = (value: number) => Number(value.toFixed(1));
 
 export const interpolateNumber = (from: number, to: number, progress: number) =>
   from + (to - from) * progress;
@@ -32,7 +32,7 @@ export const interpolatePointsInto = (
   return out;
 };
 
-const round2 = (value: number) => Math.round(value * 100) / 100;
+const roundCoord = (value: number) => Math.round(value * 10) / 10;
 
 export const pointsToQuadraticPath = (points: readonly number[], pointCount: number) => {
   let path = "";
@@ -45,7 +45,7 @@ export const pointsToQuadraticPath = (points: readonly number[], pointCount: num
     const secondY = points[offset + 3];
     const startX = (firstX + secondX) * 0.5;
     const startY = (firstY + secondY) * 0.5;
-    path += `M${round2(startX)} ${round2(startY)}`;
+    path += `M${roundCoord(startX)} ${roundCoord(startY)}`;
 
     for (let point = 1; point < pointCount; point++) {
       const index = offset + point * 2;
@@ -54,7 +54,7 @@ export const pointsToQuadraticPath = (points: readonly number[], pointCount: num
       const controlY = points[index + 1];
       const endX = (controlX + points[next]) * 0.5;
       const endY = (controlY + points[next + 1]) * 0.5;
-      path += `Q${round2(controlX)} ${round2(controlY)} ${round2(endX)} ${round2(endY)}`;
+      path += `Q${roundCoord(controlX)} ${roundCoord(controlY)} ${roundCoord(endX)} ${roundCoord(endY)}`;
     }
     path += "Z";
   }

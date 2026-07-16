@@ -92,7 +92,7 @@
 }
 
 .logo-border-inner-path {
-  stroke: var(--color-neutral-50);
+  stroke: var(--color-neutral-100);
   stroke-width: var(--logo-padding-stroke);
 }
 
@@ -103,6 +103,12 @@
 
   .logo-border-inner-path {
     stroke: var(--color-neutral-900);
+  }
+
+  .header__title .logo-wordmark-underlay-path {
+
+    fill: var(--color-neutral-100);
+    stroke: var(--color-neutral-100);
   }
 }
 
@@ -126,8 +132,8 @@
   }
 
   .logo-wordmark-underlay-path {
-    fill: #000;
-    stroke: #000;
+    fill: var(--color-neutral-900);
+    stroke: var(--color-neutral-900);
     stroke-width: calc(var(--site-border-width) * 3);
     stroke-linejoin: round;
     stroke-linecap: round;

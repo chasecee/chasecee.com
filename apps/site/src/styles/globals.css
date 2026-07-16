@@ -40,6 +40,8 @@ body.pt-8 {
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
 
+  --color-neutral-100: #e3ded1;
+
   --background-image-gradient-radial: radial-gradient(var(--tw-gradient-stops));
 
   --border-width-site: var(--site-border-width);

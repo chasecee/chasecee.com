@@ -104,7 +104,7 @@ type DeepPartial<T> = T extends object
 const PIXELS_PER_METER = 50;
 const INV_PIXELS_PER_METER = 1 / PIXELS_PER_METER;
 const MAX_DEVICE_PIXEL_RATIO = 1.5;
-const BG_LIGHT = { r: 245 / 255, g: 245 / 255, b: 245 / 255 };
+const BG_LIGHT = { r: 227 / 255, g: 222 / 255, b: 209 / 255 };
 const BG_DARK = { r: 23 / 255, g: 23 / 255, b: 23 / 255 };
 
 type PhysicsSettings = typeof config;

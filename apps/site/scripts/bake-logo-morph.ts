@@ -5,7 +5,6 @@
  * bun run logo:morph -- list
  * bun run logo:morph -- add bowlbyOne
  * bun run logo:morph -- add patuaOne --text "Chase Cee" --force
- * bun run logo:morph -- add literata --google ofl/literata/Literata[opsz,wght].ttf --weight 400
  */
 
 import { mkdir, readFile, writeFile, access } from "node:fs/promises";
@@ -20,7 +19,7 @@ const MORPH_PATH = path.join(VARIANTS_DIR, "morphData.js");
 const CACHE_DIR = path.join(ROOT, "scripts/.cache/logo-fonts");
 const GOOGLE_RAW = "https://raw.githubusercontent.com/google/fonts/main";
 
-const POINTS = 64;
+const POINTS = 128;
 const VIEW_W = 402;
 const VIEW_H = 85;
 const TARGET_W = 360;
@@ -57,13 +56,12 @@ const CATALOG: Record<string, FontSpec> = Object.fromEntries(
       { id: "bebasNeue", google: "ofl/bebasneue/BebasNeue-Regular.ttf" },
       { id: "alfaSlabOne", google: "ofl/alfaslabone/AlfaSlabOne-Regular.ttf" },
       { id: "righteous", google: "ofl/righteous/Righteous-Regular.ttf" },
-      { id: "patuaOne", google: "ofl/patuaone/PatuaOne-Regular.ttf" },
       { id: "arvoBold", google: "ofl/arvo/Arvo-Bold.ttf" },
       { id: "bowlbyOne", google: "ofl/bowlbyone/BowlbyOne-Regular.ttf" },
+      { id: "jersey10", google: "ofl/jersey10/Jersey10-Regular.ttf" },
       {
-        id: "literata",
-        google: "ofl/literata/Literata%5Bopsz,wght%5D.ttf",
-        weight: 400,
+        id: "cherryBombOne",
+        google: "ofl/cherrybombone/CherryBombOne-Regular.ttf",
       },
     ] satisfies FontSpec[]
   ).map((spec) => [spec.id, spec]),
@@ -267,6 +265,8 @@ const loadFont = async (spec: FontSpec) => {
   return font;
 };
 
+const roundCoord = (value: number) => Math.round(value * 10) / 10;
+
 const pathToSvg = (
   commands: Array<{ command: string; args: number[] }>,
   matrix: Matrix,
@@ -275,19 +275,19 @@ const pathToSvg = (
   for (const { command, args } of commands) {
     if (command === "moveTo") {
       const [x, y] = transform(matrix, [args[0], args[1]]);
-      d += `M${x} ${y}`;
+      d += `M${roundCoord(x)} ${roundCoord(y)}`;
     } else if (command === "lineTo") {
       const [x, y] = transform(matrix, [args[0], args[1]]);
-      d += `L${x} ${y}`;
+      d += `L${roundCoord(x)} ${roundCoord(y)}`;
     } else if (command === "quadraticCurveTo") {
       const [cx, cy] = transform(matrix, [args[0], args[1]]);
       const [x, y] = transform(matrix, [args[2], args[3]]);
-      d += `Q${cx} ${cy} ${x} ${y}`;
+      d += `Q${roundCoord(cx)} ${roundCoord(cy)} ${roundCoord(x)} ${roundCoord(y)}`;
     } else if (command === "bezierCurveTo") {
       const [c1x, c1y] = transform(matrix, [args[0], args[1]]);
       const [c2x, c2y] = transform(matrix, [args[2], args[3]]);
       const [x, y] = transform(matrix, [args[4], args[5]]);
-      d += `C${c1x} ${c1y} ${c2x} ${c2y} ${x} ${y}`;
+      d += `C${roundCoord(c1x)} ${roundCoord(c1y)} ${roundCoord(c2x)} ${roundCoord(c2y)} ${roundCoord(x)} ${roundCoord(y)}`;
     } else if (command === "closePath") {
       d += "Z";
     }
@@ -359,7 +359,7 @@ const bakeFromPrepared = async (
           ? align(sample(shaped[slot]), target)
           : Array.from({ length: POINTS }, () => center(target));
       for (const [x, y] of points) {
-        flat.push(Math.round(x * 100) / 100, Math.round(y * 100) / 100);
+        flat.push(roundCoord(x), roundCoord(y));
       }
     }
     return flat;
@@ -473,7 +473,6 @@ Examples:
   bun run logo:morph -- list
   bun run logo:morph -- rebuild
   bun run logo:morph -- add bowlbyOne
-  bun run logo:morph -- add literata --force
 `;
 
 const main = async () => {

@@ -19,7 +19,7 @@ import { LOGO_VIEW_HEIGHT, LOGO_VIEW_WIDTH } from "./silhouette";
 
 const STORAGE_KEY = "chasecee:logo-font";
 
-export const FONT_CYCLE = [7, 8, 3, 0, 5] as const;
+export const FONT_CYCLE = [8, 0, 6, 3, 4, 7] as const;
 
 type ChaseCeeLogoProps = {
   initialIndex: number;
@@ -310,6 +310,7 @@ export default function ChaseCeeLogo({
             underlayPathRefs.current[index] = node;
           }}
           suppressHydrationWarning
+          fillRule="evenodd"
           className="logo-wordmark-underlay-path"
         />
       ))}
