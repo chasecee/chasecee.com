@@ -127,6 +127,10 @@
     overflow: visible;
   }
 
+  .logo-wordmark {
+    color: white;
+  }
+
   .logo-wordmark-path {
     @apply fill-current;
   }
