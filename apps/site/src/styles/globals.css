@@ -71,12 +71,20 @@ body.pt-8 {
 }
 
 @utility project-embed {
-  aspect-ratio: var(--ar-mobile, var(--ar-desktop, 1 / 1));
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: var(--ar-mobile-w, 1) / var(--ar-mobile-h, 1);
   @media (width >= 768px) {
-    aspect-ratio: var(--ar-desktop, 1 / 1);
+    aspect-ratio: var(--ar-desktop-w, 1) / var(--ar-desktop-h, 1);
   }
 
   iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    border: 0;
     pointer-events: none;
     opacity: 0;
     transition: opacity 500ms ease;
@@ -255,7 +263,7 @@ body.pt-8 {
   iframe:not(.site-mini-frame) {
     max-width: 100%;
   }
-  iframe:not(.embed-frame-fixed) {
+  iframe:not(.embed-frame-fixed, [data-project-embed]) {
     height: auto;
   }
 }

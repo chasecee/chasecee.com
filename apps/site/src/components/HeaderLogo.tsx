@@ -12,11 +12,6 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import ChaseCeeLogo, { FONT_CYCLE } from "./logo/ChaseCeeLogo";
-import LogoMorphDevControls from "./logo/LogoMorphDevControls";
-import {
-  DEFAULT_MORPH_BEZIER,
-  type EaseBezier,
-} from "./logo/morphEase";
 import { LOGO_VIEW_HEIGHT, LOGO_VIEW_WIDTH } from "./logo/silhouette";
 import { MORPH_VARIANTS } from "./logo/variants/morphData.js";
 
@@ -71,10 +66,7 @@ export default function HeaderLogo() {
   const [restDurationMs, setRestDurationMs] = useState(720);
   const [morphDurationMs, setMorphDurationMs] = useState(140);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const [easeBezier, setEaseBezier] = useState<EaseBezier>(() => [...DEFAULT_MORPH_BEZIER]);
-  const [kapowStartOffsetMs, setKapowStartOffsetMs] = useState(0);
-  const [forceHover, setForceHover] = useState(false);
-  const active = (isHovered || forceHover) && !prefersReducedMotion;
+  const active = isHovered && !prefersReducedMotion;
   const currentFontId = MORPH_VARIANTS[currentIndex]?.id ?? MORPH_VARIANTS[0].id;
 
   const maybeNavigate = useCallback(() => {
@@ -276,10 +268,7 @@ export default function HeaderLogo() {
           if (event.button !== 0 || prefersReducedMotion) return;
           setIsHovered(true);
         }}
-        onPointerCancel={() => {
-          if (forceHover) return;
-          setIsHovered(false);
-        }}
+        onPointerCancel={() => setIsHovered(false)}
       >
         <a
           onClick={handleLogoClick}
@@ -299,8 +288,6 @@ export default function HeaderLogo() {
                   exploding={isExploding}
                   restDurationMs={restDurationMs}
                   morphDurationMs={morphDurationMs}
-                  easeBezier={easeBezier}
-                  kapowStartOffsetMs={kapowStartOffsetMs}
                   onIndexChange={handleIndexChange}
                   mirrorPathRefs={mirrorPathRefs}
                 />
@@ -313,17 +300,6 @@ export default function HeaderLogo() {
             )}
           </div>
         </a>
-        {import.meta.env.DEV && (
-          <LogoMorphDevControls
-            bezier={easeBezier}
-            kapowStartOffsetMs={kapowStartOffsetMs}
-            restDurationMs={restDurationMs}
-            forceHover={forceHover}
-            onBezierChange={setEaseBezier}
-            onKapowStartOffsetChange={setKapowStartOffsetMs}
-            onForceHoverChange={setForceHover}
-          />
-        )}
       </div>
     </>
   );

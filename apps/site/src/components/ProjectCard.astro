@@ -49,19 +49,19 @@ const colorPalette = project.color?.hex
   ? generateColorPalette(project.color.hex)
   : null;
 const projectImage = project.image;
-const toCssRatio = (value: string) => {
+const parseRatio = (value: string) => {
   const compact = value.replace(/\s+/g, "");
   const normalized = compact.includes("/")
     ? compact
     : compact.includes(":")
       ? compact.replace(":", "/")
       : compact;
-  if (!/^\d+(\.\d+)?\/\d+(\.\d+)?$/.test(normalized)) return "1 / 1";
-  const [width, height] = normalized.split("/");
-  return `${width} / ${height}`;
+  if (!/^\d+(\.\d+)?\/\d+(\.\d+)?$/.test(normalized)) return { w: 1, h: 1 };
+  const [w, h] = normalized.split("/").map(Number);
+  return { w, h };
 };
-const desktopRatio = toCssRatio(project.aspectRatio?.desktop || "1/1");
-const mobileRatio = toCssRatio(
+const desktopRatio = parseRatio(project.aspectRatio?.desktop || "1/1");
+const mobileRatio = parseRatio(
   project.aspectRatio?.mobile || project.aspectRatio?.desktop || "1/1",
 );
 const draftMode = Astro.locals.draftMode === true;
@@ -83,8 +83,8 @@ const itemClass = scroll
     {
       displayType === "embed" && project.embedUrl ? (
         <div
-          class="project-embed relative w-full overflow-hidden"
-          style={`--ar-desktop: ${desktopRatio}; --ar-mobile: ${mobileRatio};`}
+          class="project-embed"
+          style={`--ar-desktop-w: ${desktopRatio.w}; --ar-desktop-h: ${desktopRatio.h}; --ar-mobile-w: ${mobileRatio.w}; --ar-mobile-h: ${mobileRatio.h};`}
         >
           {showDraftBadge && (
             <span class="pointer-events-none absolute top-2 right-2 z-20 inline-flex rounded bg-amber-300 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black">
@@ -93,7 +93,6 @@ const itemClass = scroll
           )}
           <iframe
             title={project.name ?? undefined}
-            class="pointer-events-none absolute inset-0 h-full w-full border-0"
             tabindex="-1"
             data-project-embed
             data-src={project.embedUrl}

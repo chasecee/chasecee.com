@@ -59,10 +59,34 @@ export const prerender = false;
       </p>
       <p>
         Overall, I just love to build things and tackle new challenges. I'm
-        always open to talk about new opportunities!{' '}
-        <a href="/#contact" class="underline">Let's get started</a> on your next
-        big idea.
+        always open to talk about new opportunities! Let's get started on your
+        next big idea —{" "}
+        <a
+          href="#"
+          class="underline"
+          data-u="chaserchristensen"
+          data-d="gmail.com"
+          id="about-email"
+        >
+          chaserchristensen [at] gmail [dot] com
+        </a>.
       </p>
     </div>
   </Container>
 </SiteLayout>
+
+<script is:inline data-astro-rerun>
+  (() => {
+    const link = document.getElementById("about-email");
+    if (!link) return;
+    const address = `${link.dataset.u}@${link.dataset.d}`;
+    const openMail = (event) => {
+      event.preventDefault();
+      window.location.href = `mailto:${address}`;
+    };
+    link.addEventListener("click", openMail);
+    link.addEventListener("contextmenu", () => {
+      link.href = `mailto:${address}`;
+    });
+  })();
+</script>

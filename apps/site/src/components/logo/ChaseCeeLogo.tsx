@@ -10,11 +10,7 @@ import {
   pointsToKapowPath,
   pointsToQuadraticPath,
 } from "./kapowMorph";
-import {
-  DEFAULT_MORPH_BEZIER,
-  sampleCubicBezier,
-  type EaseBezier,
-} from "./morphEase";
+import { DEFAULT_MORPH_BEZIER, sampleCubicBezier } from "./morphEase";
 import { LOGO_VIEW_HEIGHT, LOGO_VIEW_WIDTH } from "./silhouette";
 
 const STORAGE_KEY = "chasecee:logo-font";
@@ -27,8 +23,6 @@ type ChaseCeeLogoProps = {
   exploding: boolean;
   restDurationMs: number;
   morphDurationMs: number;
-  easeBezier?: EaseBezier;
-  kapowStartOffsetMs?: number;
   onIndexChange: (index: number) => void;
   mirrorPathRefs?: Array<React.RefObject<(SVGPathElement | null)[]>>;
   pathClassName?: string;
@@ -46,8 +40,6 @@ export default function ChaseCeeLogo({
   exploding,
   restDurationMs,
   morphDurationMs,
-  easeBezier = DEFAULT_MORPH_BEZIER,
-  kapowStartOffsetMs = 0,
   onIndexChange,
   mirrorPathRefs,
   pathClassName,
@@ -68,8 +60,6 @@ export default function ChaseCeeLogo({
   const morphingRef = React.useRef(false);
   const activeRef = React.useRef(active);
   const explodingRef = React.useRef(exploding);
-  const easeBezierRef = React.useRef(easeBezier);
-  const kapowOffsetRef = React.useRef(kapowStartOffsetMs);
   const restMsRef = React.useRef(restDurationMs);
   const morphMsRef = React.useRef(morphDurationMs);
   const onIndexChangeRef = React.useRef(onIndexChange);
@@ -80,8 +70,6 @@ export default function ChaseCeeLogo({
 
   activeRef.current = active;
   explodingRef.current = exploding;
-  easeBezierRef.current = easeBezier;
-  kapowOffsetRef.current = kapowStartOffsetMs;
   restMsRef.current = restDurationMs;
   morphMsRef.current = morphDurationMs;
   onIndexChangeRef.current = onIndexChange;
@@ -159,7 +147,7 @@ export default function ChaseCeeLogo({
     const tick = (now: number) => {
       const raw = Math.min((now - startedAt) / durationMs, 1);
       const progress = Math.min(
-        Math.max(sampleCubicBezier(raw, easeBezierRef.current), 0),
+        Math.max(sampleCubicBezier(raw, DEFAULT_MORPH_BEZIER), 0),
         1,
       );
       for (let index = 0; index < from.glyphs.length; index++) {
@@ -204,11 +192,9 @@ export default function ChaseCeeLogo({
     setKapowActive(true, indexRef.current % 4);
 
     const tick = (now: number) => {
-      const restMs = restMsRef.current;
-      const offset = Math.min(Math.max(kapowOffsetRef.current, 0), Math.max(restMs - 1, 0));
-      const morphMs = Math.max(restMs - offset, 1);
-      const raw = Math.min(Math.max(now - startedAt - offset, 0) / morphMs, 1);
-      const progress = Math.min(sampleCubicBezier(raw, easeBezierRef.current), 1);
+      const morphMs = Math.max(restMsRef.current, 1);
+      const raw = Math.min((now - startedAt) / morphMs, 1);
+      const progress = Math.min(sampleCubicBezier(raw, DEFAULT_MORPH_BEZIER), 1);
       kapowProgressRef.current = progress;
       const scratch = interpolatePointsInto(
         kapowScratch.current,

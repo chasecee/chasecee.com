@@ -42,8 +42,10 @@ export default function MusicView({
           Draft
         </span>
       )}
-      <h1>{bandName}</h1>
-      <h2>{albumName}</h2>
+      <h1>
+        {albumName}
+        {bandName ? ` by ${bandName}` : ""}
+      </h1>
 
       <MusicPlayers
         embeds={embeds}
