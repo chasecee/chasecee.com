@@ -7,11 +7,11 @@
   --logo-wordmark-fill: var(--color-white);
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --logo-wordmark-fill: var(--color-neutral-900);
   }
-}
+} */
 
 .logo-kapow-unskew {
   transform: skew(3.5deg, 4deg);
