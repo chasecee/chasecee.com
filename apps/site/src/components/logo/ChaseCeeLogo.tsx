@@ -15,7 +15,7 @@ import { LOGO_VIEW_HEIGHT, LOGO_VIEW_WIDTH } from "./silhouette";
 
 const STORAGE_KEY = "chasecee:logo-font";
 
-export const FONT_CYCLE = [8, 0, 6, 3, 4, 7] as const;
+export const FONT_CYCLE = [5, 0, 3, 1, 2, 4] as const;
 
 type ChaseCeeLogoProps = {
   initialIndex: number;

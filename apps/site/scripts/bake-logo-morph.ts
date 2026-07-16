@@ -48,15 +48,8 @@ const CATALOG: Record<string, FontSpec> = Object.fromEntries(
   (
     [
       { id: "anton", google: "ofl/anton/Anton-Regular.ttf" },
-      {
-        id: "pixelifySans",
-        google: "ofl/pixelifysans/PixelifySans%5Bwght%5D.ttf",
-        weight: 600,
-      },
-      { id: "bebasNeue", google: "ofl/bebasneue/BebasNeue-Regular.ttf" },
       { id: "alfaSlabOne", google: "ofl/alfaslabone/AlfaSlabOne-Regular.ttf" },
       { id: "righteous", google: "ofl/righteous/Righteous-Regular.ttf" },
-      { id: "arvoBold", google: "ofl/arvo/Arvo-Bold.ttf" },
       { id: "bowlbyOne", google: "ofl/bowlbyone/BowlbyOne-Regular.ttf" },
       { id: "jersey10", google: "ofl/jersey10/Jersey10-Regular.ttf" },
       {
