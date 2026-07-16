@@ -16,8 +16,3 @@ export interface ButtonProps
   className?: string;
   children?: React.ReactNode;
 }
-
-export interface ProjectCardProps {
-  project: import("./Project").Project;
-  index?: number;
-}

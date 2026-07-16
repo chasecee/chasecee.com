@@ -1,7 +1,6 @@
 ---
 import type { Project } from "@/types/Project";
 import generateColorPalette from "@/src/utils/colorUtils";
-import CustomDashboardCard from "@/src/components/project-cards/CustomDashboardCard";
 import urlFor from "@/sanity/sanity.image";
 import { sanitizeProjectSvg } from "@/src/utils/sanitizeProjectSvg";
 
@@ -93,12 +92,11 @@ const itemClass = scroll
             </span>
           )}
           <iframe
-            src={project.embedUrl}
             title={project.name ?? undefined}
             class="pointer-events-none absolute inset-0 h-full w-full border-0"
-            loading="lazy"
             tabindex="-1"
             data-project-embed
+            data-src={project.embedUrl}
           />
         </div>
       ) : slugname === "loop-player" ? (
@@ -125,15 +123,6 @@ const itemClass = scroll
               />
             </div>
           )}
-        </div>
-      ) : slugname === "custom-dashboard" ? (
-        <div class="relative overflow-hidden">
-          {showDraftBadge && (
-            <span class="pointer-events-none absolute top-2 right-2 z-20 inline-flex rounded bg-amber-300 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black">
-              Draft
-            </span>
-          )}
-          <CustomDashboardCard client:visible project={project} index={index} />
         </div>
       ) : (
         <div class="relative h-0 overflow-hidden pt-[100%]">

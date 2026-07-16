@@ -172,9 +172,31 @@ const listClass = scroll
       .querySelectorAll<HTMLIFrameElement>("[data-project-embed]:not([data-bound])")
       .forEach((frame) => {
         frame.dataset.bound = "";
-        frame.addEventListener("load", () => frame.classList.add("is-loaded"), {
-          once: true,
-        });
+        const src = frame.dataset.src;
+        if (!src) return;
+
+        const reveal = () => frame.classList.add("is-loaded");
+        frame.addEventListener("load", reveal, { once: true });
+
+        const activate = () => {
+          if (frame.getAttribute("src")) return;
+          frame.src = src;
+        };
+
+        if (!("IntersectionObserver" in window)) {
+          activate();
+          return;
+        }
+
+        const io = new IntersectionObserver(
+          (entries) => {
+            if (!entries.some((entry) => entry.isIntersecting)) return;
+            io.disconnect();
+            activate();
+          },
+          { rootMargin: "200px 0px" },
+        );
+        io.observe(frame);
       });
   };
 

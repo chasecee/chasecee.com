@@ -8,11 +8,7 @@ export type {
 } from "./Music";
 export type { Page } from "./Page";
 export type { Skill, SkillDotsProps, SkillsListProps } from "./Skills";
-export type {
-  ColorPalette,
-  ButtonProps,
-  ProjectCardProps,
-} from "./UI";
+export type { ColorPalette, ButtonProps } from "./UI";
 export type {
   LinkField,
   InternalLinkField,
