@@ -10,7 +10,7 @@
   --prose-h2: 1.7em;
   --prose-h3: 1.35em;
   --prose-h4: 1.1em;
-  --prose-heading-weight: 700;
+  --prose-heading-weight: 500;
   --prose-heading-track: -0.02em;
   --prose-link: var(--color-indigo-600);
   --prose-link-hover: var(--color-indigo-500);
