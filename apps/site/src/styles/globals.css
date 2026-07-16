@@ -33,6 +33,7 @@ body.pt-8 {
 @theme inline {
   --font-sans: var(--font-rubik), ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-weight-bold: 500;
   --transition-delay-400: 400ms;
   --max-width-prose: var(--prose-measure);
 

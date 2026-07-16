@@ -322,6 +322,7 @@ export default function ChaseCeeLogo({
           }}
           suppressHydrationWarning
           fillRule="evenodd"
+          style={{ fill: "var(--logo-wordmark-fill, var(--color-white))" }}
           className={["logo-wordmark-path", pathClassName].filter(Boolean).join(" ")}
         />
       ))}

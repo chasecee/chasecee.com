@@ -1,9 +1,16 @@
 :root {
   --logo-padding-stroke: 1.25rem;
   --logo-border-stroke: calc(var(--logo-padding-stroke) + 4 * var(--site-border-width));
-  --logo-rest-duration: 720ms;
-  --logo-morph-duration: 140ms;
+  --logo-rest-duration: 800ms;
+  --logo-morph-duration: 200ms;
   --logo-kapow-halftone-size: 8px;
+  --logo-wordmark-fill: var(--color-white);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --logo-wordmark-fill: var(--color-neutral-900);
+  }
 }
 
 .logo-kapow-unskew {
@@ -127,14 +134,6 @@
     overflow: visible;
   }
 
-  .logo-wordmark {
-    color: white;
-  }
-
-  .logo-wordmark-path {
-    @apply fill-current;
-  }
-
   .logo-wordmark-underlay-path {
     fill: var(--color-neutral-900);
     stroke: var(--color-neutral-900);
@@ -145,9 +144,7 @@
   }
 
   &:active {
-    .logo-wordmark {
-      @apply text-[rgb(255_105_180)];
-    }
+    --logo-wordmark-fill: rgb(255 105 180);
 
     .logo-kapow-path {
       @apply text-yellow-400;
