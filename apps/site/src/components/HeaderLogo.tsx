@@ -51,7 +51,6 @@ export default function HeaderLogo() {
   const explodeTimerRef = useRef<number | null>(null);
   const pendingNavigateRef = useRef(false);
   const morphDoneRef = useRef(true);
-  const explodeDoneRef = useRef(true);
   const borderPathRefs = useRef<(SVGPathElement | null)[]>([]);
   const borderInnerPathRefs = useRef<(SVGPathElement | null)[]>([]);
   const mirrorPathRefs = useMemo(() => [borderPathRefs, borderInnerPathRefs], []);
@@ -59,19 +58,17 @@ export default function HeaderLogo() {
   const [strokeBox, setStrokeBox] = useState<StrokeBox | null>(null);
   const [borderRoot, setBorderRoot] = useState<HTMLElement | null>(null);
   const [borderInnerRoot, setBorderInnerRoot] = useState<HTMLElement | null>(null);
-  const [isHovered, setIsHovered] = useState(false);
   const [paintIndex] = useState(readStoredIndex);
   const [currentIndex, setCurrentIndex] = useState(paintIndex);
   const [isExploding, setIsExploding] = useState(false);
-  const [restDurationMs, setRestDurationMs] = useState(720);
+  const [morphNonce, setMorphNonce] = useState(0);
   const [morphDurationMs, setMorphDurationMs] = useState(140);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const active = isHovered && !prefersReducedMotion;
   const currentFontId = MORPH_VARIANTS[currentIndex]?.id ?? MORPH_VARIANTS[0].id;
 
   const maybeNavigate = useCallback(() => {
     if (!pendingNavigateRef.current) return;
-    if (!morphDoneRef.current || !explodeDoneRef.current) return;
+    if (!morphDoneRef.current) return;
     pendingNavigateRef.current = false;
     if (isHomePath()) return;
     navigate("/");
@@ -90,7 +87,6 @@ export default function HeaderLogo() {
     const onSwap = () => {
       setBorderRoot(document.getElementById("logo-border-root"));
       setBorderInnerRoot(document.getElementById("logo-border-inner-root"));
-      setIsHovered(false);
       setIsExploding(false);
     };
     onSwap();
@@ -145,7 +141,6 @@ export default function HeaderLogo() {
 
   useEffect(() => {
     const styles = getComputedStyle(document.documentElement);
-    setRestDurationMs(parseCssDurationMs(styles.getPropertyValue("--logo-rest-duration")) ?? 720);
     setMorphDurationMs(
       parseCssDurationMs(styles.getPropertyValue("--logo-morph-duration")) ?? 140,
     );
@@ -169,17 +164,14 @@ export default function HeaderLogo() {
     if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
     if (prefersReducedMotion) return;
     event.preventDefault();
-    setIsHovered(false);
     pendingNavigateRef.current = !isHomePath();
     morphDoneRef.current = false;
-    explodeDoneRef.current = false;
+    setMorphNonce((n) => n + 1);
     setIsExploding(true);
     if (explodeTimerRef.current) window.clearTimeout(explodeTimerRef.current);
     explodeTimerRef.current = window.setTimeout(() => {
       explodeTimerRef.current = null;
       setIsExploding(false);
-      explodeDoneRef.current = true;
-      maybeNavigate();
     }, KAPOW_EXPLODE_DURATION_MS);
   };
 
@@ -260,16 +252,7 @@ export default function HeaderLogo() {
     <>
       {borderPortal}
       {borderInnerPortal}
-      <div
-        className="relative"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        onPointerDown={(event) => {
-          if (event.button !== 0 || prefersReducedMotion) return;
-          setIsHovered(true);
-        }}
-        onPointerCancel={() => setIsHovered(false)}
-      >
+      <div className="relative">
         <a
           onClick={handleLogoClick}
           className="header__title group relative flex flex-row items-center gap-2"
@@ -284,9 +267,8 @@ export default function HeaderLogo() {
               <div className="logo-wordmark absolute top-0 left-0 w-full origin-center [transform:translateY(0%)_skew(-3.5deg,-4deg)]">
                 <ChaseCeeLogo
                   initialIndex={paintIndex}
-                  active={active}
                   exploding={isExploding}
-                  restDurationMs={restDurationMs}
+                  morphNonce={morphNonce}
                   morphDurationMs={morphDurationMs}
                   onIndexChange={handleIndexChange}
                   mirrorPathRefs={mirrorPathRefs}

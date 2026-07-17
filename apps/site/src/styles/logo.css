@@ -1,7 +1,6 @@
 :root {
   --logo-padding-stroke: 1.25rem;
   --logo-border-stroke: calc(var(--logo-padding-stroke) + 4 * var(--site-border-width));
-  --logo-rest-duration: 800ms;
   --logo-morph-duration: 200ms;
   --logo-kapow-halftone-size: 8px;
   --logo-wordmark-fill: var(--color-white);
@@ -45,7 +44,6 @@
   opacity: 1;
   fill: currentColor;
   stroke: transparent;
-  will-change: opacity, transform;
 }
 
 .logo-kapow-path--phase-0 {
@@ -65,7 +63,7 @@
 }
 
 .logo-kapow-path--explode {
-  animation: logo-kapow-path-explode 440ms ease forwards;
+  animation: logo-kapow-path-explode 440ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
   @apply fill-current stroke-current;
 }
 

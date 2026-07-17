@@ -114,7 +114,7 @@ const listClass = scroll
           >
             <span data-see-all-label>See All</span>
             <span
-              class="inline-flex transition-transform duration-300"
+              class="inline-flex transition-transform duration-200"
               data-see-all-icon
             >
               <LucideIcon icon={LUCIDE_ICONS.chevronDown} size={16} />
@@ -142,7 +142,7 @@ const listClass = scroll
   {
     expandable && (
       <div
-        class="grid transition-[grid-template-rows] duration-500 ease-out"
+        class="grid transition-[grid-template-rows] duration-200 ease-out"
         style="grid-template-rows: 0fr"
         data-see-all-panel
       >
@@ -215,12 +215,23 @@ const listClass = scroll
         button.addEventListener("click", () => {
           const open = button.getAttribute("aria-expanded") === "true";
           const next = !open;
+          const reducedMotion = window.matchMedia(
+            "(prefers-reduced-motion: reduce)",
+          ).matches;
           button.setAttribute("aria-expanded", String(next));
+          if (reducedMotion) panel.style.transition = "none";
           panel.style.gridTemplateRows = next ? "1fr" : "0fr";
+          if (reducedMotion) {
+            panel.offsetHeight;
+            panel.style.transition = "";
+          }
           if (label) label.textContent = next ? "Show less" : "See All";
           icon?.classList.toggle("rotate-180", next);
           if (next) {
-            header.scrollIntoView({ behavior: "smooth", block: "start" });
+            header.scrollIntoView({
+              behavior: reducedMotion ? "auto" : "smooth",
+              block: "start",
+            });
           }
         });
       });

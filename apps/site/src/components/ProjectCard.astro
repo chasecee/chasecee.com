@@ -115,7 +115,7 @@ const itemClass = scroll
             fetchpriority="high"
           />
           {project.svgcode?.code && (
-            <div class="view-actor absolute inset-0 transition-transform delay-[25ms] duration-500 group-hover:scale-110 group-hover:duration-300">
+            <div class="view-actor absolute inset-0 transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] [@media(hover:hover)_and_(pointer:fine)]:group-hover:scale-110">
               <div
                 class="svg-parent absolute top-1/2 left-1/2 h-full w-[50%] -translate-x-1/2 -translate-y-1/2 text-white"
                 set:html={sanitizeProjectSvg(project.svgcode.code)}
@@ -168,7 +168,7 @@ const itemClass = scroll
           )}
 
           {displayType === "popup" && colorPalette && (
-            <div class="project-gradient-bg absolute inset-0 -top-10 -bottom-10 flex-col flex-nowrap gap-0 overflow-hidden opacity-[20%] transition-all duration-500">
+            <div class="project-gradient-bg absolute inset-0 -top-10 -bottom-10 flex-col flex-nowrap gap-0 overflow-hidden opacity-[20%]">
               {[
                 colorPalette.darkest,
                 colorPalette.darker,
@@ -177,17 +177,17 @@ const itemClass = scroll
                 colorPalette.lightest,
               ].map((color, colorIndex) => (
                 <div
-                  class={`color-div transform-gpu transition-transform duration-[200ms] ${
+                  class={`color-div transform-gpu transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] ${
                     project.name === "Strider Intel"
-                      ? "group-hover:translate-y-[20%]"
+                      ? "[@media(hover:hover)_and_(pointer:fine)]:group-hover:translate-y-[20%]"
                       : ""
-                  } ${project.name === "doxy.me" ? "group-hover:translate-y-[20%]" : ""} ${
+                  } ${project.name === "doxy.me" ? "[@media(hover:hover)_and_(pointer:fine)]:group-hover:translate-y-[20%]" : ""} ${
                     project.name === "InMoment.com"
-                      ? "translate-x-0 group-hover:-translate-y-[10%]"
+                      ? "translate-x-0 [@media(hover:hover)_and_(pointer:fine)]:group-hover:-translate-y-[10%]"
                       : ""
                   } ${
                     project.name === "Yoli"
-                      ? "translate-x-0 group-hover:-translate-x-[10%] group-hover:-translate-y-[10%]"
+                      ? "translate-x-0 [@media(hover:hover)_and_(pointer:fine)]:group-hover:-translate-x-[10%] [@media(hover:hover)_and_(pointer:fine)]:group-hover:-translate-y-[10%]"
                       : ""
                   }`}
                   style={{
@@ -206,10 +206,10 @@ const itemClass = scroll
 
           {project.svgcode?.code && (
             <div
-              class={`view-actor absolute inset-0 transition-transform delay-[25ms] duration-500 ${
+              class={`view-actor absolute inset-0 transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] ${
                 displayType === "background"
-                  ? "group-hover:scale-100 scale-[80%] origin-center group-hover:duration-300"
-                  : "scale-[0.95] group-hover:scale-100 origin-center group-hover:duration-300"
+                  ? "scale-[80%] origin-center [@media(hover:hover)_and_(pointer:fine)]:group-hover:scale-100"
+                  : "scale-[0.95] origin-center [@media(hover:hover)_and_(pointer:fine)]:group-hover:scale-100"
               }`}
             >
               <div

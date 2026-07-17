@@ -93,6 +93,13 @@ body.pt-8 {
   iframe.is-loaded {
     opacity: 1;
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    iframe {
+      opacity: 1;
+      transition: none;
+    }
+  }
 }
 
 @utility embed-frame {
@@ -140,6 +147,13 @@ body.pt-8 {
   &.site-mini-native iframe {
     pointer-events: auto;
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    & iframe {
+      opacity: 1;
+      animation: none;
+    }
+  }
 }
 
 @keyframes site-mini-reveal {
@@ -184,44 +198,10 @@ body.pt-8 {
     }
   }
 }
-@utility border-animation {
-  animation: border-animation 10s linear infinite;
-  border-width: 1.5rem;
-}
 @utility view-actor {
-  @apply transition-transform duration-500;
+  @apply transition-transform duration-200;
+  transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
 }
-
-@layer components {
-  @keyframes border-animation {
-    0% {
-      border-style: dotted;
-      border-color: blueviolet;
-    }
-    20% {
-      border-style: dashed;
-      border-color: green;
-    }
-    40% {
-      border-style: dotted;
-      border-color: red;
-    }
-    60% {
-      border-style: dashed;
-      border-color: yellow;
-    }
-    80% {
-      border-style: dotted;
-      border-color: pink;
-    }
-    100% {
-      border-style: dashed;
-      border-color: rgb(43, 180, 226);
-    }
-  }
-
-}
-
 
 :root {
   --physics-color-level: 8;
@@ -245,7 +225,7 @@ body.pt-8 {
 ::view-transition-old(nav-active-indicator),
 ::view-transition-new(nav-active-indicator) {
   animation-duration: 220ms;
-  animation-timing-function: ease;
+  animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {

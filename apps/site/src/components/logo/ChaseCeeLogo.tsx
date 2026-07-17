@@ -4,10 +4,7 @@ import * as React from "react";
 import { MORPH_POINT_COUNT, MORPH_VARIANTS } from "./variants/morphData.js";
 import {
   interpolatePointsInto,
-  KAPOW_POINT_COUNT,
   KAPOW_VARIANT_PATHS,
-  KAPOW_VARIANT_POINTS,
-  pointsToKapowPath,
   pointsToQuadraticPath,
 } from "./kapowMorph";
 import { DEFAULT_MORPH_BEZIER, sampleCubicBezier } from "./morphEase";
@@ -19,9 +16,8 @@ export const FONT_CYCLE = [5, 0, 3, 1, 2, 4] as const;
 
 type ChaseCeeLogoProps = {
   initialIndex: number;
-  active: boolean;
   exploding: boolean;
-  restDurationMs: number;
+  morphNonce: number;
   morphDurationMs: number;
   onIndexChange: (index: number) => void;
   mirrorPathRefs?: Array<React.RefObject<(SVGPathElement | null)[]>>;
@@ -36,9 +32,8 @@ const nextIndex = (from: number) => {
 
 export default function ChaseCeeLogo({
   initialIndex,
-  active,
   exploding,
-  restDurationMs,
+  morphNonce,
   morphDurationMs,
   onIndexChange,
   mirrorPathRefs,
@@ -50,27 +45,13 @@ export default function ChaseCeeLogo({
   const underlayPathRefs = React.useRef<(SVGPathElement | null)[]>([]);
   const pathRefs = React.useRef<(SVGPathElement | null)[]>([]);
   const fontFrameRef = React.useRef(0);
-  const kapowFrameRef = React.useRef(0);
-  const restTimerRef = React.useRef(0);
   const indexRef = React.useRef(initialIndex);
-  const kapowIndexRef = React.useRef(0);
-  const kapowFromRef = React.useRef(0);
-  const kapowToRef = React.useRef(0);
-  const kapowProgressRef = React.useRef(1);
   const morphingRef = React.useRef(false);
-  const activeRef = React.useRef(active);
-  const explodingRef = React.useRef(exploding);
-  const restMsRef = React.useRef(restDurationMs);
   const morphMsRef = React.useRef(morphDurationMs);
   const onIndexChangeRef = React.useRef(onIndexChange);
   const mirrorRef = React.useRef(mirrorPathRefs);
   const morphScratch = React.useRef<number[]>([]);
-  const kapowScratch = React.useRef<number[]>([]);
-  const startRestRef = React.useRef(() => {});
 
-  activeRef.current = active;
-  explodingRef.current = exploding;
-  restMsRef.current = restDurationMs;
   morphMsRef.current = morphDurationMs;
   onIndexChangeRef.current = onIndexChange;
   mirrorRef.current = mirrorPathRefs;
@@ -81,13 +62,6 @@ export default function ChaseCeeLogo({
     mirrorRef.current?.forEach((groupRef) => {
       groupRef.current[index]?.setAttribute("d", pathValue);
     });
-  };
-
-  const setKapowPath = (index: number) => {
-    kapowPathRef.current?.setAttribute(
-      "d",
-      pointsToKapowPath(KAPOW_VARIANT_POINTS[index], KAPOW_POINT_COUNT, 0),
-    );
   };
 
   const setKapowActive = (on: boolean, phase: number | null) => {
@@ -105,35 +79,8 @@ export default function ChaseCeeLogo({
     fontFrameRef.current = 0;
   };
 
-  const stopKapow = () => {
-    if (!kapowFrameRef.current) return;
-    cancelAnimationFrame(kapowFrameRef.current);
-    kapowFrameRef.current = 0;
-  };
-
-  const stopRest = () => {
-    if (!restTimerRef.current) return;
-    clearTimeout(restTimerRef.current);
-    restTimerRef.current = 0;
-  };
-
-  const settleKapow = (index: number) => {
-    kapowIndexRef.current = index;
-    kapowProgressRef.current = 1;
-    setKapowPath(index);
-  };
-
-  const commitKapow = () => {
-    if (kapowProgressRef.current >= 1) return;
-    settleKapow(kapowProgressRef.current < 0.5 ? kapowFromRef.current : kapowToRef.current);
-  };
-
   const startMorph = React.useCallback(() => {
-    if (morphingRef.current) return;
     stopFont();
-    stopRest();
-    stopKapow();
-    commitKapow();
 
     const fromIndex = indexRef.current;
     const toIndex = nextIndex(fromIndex);
@@ -167,7 +114,6 @@ export default function ChaseCeeLogo({
         morphingRef.current = false;
         fontFrameRef.current = 0;
         onIndexChangeRef.current(toIndex);
-        if (activeRef.current && !explodingRef.current) startRestRef.current();
         return;
       }
       fontFrameRef.current = requestAnimationFrame(tick);
@@ -176,90 +122,21 @@ export default function ChaseCeeLogo({
     fontFrameRef.current = requestAnimationFrame(tick);
   }, []);
 
-  const startRest = React.useCallback(() => {
-    if (!activeRef.current || morphingRef.current || explodingRef.current) return;
-    stopRest();
-    stopKapow();
-
-    const count = KAPOW_VARIANT_POINTS.length;
-    const from = kapowIndexRef.current % count;
-    const to = (from + 1) % count;
-    kapowFromRef.current = from;
-    kapowToRef.current = to;
-    kapowProgressRef.current = 0;
-    const startedAt = performance.now();
-    let completed = false;
-    setKapowActive(true, indexRef.current % 4);
-
-    const tick = (now: number) => {
-      const morphMs = Math.max(restMsRef.current, 1);
-      const raw = Math.min((now - startedAt) / morphMs, 1);
-      const progress = Math.min(sampleCubicBezier(raw, DEFAULT_MORPH_BEZIER), 1);
-      kapowProgressRef.current = progress;
-      const scratch = interpolatePointsInto(
-        kapowScratch.current,
-        KAPOW_VARIANT_POINTS[from],
-        KAPOW_VARIANT_POINTS[to],
-        progress,
-      );
-      kapowScratch.current = scratch;
-      kapowPathRef.current?.setAttribute(
-        "d",
-        pointsToKapowPath(scratch, KAPOW_POINT_COUNT, 0),
-      );
-      if (raw >= 1) {
-        completed = true;
-        settleKapow(to);
-        kapowFrameRef.current = 0;
-        return;
-      }
-      kapowFrameRef.current = requestAnimationFrame(tick);
-    };
-
-    kapowFrameRef.current = requestAnimationFrame(tick);
-    restTimerRef.current = window.setTimeout(() => {
-      restTimerRef.current = 0;
-      stopKapow();
-      if (!completed) settleKapow(to);
-      if (!activeRef.current || explodingRef.current) return;
-      startMorph();
-    }, restMsRef.current);
-  }, [startMorph]);
-  startRestRef.current = startRest;
-
-  React.useEffect(() => {
-    if (active && !exploding) {
-      startRestRef.current();
-      return () => {
-        stopRest();
-        stopKapow();
-        kapowProgressRef.current = 1;
-        setKapowActive(false, null);
-      };
-    }
-    stopRest();
-    stopKapow();
-    kapowProgressRef.current = 1;
-    if (!exploding && !morphingRef.current) setKapowActive(false, null);
-  }, [active, exploding]);
-
   React.useEffect(() => {
     const node = kapowPathRef.current;
     if (!node) return;
+    if (morphNonce > 0 && exploding) {
+      node.classList.remove("logo-kapow-path--explode");
+      void node.getBoundingClientRect();
+      node.classList.add("logo-kapow-path--explode");
+      startMorph();
+      return;
+    }
     node.classList.toggle("logo-kapow-path--explode", exploding);
-    if (!exploding) return;
-    setKapowActive(true, 0);
-    if (!morphingRef.current) startMorph();
-  }, [exploding, startMorph]);
+    if (!exploding && !morphingRef.current) setKapowActive(false, null);
+  }, [exploding, morphNonce, startMorph]);
 
-  React.useEffect(
-    () => () => {
-      stopFont();
-      stopKapow();
-      stopRest();
-    },
-    [],
-  );
+  React.useEffect(() => () => stopFont(), []);
 
   React.useLayoutEffect(() => {
     MORPH_VARIANTS[initialIndex].paths.forEach((pathValue, index) => {

@@ -338,16 +338,6 @@ export function PhysicsCanvas() {
     canvas.addEventListener("touchstart", handleTouchStart, { passive: true });
     canvas.addEventListener("touchmove", handleTouchMove, { passive: true });
 
-    const handleVisibilityChange = () => {
-      const pauseMessage: Extract<MainToWorkerMessage, { type: "SET_PAUSED" }> =
-        {
-          type: "SET_PAUSED",
-          paused: document.hidden,
-        };
-      workerRef.current?.postMessage(pauseMessage);
-    };
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
     const lastBuf = { w: 0, h: 0 };
     const resizeObserver = new ResizeObserver((entries) => {
       if (!entries || entries.length === 0) return;
@@ -373,6 +363,7 @@ export function PhysicsCanvas() {
     resizeObserver.observe(canvas);
 
     let isCanvasVisible = true;
+    let windowFocused = true;
     const sendPause = (paused: boolean) => {
       const pauseMsg: Extract<MainToWorkerMessage, { type: "SET_PAUSED" }> = {
         type: "SET_PAUSED",
@@ -384,11 +375,19 @@ export function PhysicsCanvas() {
       );
     };
 
+    const shouldBePaused = () =>
+      document.hidden ||
+      prefersReducedMotion() ||
+      !isCanvasVisible ||
+      !windowFocused;
+
+    const updatePausedState = () => sendPause(shouldBePaused());
+
     const intersectionObserver = new IntersectionObserver(
       (entries) => {
         if (!entries || entries.length === 0) return;
         isCanvasVisible = entries[0].isIntersecting;
-        sendPause(!isCanvasVisible || document.hidden || !windowFocused);
+        updatePausedState();
       },
       {
         root: null,
@@ -398,21 +397,28 @@ export function PhysicsCanvas() {
 
     intersectionObserver.observe(canvas);
 
-    let windowFocused = true;
     const handleWindowBlur = () => {
       windowFocused = false;
-      sendPause(true);
+      updatePausedState();
     };
 
     const handleWindowFocus = () => {
       windowFocused = true;
-      if (isCanvasVisible && !document.hidden) {
-        sendPause(false);
-      }
+      updatePausedState();
     };
 
     window.addEventListener("blur", handleWindowBlur);
     window.addEventListener("focus", handleWindowFocus);
+
+    const handleVisibilityChange = () => updatePausedState();
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    const reducedMotionMedia = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    );
+    const handleReducedMotionChange = () => updatePausedState();
+    reducedMotionMedia.addEventListener("change", handleReducedMotionChange);
+    updatePausedState();
 
     const themeMedia = window.matchMedia("(prefers-color-scheme: dark)");
     const handleThemeChange = () => {
@@ -427,6 +433,7 @@ export function PhysicsCanvas() {
 
     return () => {
       themeMedia.removeEventListener("change", handleThemeChange);
+      reducedMotionMedia.removeEventListener("change", handleReducedMotionChange);
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
       window.removeEventListener("blur", handleWindowBlur);

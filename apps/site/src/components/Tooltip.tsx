@@ -42,7 +42,7 @@ export default function Tooltip({
     >
       {children}
       <div
-        className={`absolute bottom-full left-1/2 mb-1 -translate-x-1/2 rounded-md bg-neutral-100 px-2 py-1 text-xs whitespace-nowrap text-neutral-900 shadow-lg transition-all duration-200 dark:bg-neutral-900 dark:text-white ${
+        className={`absolute bottom-full left-1/2 mb-1 -translate-x-1/2 origin-bottom rounded-md bg-neutral-100 px-2 py-1 text-xs whitespace-nowrap text-neutral-900 shadow-lg transition-[transform,opacity] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] dark:bg-neutral-900 dark:text-white ${
           isVisible
             ? "scale-100 opacity-100"
             : "pointer-events-none scale-95 opacity-0"
