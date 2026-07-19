@@ -32,10 +32,10 @@ const SkillDots = ({ value, max = 10 }: SkillDotsProps) => {
 };
 
 type ListViewProps = {
-  category: Skill;
+  skills: Skill;
 };
 
-const ListView = ({ category }: ListViewProps) => {
+const ListView = ({ skills }: ListViewProps) => {
   const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
 
   const toggleCategory = useCallback((name: string) => {
@@ -100,16 +100,16 @@ const ListView = ({ category }: ListViewProps) => {
     [openCategories, toggleCategory],
   );
 
-  const items = useMemo(
-    () => (category.children ? sortSkills([...category.children]) : []),
-    [category.children],
+  const sortedCategories = useMemo(
+    () => (skills.children ? sortSkills([...skills.children]) : []),
+    [skills.children],
   );
 
-  if (items.length === 0) return null;
+  if (sortedCategories.length === 0) return null;
 
   return (
     <div className="py-1">
-      {items.map((skill) => renderSkillItem(skill, 0))}
+      {sortedCategories.map((category) => renderSkillItem(category, 0))}
     </div>
   );
 };

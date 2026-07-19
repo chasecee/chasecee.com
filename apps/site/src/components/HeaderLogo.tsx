@@ -58,12 +58,13 @@ export default function HeaderLogo() {
   const [strokeBox, setStrokeBox] = useState<StrokeBox | null>(null);
   const [borderRoot, setBorderRoot] = useState<HTMLElement | null>(null);
   const [borderInnerRoot, setBorderInnerRoot] = useState<HTMLElement | null>(null);
-  const [paintIndex] = useState(readStoredIndex);
-  const [currentIndex, setCurrentIndex] = useState(paintIndex);
+  const [paintIndex, setPaintIndex] = useState<number>(FONT_CYCLE[0]);
+  const [currentIndex, setCurrentIndex] = useState<number>(paintIndex);
   const [isExploding, setIsExploding] = useState(false);
   const [morphNonce, setMorphNonce] = useState(0);
   const [morphDurationMs, setMorphDurationMs] = useState(140);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const currentFontId = MORPH_VARIANTS[currentIndex]?.id ?? MORPH_VARIANTS[0].id;
 
   const maybeNavigate = useCallback(() => {
@@ -140,6 +141,11 @@ export default function HeaderLogo() {
   }, []);
 
   useEffect(() => {
+    setIsMounted(true);
+    const storedIndex = readStoredIndex();
+    setPaintIndex(storedIndex);
+    setCurrentIndex(storedIndex);
+
     const styles = getComputedStyle(document.documentElement);
     setMorphDurationMs(
       parseCssDurationMs(styles.getPropertyValue("--logo-morph-duration")) ?? 140,
@@ -275,7 +281,7 @@ export default function HeaderLogo() {
                 />
               </div>
             </div>
-            {import.meta.env.DEV && (
+            {import.meta.env.DEV && isMounted && (
               <span className="pointer-events-none absolute top-1/2 left-full z-20 ml-2 -translate-y-1/2 rounded border border-neutral-500/60 bg-neutral-50/90 px-2 py-1 font-mono text-[10px] leading-none text-neutral-700 dark:border-neutral-600 dark:bg-neutral-900/90 dark:text-neutral-200">
                 {currentFontId}
               </span>

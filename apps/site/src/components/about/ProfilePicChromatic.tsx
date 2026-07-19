@@ -1,23 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import ProfilePicDevControls, {
-  type ProfilePicDevParams,
-} from "./ProfilePicDevControls";
 
 const alt = "Portrait of Chase Cee";
-const IS_DEV = import.meta.env.DEV;
-const MIN_CELLS = 1;
-const MAX_CELLS = 24;
-const DEFAULT_PARAMS: ProfilePicDevParams = {
-  cells: 14,
-  strength: 2.2,
-  radius: 0.32,
-  easeMs: 72,
-  lineOpacity: 0.4,
-  showGrid: true,
-};
-
+const EFFECT_MULTIPLIER = 2.5;
 const vertexShaderSource = `
 attribute vec2 a_position;
 varying vec2 v_uv;
@@ -33,97 +19,38 @@ precision highp float;
 
 varying vec2 v_uv;
 uniform sampler2D u_texture;
-uniform vec2 u_focus;
+uniform vec2 u_resolution;
+uniform vec2 u_offset;
 uniform float u_strength;
-uniform float u_radius;
-uniform float u_cells;
-uniform float u_line_opacity;
+uniform float u_noise;
+uniform float u_time;
 
-const int MAX_GRID_CELLS = 24;
-
-float remapAxis(float pos, float focus, float cells, float strength, float radius) {
-  float weights[MAX_GRID_CELLS];
-  float total = 0.0;
-
-  for (int i = 0; i < MAX_GRID_CELLS; i++) {
-    if (float(i) >= cells) {
-      break;
-    }
-    float center = (float(i) + 0.5) / cells;
-    float dist = abs(center - focus);
-    float influence = 1.0 - smoothstep(0.0, max(radius, 0.0001), dist);
-    float weight = 1.0 + strength * influence;
-    weights[i] = weight;
-    total += weight;
-  }
-
-  float startEdge = 0.0;
-  for (int i = 0; i < MAX_GRID_CELLS; i++) {
-    if (float(i) >= cells) {
-      break;
-    }
-    float endEdge = startEdge + (weights[i] / max(total, 0.0001));
-    if (pos <= endEdge || float(i) >= cells - 1.0) {
-      float local = (pos - startEdge) / max(endEdge - startEdge, 0.00001);
-      return (float(i) + clamp(local, 0.0, 1.0)) / cells;
-    }
-    startEdge = endEdge;
-  }
-
-  return pos;
+float rand(vec2 n) {
+  return fract(sin(dot(n, vec2(12.9898, 78.233))) * 43758.5453123);
 }
 
 void main() {
   vec2 uv = vec2(v_uv.x, 1.0 - v_uv.y);
-  float cells = clamp(floor(u_cells + 0.5), 1.0, float(MAX_GRID_CELLS));
+  vec2 shift = (u_offset / max(u_resolution, vec2(1.0))) * u_strength;
+  float grain = (rand(uv * 1200.0 + vec2(u_time * 0.15, u_time * 0.07)) - 0.5) * u_noise;
+  vec2 grainVec = vec2(grain, -grain);
 
-  vec2 sourceUv = vec2(
-    remapAxis(uv.x, clamp(u_focus.x, 0.0, 1.0), cells, max(u_strength, 0.0), u_radius),
-    remapAxis(uv.y, clamp(u_focus.y, 0.0, 1.0), cells, max(u_strength, 0.0), u_radius)
-  );
+  float r = texture2D(u_texture, clamp(uv + shift + grainVec, 0.0, 1.0)).r;
+  float g = texture2D(u_texture, clamp(uv + grainVec * 0.5, 0.0, 1.0)).g;
+  float b = texture2D(u_texture, clamp(uv - shift - grainVec, 0.0, 1.0)).b;
 
-  vec4 color = texture2D(u_texture, clamp(sourceUv, 0.0, 1.0));
-  vec2 grid = abs(fract(sourceUv * cells) - 0.5);
-  float line = 1.0 - smoothstep(0.49, 0.5, max(grid.x, grid.y));
-  color.rgb = mix(color.rgb, vec3(0.0), clamp(u_line_opacity, 0.0, 1.0) * line);
-
-  gl_FragColor = color;
+  gl_FragColor = vec4(r, g, b, 1.0);
 }
 `;
 
-type XY = {
-  x: number;
-  y: number;
-};
+type XY = { x: number; y: number };
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 
-export default function ProfilePic() {
+export default function ProfilePicChromatic() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const paramsRef = useRef<ProfilePicDevParams>(DEFAULT_PARAMS);
-  const [controls, setControls] = useState<ProfilePicDevParams>(DEFAULT_PARAMS);
-  const [isMounted, setIsMounted] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
-
-  const updateControls = (next: ProfilePicDevParams) => {
-    const sanitized: ProfilePicDevParams = {
-      cells: Math.round(clamp(next.cells, MIN_CELLS, MAX_CELLS)),
-      strength: clamp(next.strength, 0, 4),
-      radius: clamp(next.radius, 0.05, 1.25),
-      easeMs: clamp(next.easeMs, 16, 260),
-      lineOpacity: clamp(next.lineOpacity, 0, 1),
-      showGrid: next.showGrid,
-    };
-    paramsRef.current = sanitized;
-    if (IS_DEV) {
-      setControls(sanitized);
-    }
-  };
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
@@ -169,21 +96,20 @@ export default function ProfilePic() {
     gl.useProgram(program);
 
     const positionLocation = gl.getAttribLocation(program, "a_position");
-    if (positionLocation < 0) return;
-
-    const textureLocation = gl.getUniformLocation(program, "u_texture");
-    const focusLocation = gl.getUniformLocation(program, "u_focus");
+    const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
+    const offsetLocation = gl.getUniformLocation(program, "u_offset");
     const strengthLocation = gl.getUniformLocation(program, "u_strength");
-    const radiusLocation = gl.getUniformLocation(program, "u_radius");
-    const cellsLocation = gl.getUniformLocation(program, "u_cells");
-    const lineOpacityLocation = gl.getUniformLocation(program, "u_line_opacity");
+    const noiseLocation = gl.getUniformLocation(program, "u_noise");
+    const timeLocation = gl.getUniformLocation(program, "u_time");
+    const textureLocation = gl.getUniformLocation(program, "u_texture");
     if (
-      !textureLocation ||
-      !focusLocation ||
+      positionLocation < 0 ||
+      !resolutionLocation ||
+      !offsetLocation ||
       !strengthLocation ||
-      !radiusLocation ||
-      !cellsLocation ||
-      !lineOpacityLocation
+      !noiseLocation ||
+      !timeLocation ||
+      !textureLocation
     ) {
       return;
     }
@@ -209,8 +135,8 @@ export default function ProfilePic() {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.uniform1i(textureLocation, 0);
 
-    const currentFocus: XY = { x: 0.5, y: 0.5 };
-    const targetFocus: XY = { x: 0.5, y: 0.5 };
+    const currentOffset: XY = { x: 0, y: 0 };
+    const targetOffset: XY = { x: 0, y: 0 };
     let currentStrength = 0;
     let targetStrength = 0;
     let isHovering = false;
@@ -221,12 +147,14 @@ export default function ProfilePic() {
     const applyPointer = (clientX: number, clientY: number) => {
       const rect = canvas.getBoundingClientRect();
       if (!rect.width || !rect.height) return;
-      const x = clamp((clientX - rect.left) / rect.width, 0, 1);
-      const y = clamp((clientY - rect.top) / rect.height, 0, 1);
-      targetFocus.x = x;
-      targetFocus.y = 1 - y;
-      const { strength } = paramsRef.current;
-      targetStrength = isPointerDown ? strength * 1.08 : strength;
+      const viewportWidth = Math.max(window.innerWidth, 1);
+      const viewportHeight = Math.max(window.innerHeight, 1);
+      const x = (clientX / viewportWidth) * 2 - 1;
+      const y = (clientY / viewportHeight) * 2 - 1;
+      const maxShift = Math.min(rect.width, rect.height) * 0.022 * EFFECT_MULTIPLIER;
+      targetOffset.x = clamp(x, -1, 1) * maxShift;
+      targetOffset.y = clamp(-y, -1, 1) * maxShift;
+      targetStrength = isPointerDown ? 1 : 0.72;
     };
 
     const resize = () => {
@@ -246,17 +174,19 @@ export default function ProfilePic() {
       const delta = Math.min(64, timestamp - lastTimestamp);
       lastTimestamp = timestamp;
 
-      const { easeMs, radius, cells, lineOpacity, showGrid } = paramsRef.current;
-      const easing = 1 - Math.exp(-delta / Math.max(16, easeMs));
-      currentFocus.x += (targetFocus.x - currentFocus.x) * easing;
-      currentFocus.y += (targetFocus.y - currentFocus.y) * easing;
+      const easing = 1 - Math.exp(-delta / 70);
+      currentOffset.x += (targetOffset.x - currentOffset.x) * easing;
+      currentOffset.y += (targetOffset.y - currentOffset.y) * easing;
       currentStrength += (targetStrength - currentStrength) * easing;
 
-      gl.uniform2f(focusLocation, currentFocus.x, currentFocus.y);
+      gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
+      gl.uniform2f(offsetLocation, currentOffset.x, currentOffset.y);
       gl.uniform1f(strengthLocation, currentStrength);
-      gl.uniform1f(radiusLocation, radius);
-      gl.uniform1f(cellsLocation, cells);
-      gl.uniform1f(lineOpacityLocation, IS_DEV && showGrid ? lineOpacity : 0);
+      gl.uniform1f(
+        noiseLocation,
+        0.01 * EFFECT_MULTIPLIER * (0.35 + currentStrength * 0.65),
+      );
+      gl.uniform1f(timeLocation, timestamp * 0.001);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
 
       rafId = window.requestAnimationFrame(draw);
@@ -264,7 +194,7 @@ export default function ProfilePic() {
 
     const onPointerEnter = () => {
       isHovering = true;
-      targetStrength = Math.max(targetStrength, paramsRef.current.strength * 0.6);
+      targetStrength = Math.max(targetStrength, 0.35);
     };
     const onPointerDown = (event: PointerEvent) => {
       isPointerDown = true;
@@ -278,18 +208,18 @@ export default function ProfilePic() {
     const releasePointer = () => {
       isPointerDown = false;
       if (!isHovering) {
-        targetFocus.x = 0.5;
-        targetFocus.y = 0.5;
+        targetOffset.x = 0;
+        targetOffset.y = 0;
         targetStrength = 0;
       } else {
-        targetStrength = paramsRef.current.strength * 0.65;
+        targetStrength = 0.32;
       }
     };
     const onPointerLeave = () => {
       isHovering = false;
       isPointerDown = false;
-      targetFocus.x = 0.5;
-      targetFocus.y = 0.5;
+      targetOffset.x = 0;
+      targetOffset.y = 0;
       targetStrength = 0;
     };
 
@@ -305,20 +235,13 @@ export default function ProfilePic() {
     resize();
 
     const image = new Image();
-    let started = false;
-    const start = () => {
-      if (started) return;
-      started = true;
+    image.src = "/me.webp";
+    image.decoding = "async";
+    image.onload = () => {
       gl.bindTexture(gl.TEXTURE_2D, texture);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
       rafId = window.requestAnimationFrame(draw);
     };
-    image.decoding = "async";
-    image.onload = start;
-    image.src = "/me.webp";
-    if (image.complete && image.naturalWidth > 0) {
-      start();
-    }
 
     return () => {
       window.cancelAnimationFrame(rafId);
@@ -350,15 +273,10 @@ export default function ProfilePic() {
   }
 
   return (
-    <>
-      <canvas
-        ref={canvasRef}
-        aria-label={alt}
-        className="m-0 block aspect-square w-full touch-none"
-      />
-      {IS_DEV && isMounted ? (
-        <ProfilePicDevControls values={controls} onChange={updateControls} />
-      ) : null}
-    </>
+    <canvas
+      ref={canvasRef}
+      aria-label={alt}
+      className="m-0 block aspect-square w-full touch-none"
+    />
   );
 }
