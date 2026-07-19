@@ -6,7 +6,7 @@ const HeroText = () => {
       </h1>
       <div className="container flex flex-col gap-8">
         <p className="mx-auto w-[80%] text-base font-light text-balance text-gray-600 md:w-[60%] md:text-xl dark:text-gray-400">
-          I&apos;m Chase, an opinionated designer, jaded developer, and curious fella.
+          I&apos;m Chase, an opinionated designer, tinkering developer, and endlessly curious fella.
         </p>
       </div>
     </div>
