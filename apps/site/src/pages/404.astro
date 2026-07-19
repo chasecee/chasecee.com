@@ -1,16 +1,43 @@
 ---
 import SiteLayout from "@/src/layouts/SiteLayout.astro";
 import Container from "@/src/components/Container.astro";
+import LucideIcon from "@/src/components/icons/LucideIcon.astro";
+import { LUCIDE_ICONS } from "@/src/components/icons/lucide";
 
 export const prerender = false;
 
 Astro.response.status = 404;
 ---
 
-<SiteLayout title="Not Found - Chase Cee">
+<SiteLayout
+  title="You Lost? - Chase Cee"
+  description="This page doesn't exist. Head on back to town."
+>
   <Container>
-    <h2>Error: Not Found</h2>
-    <pre>Could not find requested resource</pre>
-    <a href="/">Return Home</a>
+    <div class="prose prose-flow mt-10">
+      <div class="mx-auto flex max-w-2xl flex-col items-start gap-6 py-16 text-left md:items-center md:text-center">
+        <p class="not-prose m-0 font-mono text-sm tracking-widest opacity-50">
+          404
+        </p>
+        <h1 class="m-0 text-[clamp(2.4rem,8vw,4.3rem)] leading-[1.05]">
+          You ain't from round this place, is ya?
+        </h1>
+        <p class="m-0 text-xl opacity-80">
+          Whatever page you're lookin' for doesn't live here — never has, far
+          as anyone can recall. Best head on back to town.
+        </p>
+        <a
+          href="/"
+          class="not-prose group mt-4 inline-flex items-center justify-center gap-x-3 rounded-[.25rem] border-0 bg-indigo-600 px-6 py-3 text-base text-black no-underline shadow-xs ring-site ring-indigo-300 transition-colors dark:bg-indigo-500/20 dark:text-white dark:ring-indigo-300/20"
+        >
+          Take me home
+          <LucideIcon
+            icon={LUCIDE_ICONS.chevronRight}
+            size={12}
+            class="transition-transform duration-200 [@media(hover:hover)_and_(pointer:fine)]:group-hover:translate-x-1 group-active:translate-x-1"
+          />
+        </a>
+      </div>
+    </div>
   </Container>
 </SiteLayout>
