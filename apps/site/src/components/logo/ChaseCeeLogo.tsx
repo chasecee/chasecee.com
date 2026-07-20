@@ -1,7 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { MORPH_POINT_COUNT, MORPH_VARIANTS } from "./variants/morphData.js";
+import {
+  MORPH_POINT_COUNT,
+  MORPH_PATHS,
+  MORPH_VARIANT_IDS,
+} from "./variants/morphMeta.js";
+import { loadGlyphs, prefetchGlyphs } from "./variants/loadGlyphs";
 import {
   interpolatePointsInto,
   KAPOW_VARIANT_PATHS,
@@ -46,6 +51,7 @@ export default function ChaseCeeLogo({
   const pathRefs = React.useRef<(SVGPathElement | null)[]>([]);
   const fontFrameRef = React.useRef(0);
   const indexRef = React.useRef(initialIndex);
+  const morphTokenRef = React.useRef(0);
   const morphingRef = React.useRef(false);
   const morphMsRef = React.useRef(morphDurationMs);
   const onIndexChangeRef = React.useRef(onIndexChange);
@@ -84,42 +90,57 @@ export default function ChaseCeeLogo({
 
     const fromIndex = indexRef.current;
     const toIndex = nextIndex(fromIndex);
-    const from = MORPH_VARIANTS[fromIndex];
-    const to = MORPH_VARIANTS[toIndex];
+    const toPaths = MORPH_PATHS[toIndex];
     const durationMs = morphMsRef.current;
-    const startedAt = performance.now();
     morphingRef.current = true;
     setKapowActive(true, fromIndex % 4);
+    const morphToken = ++morphTokenRef.current;
 
-    const tick = (now: number) => {
-      const raw = Math.min((now - startedAt) / durationMs, 1);
-      const progress = Math.min(
-        Math.max(sampleCubicBezier(raw, DEFAULT_MORPH_BEZIER), 0),
-        1,
-      );
-      for (let index = 0; index < from.glyphs.length; index++) {
-        const scratch = interpolatePointsInto(
-          morphScratch.current,
-          from.glyphs[index],
-          to.glyphs[index],
-          progress,
-        );
-        morphScratch.current = scratch;
-        setPathValue(index, pointsToQuadraticPath(scratch, MORPH_POINT_COUNT));
-      }
-      if (raw >= 1) {
-        to.paths.forEach((pathValue, index) => setPathValue(index, pathValue));
-        localStorage.setItem(STORAGE_KEY, to.id);
-        indexRef.current = toIndex;
-        morphingRef.current = false;
-        fontFrameRef.current = 0;
-        onIndexChangeRef.current(toIndex);
-        return;
-      }
-      fontFrameRef.current = requestAnimationFrame(tick);
+    const finishAt = (paths: readonly string[]) => {
+      paths.forEach((pathValue, index) => setPathValue(index, pathValue));
+      localStorage.setItem(STORAGE_KEY, MORPH_VARIANT_IDS[toIndex]);
+      indexRef.current = toIndex;
+      morphingRef.current = false;
+      fontFrameRef.current = 0;
+      onIndexChangeRef.current(toIndex);
+      prefetchGlyphs(nextIndex(toIndex));
     };
 
-    fontFrameRef.current = requestAnimationFrame(tick);
+    Promise.all([loadGlyphs(fromIndex), loadGlyphs(toIndex)])
+      .then(([fromGlyphs, toGlyphs]) => {
+        if (morphTokenRef.current !== morphToken || !morphingRef.current) return;
+        const startedAt = performance.now();
+
+        const tick = (now: number) => {
+          const raw = Math.min((now - startedAt) / durationMs, 1);
+          const progress = Math.min(
+            Math.max(sampleCubicBezier(raw, DEFAULT_MORPH_BEZIER), 0),
+            1,
+          );
+          for (let index = 0; index < fromGlyphs.length; index++) {
+            const scratch = interpolatePointsInto(
+              morphScratch.current,
+              fromGlyphs[index],
+              toGlyphs[index],
+              progress,
+            );
+            morphScratch.current = scratch;
+            setPathValue(index, pointsToQuadraticPath(scratch, MORPH_POINT_COUNT));
+          }
+          if (raw >= 1) {
+            finishAt(toPaths);
+            return;
+          }
+          fontFrameRef.current = requestAnimationFrame(tick);
+        };
+
+        fontFrameRef.current = requestAnimationFrame(tick);
+      })
+      .catch(() => {
+        // Glyph chunk failed to load (offline, etc.) — swap without tweening.
+        if (morphTokenRef.current !== morphToken || !morphingRef.current) return;
+        finishAt(toPaths);
+      });
   }, []);
 
   React.useEffect(() => {
@@ -138,13 +159,29 @@ export default function ChaseCeeLogo({
 
   React.useEffect(() => () => stopFont(), []);
 
+  React.useEffect(() => {
+    // Warm the glyph chunks for the current and next variant while idle so
+    // the first click can tween without waiting on a network fetch.
+    const warm = () => {
+      prefetchGlyphs(indexRef.current);
+      prefetchGlyphs(nextIndex(indexRef.current));
+    };
+    if (typeof window.requestIdleCallback === "function") {
+      const handle = window.requestIdleCallback(warm);
+      return () => window.cancelIdleCallback(handle);
+    }
+    const timeout = window.setTimeout(warm, 1500);
+    return () => window.clearTimeout(timeout);
+  }, []);
+
   React.useLayoutEffect(() => {
-    MORPH_VARIANTS[initialIndex].paths.forEach((pathValue, index) => {
+    if (!morphingRef.current) indexRef.current = initialIndex;
+    MORPH_PATHS[initialIndex].forEach((pathValue, index) => {
       setPathValue(index, pathValue);
     });
   }, [initialIndex]);
 
-  const pathCount = MORPH_VARIANTS[initialIndex].paths.length;
+  const pathCount = MORPH_PATHS[initialIndex].length;
 
   return (
     <svg

@@ -57,7 +57,19 @@ export default function ProjectHero({
       ? sanitizeProjectSvg(stegaClean(rawSvgCode).trim())
       : "";
   const imageUrl = project.image
-    ? urlFor(project.image).width(1600).height(900).dpr(1.5).url()
+    ? urlFor(project.image).width(1600).height(900).url()
+    : "";
+  const heroWidths = [640, 960, 1280, 1600, 2000, 2400];
+  const heroSrcSet = project.image
+    ? heroWidths
+        .map(
+          (width) =>
+            `${urlFor(project.image!)
+              .width(width)
+              .height(Math.round((width * 9) / 16))
+              .url()} ${width}w`,
+        )
+        .join(", ")
     : "";
   const hasLogo = Boolean(svgCode);
   const clippedLogo = Boolean(svgCode && imageUrl);
@@ -81,12 +93,15 @@ export default function ProjectHero({
           {imageUrl && (
             <img
               src={imageUrl}
+              srcSet={heroSrcSet}
+              sizes="(min-width: 1400px) 1352px, 100vw"
               alt=""
               width={1600}
               height={900}
               className="h-full w-full object-cover"
               loading="eager"
               fetchPriority="high"
+              decoding="async"
             />
           )}
           <div className="absolute inset-0 bg-black/70" />

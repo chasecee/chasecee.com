@@ -28,6 +28,14 @@ export default defineConfig({
       bypassToken: process.env.ISR_BYPASS_TOKEN,
       exclude: [/^\/api\/.+/],
     },
+    // og-satori reads these from disk at runtime now that the project OG
+    // route is server-rendered (ISR) instead of prerendered.
+    includeFiles: [
+      "./assets/anton-regular.ttf",
+      "./assets/rubik-latin-400.woff",
+      "./assets/rubik-latin-800.woff",
+      "./assets/bg.png",
+    ],
   }),
   fonts: [
     {
@@ -60,6 +68,11 @@ export default defineConfig({
   integrations: [react()],
   vite: {
     envDir: monorepoRoot,
+    resolve: {
+      // The sanity-kit package imports these too; force a single copy so the
+      // client build doesn't emit duplicate photoswipe/stega chunks.
+      dedupe: ["photoswipe", "@sanity/client", "react", "react-dom"],
+    },
     server: {
       fs: {
         allow: useLocalKit ? [monorepoRoot, localKit, appRoot] : [monorepoRoot, appRoot],

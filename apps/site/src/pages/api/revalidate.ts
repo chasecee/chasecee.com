@@ -12,9 +12,13 @@ export const POST = createIsrRevalidateRoute({
     if (docType === "page" && slug) {
       paths.push(slug === "home" ? "/" : `/${slug}`);
     } else if (docType === "project" && slug) {
-      paths.push(`/projects/${slug}`, "/");
+      paths.push(`/projects/${slug}`, `/og/project/${slug}.png`, "/");
     } else if (docType === "music" && slug) {
       paths.push(`/music/${slug}`, "/music");
+    }
+
+    if (paths.length > 0) {
+      paths.push("/sitemap.xml");
     }
 
     return paths;
