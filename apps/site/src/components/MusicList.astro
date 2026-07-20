@@ -12,7 +12,7 @@ const draftMode = Astro.locals.draftMode === true;
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 flex-nowrap gap-10 overflow-x-auto pb-10">
   {
-    items.map((item) => {
+    items.map((item, index) => {
       const showDraftBadge = draftMode && item.isDraft;
       const draftRingClass = showDraftBadge
         ? "ring-2 ring-amber-300 ring-offset-2 ring-offset-neutral-100 dark:ring-offset-neutral-900"
@@ -32,16 +32,29 @@ const draftMode = Astro.locals.draftMode === true;
               {item.albumArt ? (
                 <img
                   src={withSanityImageParams(item.albumArt, {
-                    w: 900,
-                    h: 900,
+                    w: 640,
+                    h: 640,
                     fit: "crop",
                     auto: "format",
                   })}
+                  srcset={[320, 480, 640, 800, 960]
+                    .map(
+                      (width) =>
+                        `${withSanityImageParams(item.albumArt ?? undefined, {
+                          w: width,
+                          h: width,
+                          fit: "crop",
+                          auto: "format",
+                        })} ${width}w`,
+                    )
+                    .join(", ")}
+                  sizes="(min-width: 1400px) 424px, (min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
                   alt={item.albumArtAlt || `${item.albumName} by ${item.bandName}`}
                   width={640}
                   height={640}
                   class="absolute inset-0 h-full w-full object-cover"
-                  loading="lazy"
+                  loading={index < 3 ? "eager" : "lazy"}
+                  fetchpriority={index === 0 ? "high" : "auto"}
                   decoding="async"
                 />
               ) : null}

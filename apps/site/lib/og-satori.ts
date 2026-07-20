@@ -12,13 +12,29 @@ interface OGImageOptions {
   template?: "home" | "page" | "project";
 }
 
+// Local builds run with cwd = apps/site; in the deployed Vercel function the
+// includeFiles land under apps/site/assets relative to the function root.
+const ASSET_DIRS = ["assets", "apps/site/assets"];
+
+async function readAsset(name: string) {
+  let lastError: unknown;
+  for (const dir of ASSET_DIRS) {
+    try {
+      return await readFile(join(process.cwd(), dir, name));
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError;
+}
+
 async function loadAssets() {
   const [antonRegular, rubikRegular, rubikBold, backgroundImageBuffer] =
     await Promise.all([
-      readFile(join(process.cwd(), "assets/anton-regular.ttf")),
-      readFile(join(process.cwd(), "assets/rubik-latin-400.woff")),
-      readFile(join(process.cwd(), "assets/rubik-latin-800.woff")),
-      readFile(join(process.cwd(), "assets/bg.png")),
+      readAsset("anton-regular.ttf"),
+      readAsset("rubik-latin-400.woff"),
+      readAsset("rubik-latin-800.woff"),
+      readAsset("bg.png"),
     ]);
 
   return {

@@ -13,7 +13,10 @@ import {
 import { createPortal } from "react-dom";
 import ChaseCeeLogo, { FONT_CYCLE } from "./logo/ChaseCeeLogo";
 import { LOGO_VIEW_HEIGHT, LOGO_VIEW_WIDTH } from "./logo/silhouette";
-import { MORPH_VARIANTS } from "./logo/variants/morphData.js";
+import {
+  MORPH_PATHS,
+  MORPH_VARIANT_IDS,
+} from "./logo/variants/morphMeta.js";
 
 const parseCssDurationMs = (raw: string) => {
   const value = raw.trim();
@@ -41,7 +44,7 @@ const isHomePath = () => {
 const readStoredIndex = () => {
   if (typeof window === "undefined") return FONT_CYCLE[0];
   const storedId = localStorage.getItem(STORAGE_KEY);
-  const storedIndex = MORPH_VARIANTS.findIndex((variant) => variant.id === storedId);
+  const storedIndex = storedId ? MORPH_VARIANT_IDS.indexOf(storedId) : -1;
   if (storedIndex === -1) return FONT_CYCLE[0];
   if (!FONT_CYCLE.includes(storedIndex as (typeof FONT_CYCLE)[number])) return FONT_CYCLE[0];
   return storedIndex;
@@ -65,7 +68,7 @@ export default function HeaderLogo() {
   const [morphDurationMs, setMorphDurationMs] = useState(140);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const currentFontId = MORPH_VARIANTS[currentIndex]?.id ?? MORPH_VARIANTS[0].id;
+  const currentFontId = MORPH_VARIANT_IDS[currentIndex] ?? MORPH_VARIANT_IDS[0];
 
   const maybeNavigate = useCallback(() => {
     if (!pendingNavigateRef.current) return;
@@ -96,7 +99,7 @@ export default function HeaderLogo() {
   }, []);
 
   useLayoutEffect(() => {
-    const paths = MORPH_VARIANTS[currentIndex]?.paths;
+    const paths = MORPH_PATHS[currentIndex];
     if (!paths) return;
     paths.forEach((pathValue, index) => {
       borderPathRefs.current[index]?.setAttribute("d", pathValue);
@@ -202,7 +205,7 @@ export default function HeaderLogo() {
     refGroup: React.RefObject<(SVGPathElement | null)[]>,
     className: string,
   ) =>
-    Array.from({ length: MORPH_VARIANTS[paintIndex].paths.length }, (_, index) => (
+    Array.from({ length: MORPH_PATHS[paintIndex].length }, (_, index) => (
       <path
         key={`${className}-${index}`}
         ref={(node) => {
