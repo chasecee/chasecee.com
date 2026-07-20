@@ -1,0 +1,88 @@
+---
+import { stegaClean } from "@sanity/client/stega";
+import { withSanityImageParams } from "@chasecee/sanity-kit/astro";
+import Body from "@/src/components/Body";
+import MusicPlayers, { isPlatformListenLink } from "@/src/components/MusicPlayers";
+import type { MusicViewData } from "@/src/components/MusicView";
+
+interface Props {
+  item: MusicViewData;
+}
+
+const { item } = Astro.props;
+const bandName = stegaClean(item.bandName ?? "");
+const albumName = stegaClean(item.albumName ?? "");
+const embeds = item.embeds ?? [];
+const links = item.links ?? [];
+const content = item.content ?? [];
+const otherLinks = links.filter((link) => !isPlatformListenLink(link.label));
+const artWidths = [640, 960, 1280, 1600];
+---
+
+<div class="prose prose-flow mt-10">
+  <h1>
+    {albumName}{bandName ? ` by ${bandName}` : ""}
+  </h1>
+
+  <MusicPlayers
+    client:load
+    embeds={embeds}
+    links={links}
+    albumName={albumName}
+  />
+
+  {
+    otherLinks.length > 0 && (
+      <section class="mt-10">
+        <h3>Links</h3>
+        <ul>
+          {otherLinks.map((link) => (
+            <li>
+              <a href={stegaClean(link.url)} target="_blank" rel="noopener noreferrer">
+                {stegaClean(link.label)}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  {
+    item.albumArt && (
+      <div class="measure-wide">
+        <img
+          src={withSanityImageParams(item.albumArt, {
+            w: 1104,
+            fit: "max",
+            auto: "format",
+          })}
+          srcset={artWidths
+            .map(
+              (width) =>
+                `${withSanityImageParams(item.albumArt ?? undefined, {
+                  w: width,
+                  fit: "max",
+                  auto: "format",
+                })} ${width}w`,
+            )
+            .join(", ")}
+          sizes="(min-width: 1280px) 1104px, 100vw"
+          alt={item.albumArtAlt || `${albumName} album art`}
+          width={1200}
+          height={1200}
+          class="w-full"
+          decoding="async"
+        />
+      </div>
+    )
+  }
+
+  {
+    content.length > 0 && (
+      <section class="mt-8">
+        <Body value={content} />
+      </section>
+    )
+  }
+</div>

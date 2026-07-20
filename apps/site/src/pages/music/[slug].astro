@@ -1,7 +1,7 @@
 ---
 import SiteLayout from "@/src/layouts/SiteLayout.astro";
 import Container from "@/src/components/Container.astro";
-import MusicView from "@/src/components/MusicView";
+import MusicDetail from "@/src/components/MusicDetail.astro";
 import LiveMusic from "@/src/components/LiveMusic";
 import ImageGalleryLightbox from "@/src/components/gallery/ImageGalleryLightbox.astro";
 import { getMusicBySlug } from "@/sanity/sanity-utils";
@@ -59,7 +59,7 @@ const albumName = stegaClean(item.albumName);
           initial={{ ...initialMusic, data: item }}
         />
       ) : (
-        <MusicView client:load item={item} />
+        <MusicDetail item={item} />
       )
     }
   </Container>

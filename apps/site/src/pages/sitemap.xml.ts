@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { getProjects, getPages, getMusic } from "@/sanity/sanity-utils";
 
-export const prerender = true;
+export const prerender = false;
 
 export const GET: APIRoute = async ({ site }) => {
   const [projects, pages, music] = await Promise.all([
