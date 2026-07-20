@@ -22,6 +22,7 @@ import {
   resolveProductionUrlAsync,
   getSiteBaseUrl,
   galleryPlugin,
+  mediaPlugin,
   configureStudioPreviewUrls,
   kitStudioConfig,
 } from "@chasecee/sanity-kit/studio";
@@ -187,6 +188,7 @@ export default defineConfig({
     codeInput(),
     colorInput(),
     galleryPlugin({}),
+    mediaPlugin(),
     presentationTool({
       name: "edit",
       title: "Edit",
