@@ -41,7 +41,7 @@
       ]
     },
     {
-      "source": "/:file(me.webp|noise1.webp|wavyline.lottie)",
+      "source": "/:file(me.webp|noise1.webp)",
       "headers": [
         {
           "key": "Cache-Control",

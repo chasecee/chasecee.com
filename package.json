@@ -15,7 +15,7 @@
     "studio:deploy": "bun run --filter admin deploy",
     "site:dev": "bun run --filter site dev",
     "typegen": "bun run --filter admin typegen",
-    "convert-webp": "node scripts/convert-to-webp.mjs",
+    "convert-webp": "bun scripts/convert-to-webp.mjs",
     "music:audit": "bun scripts/music-audit.ts",
     "music:apply": "bun scripts/music-apply.ts",
     "logo:morph": "bun run --filter site logo:morph",

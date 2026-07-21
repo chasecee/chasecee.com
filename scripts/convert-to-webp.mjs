@@ -1,159 +1,121 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 
-import { readdir, stat } from "fs/promises";
-import { join, extname, basename } from "path";
-import sharp from "sharp";
+import { basename, dirname, extname, join } from "node:path";
 
-const CONFIG = {
+const config = {
   quality: 85,
   keepOriginals: false,
   sourceDir: "./apps/site/public",
-  recursive: true,
-  extensions: [".jpg", ".jpeg", ".JPG", ".JPEG"],
 };
 
-async function findImages(dir) {
-  const images = [];
-  const items = await readdir(dir);
-
-  for (const item of items) {
-    const fullPath = join(dir, item);
-    const stats = await stat(fullPath);
-
-    if (stats.isDirectory() && CONFIG.recursive) {
-      const subImages = await findImages(fullPath);
-      images.push(...subImages);
-    } else if (stats.isFile() && CONFIG.extensions.includes(extname(item))) {
-      images.push(fullPath);
-    }
-  }
-
-  return images;
-}
-
-async function convertToWebP(imagePath) {
-  const dir = imagePath.substring(0, imagePath.lastIndexOf("/"));
-  const name = basename(imagePath, extname(imagePath));
-  const webpPath = join(dir, `${name}.webp`);
-
-  try {
-    const info = await sharp(imagePath)
-      .webp({ quality: CONFIG.quality })
-      .toFile(webpPath);
-
-    return {
-      success: true,
-      original: imagePath,
-      converted: webpPath,
-      originalSize: (await stat(imagePath)).size,
-      newSize: info.size,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      original: imagePath,
-      error: error.message,
-    };
-  }
-}
-
-async function main() {
-  console.log("🔍 Finding JPG images...");
-
-  try {
-    const images = await findImages(CONFIG.sourceDir);
-
-    if (images.length === 0) {
-      console.log("❌ No JPG images found");
-      return;
-    }
-
-    console.log(`📸 Found ${images.length} images to convert`);
-    console.log(
-      `⚙️  Quality: ${CONFIG.quality}%, Keep originals: ${CONFIG.keepOriginals}\n`,
-    );
-
-    let totalOriginalSize = 0;
-    let totalNewSize = 0;
-    let converted = 0;
-    let errors = 0;
-
-    for (const imagePath of images) {
-      const result = await convertToWebP(imagePath);
-
-      if (result.success) {
-        converted++;
-        totalOriginalSize += result.originalSize;
-        totalNewSize += result.newSize;
-
-        const savings = (
-          ((result.originalSize - result.newSize) / result.originalSize) *
-          100
-        ).toFixed(1);
-        console.log(
-          `✅ ${result.original} → ${result.converted} (${savings}% smaller)`,
-        );
-
-        if (!CONFIG.keepOriginals) {
-          const { unlink } = await import("fs/promises");
-          await unlink(result.original);
-          console.log(`🗑️  Removed ${result.original}`);
-        }
-      } else {
-        errors++;
-        console.log(`❌ Failed: ${result.original} - ${result.error}`);
-      }
-    }
-
-    const totalSavings = (
-      ((totalOriginalSize - totalNewSize) / totalOriginalSize) *
-      100
-    ).toFixed(1);
-    const sizeBefore = (totalOriginalSize / 1024 / 1024).toFixed(2);
-    const sizeAfter = (totalNewSize / 1024 / 1024).toFixed(2);
-
-    console.log(`\n📊 Summary:`);
-    console.log(`   Converted: ${converted}/${images.length}`);
-    console.log(`   Errors: ${errors}`);
-    console.log(
-      `   Size: ${sizeBefore}MB → ${sizeAfter}MB (${totalSavings}% reduction)`,
-    );
-  } catch (error) {
-    console.error("💥 Script failed:", error.message);
-    process.exit(1);
-  }
-}
-
-if (process.argv.includes("--help")) {
-  console.log(`
-Usage: node scripts/convert-to-webp.js [options]
+const args = process.argv.slice(2);
+if (args.includes("--help")) {
+  console.log(`Usage: bun scripts/convert-to-webp.mjs [options]
 
 Options:
   --quality <number>    WebP quality (default: 85)
   --keep-originals      Keep original JPG files
-  --dir <path>          Source directory (default: ./public)
+  --dir <path>          Source directory (default: ./apps/site/public)
   --help                Show this help
-
-Examples:
-  node scripts/convert-to-webp.js
-  node scripts/convert-to-webp.js --quality 90 --keep-originals
-  node scripts/convert-to-webp.js --dir ./assets
 `);
   process.exit(0);
 }
 
-const qualityArg = process.argv.indexOf("--quality");
-if (qualityArg > -1) {
-  CONFIG.quality = parseInt(process.argv[qualityArg + 1]) || CONFIG.quality;
+const qualityIdx = args.indexOf("--quality");
+if (qualityIdx > -1) {
+  config.quality = Number.parseInt(args[qualityIdx + 1], 10) || config.quality;
 }
 
-const dirArg = process.argv.indexOf("--dir");
-if (dirArg > -1) {
-  CONFIG.sourceDir = process.argv[dirArg + 1] || CONFIG.sourceDir;
+const dirIdx = args.indexOf("--dir");
+if (dirIdx > -1) {
+  config.sourceDir = args[dirIdx + 1] || config.sourceDir;
 }
 
-if (process.argv.includes("--keep-originals")) {
-  CONFIG.keepOriginals = true;
+if (args.includes("--keep-originals")) {
+  config.keepOriginals = true;
 }
 
-main();
+async function findImages(dir) {
+  const images = [];
+  const glob = new Bun.Glob("**/*.{jpg,jpeg,JPG,JPEG}");
+  for await (const path of glob.scan({ cwd: dir, absolute: true })) {
+    images.push(path);
+  }
+  return images;
+}
+
+async function convertToWebP(imagePath) {
+  const webpPath = join(
+    dirname(imagePath),
+    `${basename(imagePath, extname(imagePath))}.webp`,
+  );
+  const original = Bun.file(imagePath);
+  const originalSize = original.size;
+
+  try {
+    await original.image().webp({ quality: config.quality }).write(webpPath);
+    return {
+      ok: true,
+      original: imagePath,
+      converted: webpPath,
+      originalSize,
+      newSize: Bun.file(webpPath).size,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      original: imagePath,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+const images = await findImages(config.sourceDir);
+if (images.length === 0) {
+  console.log("No JPG images found");
+  process.exit(0);
+}
+
+console.log(`Found ${images.length} images`);
+console.log(
+  `Quality: ${config.quality}%, keep originals: ${config.keepOriginals}\n`,
+);
+
+let totalOriginalSize = 0;
+let totalNewSize = 0;
+let converted = 0;
+let errors = 0;
+
+for (const imagePath of images) {
+  const result = await convertToWebP(imagePath);
+  if (!result.ok) {
+    errors++;
+    console.log(`Failed: ${result.original} - ${result.error}`);
+    continue;
+  }
+
+  converted++;
+  totalOriginalSize += result.originalSize;
+  totalNewSize += result.newSize;
+  const savings = (
+    ((result.originalSize - result.newSize) / result.originalSize) *
+    100
+  ).toFixed(1);
+  console.log(`${result.original} -> ${result.converted} (${savings}% smaller)`);
+
+  if (!config.keepOriginals) {
+    await Bun.file(result.original).unlink();
+    console.log(`Removed ${result.original}`);
+  }
+}
+
+const totalSavings =
+  totalOriginalSize > 0
+    ? (((totalOriginalSize - totalNewSize) / totalOriginalSize) * 100).toFixed(1)
+    : "0.0";
+
+console.log(`\nConverted: ${converted}/${images.length}`);
+console.log(`Errors: ${errors}`);
+console.log(
+  `Size: ${(totalOriginalSize / 1024 / 1024).toFixed(2)}MB -> ${(totalNewSize / 1024 / 1024).toFixed(2)}MB (${totalSavings}% reduction)`,
+);
