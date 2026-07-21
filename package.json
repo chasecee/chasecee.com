@@ -27,5 +27,9 @@
     "@chasecee/sanity-kit": "github:chasecee/sanity-kit",
     "@sanity/blueprints": "^0.22.0"
   },
-  "devDependencies": {}
+  "devDependencies": {},
+  "overrides": {
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  }
 }
