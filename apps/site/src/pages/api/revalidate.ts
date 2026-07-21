@@ -11,8 +11,15 @@ export const POST = createIsrRevalidateRoute({
 
     if (docType === "page" && slug) {
       paths.push(slug === "home" ? "/" : `/${slug}`);
+      if (slug === "home") {
+        paths.push("/api/og/home.png");
+      }
+      if (slug === "about") {
+        paths.push("/api/og/about.png");
+      }
     } else if (docType === "project" && slug) {
       paths.push(`/projects/${slug}`, "/");
+      paths.push(`/api/og/project/${slug}.png`);
     } else if (docType === "music" && slug) {
       paths.push(`/music/${slug}`, "/music");
     }

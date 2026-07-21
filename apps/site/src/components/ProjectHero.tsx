@@ -19,6 +19,7 @@ type ProjectHeroProps = {
   project: ProjectHeroData;
   showDraftBadge?: boolean;
   hasSiteMini?: boolean;
+  hasEmbed?: boolean;
   className?: string;
 };
 
@@ -46,6 +47,7 @@ export default function ProjectHero({
   project,
   showDraftBadge = false,
   hasSiteMini = false,
+  hasEmbed = false,
   className = "",
 }: ProjectHeroProps) {
   const cleanName = stegaClean(project.name ?? "");
@@ -72,6 +74,7 @@ export default function ProjectHero({
         .join(", ")
     : "";
   const hasLogo = Boolean(svgCode);
+  const plainHeading = !hasLogo && (hasSiteMini || hasEmbed);
   const clippedLogo = Boolean(svgCode && imageUrl);
   const maskImage = clippedLogo ? svgMaskDataUrl(svgCode) : "";
   const imageFill = {
@@ -83,12 +86,12 @@ export default function ProjectHero({
   return (
     <header
       className={
-        hasLogo
+        hasLogo || plainHeading
           ? `measure not-prose relative flex flex-col ${showDraftBadge ? "ring-2 ring-amber-300 ring-inset" : ""} ${className}`
           : `not-prose relative flex h-full min-h-72 flex-col justify-end overflow-hidden p-8 text-white ${showDraftBadge ? "ring-2 ring-amber-300 ring-inset" : ""} ${className}`
       }
     >
-      {!hasLogo && (
+      {!hasLogo && !plainHeading && (
         <div className="absolute inset-0 bg-black">
           {imageUrl && (
             <img

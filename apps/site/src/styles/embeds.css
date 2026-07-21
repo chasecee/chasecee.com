@@ -1,6 +1,7 @@
 .project-embed {
   position: relative;
   overflow: hidden;
+  background-color: rgb(128 128 128 / 0.15);
   aspect-ratio: var(--ar-mobile-w, 1) / var(--ar-mobile-h, 1);
 
   @media (width >= 768px) {
@@ -32,6 +33,7 @@
 }
 
 .embed-frame {
+  background-color: rgb(128 128 128 / 0.15);
   aspect-ratio: var(--embed-ar-mobile, var(--embed-ar-desktop, 16 / 9));
 
   @media (width >= 768px) {
@@ -41,4 +43,39 @@
 
 .embed-frame-fixed {
   aspect-ratio: auto;
+  background-color: rgb(128 128 128 / 0.15);
+  border-radius: 12px;
+}
+
+/* Crossfade: placeholder gray moves to the wrapper so the iframe can start
+   transparent and fade in on load. Old browsers without :has() keep the
+   always-visible gray on the iframe itself and skip the fade. */
+@supports selector(div:has(> iframe)) {
+  div:has(> .embed-frame),
+  div:has(> .embed-frame-fixed) {
+    background-color: rgb(128 128 128 / 0.15);
+  }
+
+  div:has(> .embed-frame-fixed) {
+    border-radius: 12px;
+  }
+
+  .embed-frame,
+  .embed-frame-fixed {
+    opacity: 0;
+    transition: opacity 400ms ease;
+  }
+
+  .embed-frame.is-loaded,
+  .embed-frame-fixed.is-loaded {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .embed-frame,
+    .embed-frame-fixed {
+      opacity: 1;
+      transition: none;
+    }
+  }
 }

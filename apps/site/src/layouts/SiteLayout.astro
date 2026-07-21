@@ -18,7 +18,7 @@ interface Props {
 const {
   title = "Work - Chase Cee",
   description = "Chase Cee is a designer and developer in Salt Lake City building excellent web products front to back, from brand and UI design to full-stack engineering.",
-  ogImage = "/og/home.png",
+  ogImage = "/api/og/home.png",
 } = Astro.props;
 
 const draftMode = Astro.locals.draftMode === true;
@@ -26,8 +26,10 @@ const editorMode = Astro.locals.editorMode === true;
 const showEditorBar = draftMode || editorMode;
 const pathname = Astro.url.pathname.replace(/\/+$/, "") || "/";
 const isHome = pathname === "/";
-const canonicalURL = new URL(pathname, Astro.site);
-const ogImageURL = new URL(ogImage, Astro.site);
+const siteOrigin =
+  import.meta.env.DEV ? Astro.url.origin : (Astro.site ?? Astro.url.origin);
+const canonicalURL = new URL(pathname, siteOrigin);
+const ogImageURL = new URL(ogImage, siteOrigin);
 const editUrl = presentationEditUrl(STUDIO_URL, Astro.url.href);
 ---
 
@@ -80,6 +82,22 @@ const editUrl = presentationEditUrl(STUDIO_URL, Astro.url.href);
     <div id="sanity-preview-root">
       <slot />
     </div>
+    <script is:inline>
+      document.addEventListener(
+        "load",
+        (event) => {
+          const target = event.target;
+          if (
+            target instanceof HTMLIFrameElement &&
+            (target.classList.contains("embed-frame") ||
+              target.classList.contains("embed-frame-fixed"))
+          ) {
+            target.classList.add("is-loaded");
+          }
+        },
+        true,
+      );
+    </script>
     <script is:inline define:vars={{ navOrder: ["/", "/music", "/about"] }}>
       document.addEventListener("astro:before-preparation", (event) => {
         const normalizePath = (url) => {

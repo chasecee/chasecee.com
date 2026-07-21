@@ -1,65 +1,23 @@
 import satori from "satori";
-import sharp from "sharp";
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { Resvg } from "@resvg/resvg-js";
 import type { ReactNode } from "react";
+import backgroundPngDataUrl from "@/assets/bg.png?inline";
+import jersey10TtfDataUrl from "@/assets/jersey10-regular.ttf?inline";
+import rubikRegularWoffDataUrl from "@/assets/rubik-latin-400.woff?inline";
+import rubikBoldWoffDataUrl from "@/assets/rubik-latin-800.woff?inline";
 
 export const OG_SIZE = { width: 1200, height: 630 };
+export const OG_CACHE_CONTROL =
+  "public, max-age=0, s-maxage=86400, stale-while-revalidate";
 
 interface OGImageOptions {
   title?: string;
-  subtitle?: string;
   template?: "home" | "page" | "project";
 }
 
-// Local builds run with cwd = apps/site; in the deployed Vercel function the
-// includeFiles land under apps/site/assets relative to the function root.
-const ASSET_DIRS = ["assets", "apps/site/assets"];
-
-async function readAsset(name: string) {
-  let lastError: unknown;
-  for (const dir of ASSET_DIRS) {
-    try {
-      return await readFile(join(process.cwd(), dir, name));
-    } catch (error) {
-      lastError = error;
-    }
-  }
-  throw lastError;
-}
-
-async function loadAssets() {
-  const [antonRegular, rubikRegular, rubikBold, backgroundImageBuffer] =
-    await Promise.all([
-      readAsset("anton-regular.ttf"),
-      readAsset("rubik-latin-400.woff"),
-      readAsset("rubik-latin-800.woff"),
-      readAsset("bg.png"),
-    ]);
-
-  return {
-    fonts: [
-      {
-        name: "Anton",
-        data: antonRegular,
-        weight: 400 as const,
-        style: "normal" as const,
-      },
-      {
-        name: "Rubik",
-        data: rubikRegular,
-        weight: 400 as const,
-        style: "normal" as const,
-      },
-      {
-        name: "Rubik",
-        data: rubikBold,
-        weight: 800 as const,
-        style: "normal" as const,
-      },
-    ],
-    backgroundImage: `data:image/png;base64,${backgroundImageBuffer.toString("base64")}`,
-  };
+function decodeDataUrl(dataUrl: string) {
+  const [, encoded = ""] = dataUrl.split(",");
+  return Buffer.from(encoded, "base64");
 }
 
 function homeContent() {
@@ -71,7 +29,7 @@ function homeContent() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        maxWidth: 800,
+        maxWidth: 1100,
         textAlign: "center",
         padding: "0 40px",
       },
@@ -79,13 +37,14 @@ function homeContent() {
         type: "div",
         props: {
           style: {
-            fontSize: 108,
+            fontSize: 216,
             fontWeight: 400,
             color: "#ffffff",
             margin: 0,
             marginBottom: 20,
-            lineHeight: 1.1,
-            fontFamily: "Anton",
+            lineHeight: 0.7,
+            fontFamily: "Jersey 10",
+            whiteSpace: "nowrap",
           },
           children: "Let's build.",
         },
@@ -103,7 +62,7 @@ function pageContent(title: string) {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        maxWidth: 900,
+        maxWidth: 1100,
         textAlign: "center",
         padding: "0 40px",
       },
@@ -112,13 +71,14 @@ function pageContent(title: string) {
           type: "div",
           props: {
             style: {
-              fontSize: 108,
+              fontSize: 216,
               fontWeight: 400,
               color: "#ffffff",
               margin: 0,
               marginBottom: 20,
-              lineHeight: 1.1,
-              fontFamily: "Anton",
+              lineHeight: 0.7,
+              fontFamily: "Jersey 10",
+              whiteSpace: "nowrap",
             },
             children: title,
           },
@@ -152,7 +112,7 @@ function projectContent(title: string) {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        maxWidth: 720,
+        maxWidth: 1100,
         textAlign: "center",
         padding: "0 40px",
       },
@@ -161,14 +121,14 @@ function projectContent(title: string) {
           type: "div",
           props: {
             style: {
-              fontSize: 64,
+              fontSize: 128,
               fontWeight: 400,
               color: "#ffffff",
               margin: 0,
               marginBottom: 20,
-              lineHeight: 1.1,
-              fontFamily: "Anton",
-              maxWidth: "60%",
+              lineHeight: 0.7,
+              fontFamily: "Jersey 10",
+              whiteSpace: "nowrap",
             },
             children: title,
           },
@@ -195,7 +155,26 @@ function projectContent(title: string) {
 
 export async function generateOGImagePng(options: OGImageOptions = {}) {
   const { title, template = "home" } = options;
-  const { fonts, backgroundImage } = await loadAssets();
+  const fonts = [
+    {
+      name: "Jersey 10",
+      data: decodeDataUrl(jersey10TtfDataUrl),
+      weight: 400 as const,
+      style: "normal" as const,
+    },
+    {
+      name: "Rubik",
+      data: decodeDataUrl(rubikRegularWoffDataUrl),
+      weight: 400 as const,
+      style: "normal" as const,
+    },
+    {
+      name: "Rubik",
+      data: decodeDataUrl(rubikBoldWoffDataUrl),
+      weight: 800 as const,
+      style: "normal" as const,
+    },
+  ];
 
   let content;
   switch (template) {
@@ -227,7 +206,7 @@ export async function generateOGImagePng(options: OGImageOptions = {}) {
           {
             type: "img",
             props: {
-              src: backgroundImage,
+              src: backgroundPngDataUrl,
               style: {
                 position: "absolute",
                 top: 0,
@@ -248,5 +227,5 @@ export async function generateOGImagePng(options: OGImageOptions = {}) {
     },
   );
 
-  return sharp(Buffer.from(svg)).png().toBuffer();
+  return new Resvg(svg).render().asPng();
 }

@@ -55,6 +55,12 @@ export default function ProjectView({
     ? getLeadInDataAttribute?.(siteMini._key)
     : undefined;
   const hasSiteMini = Boolean(siteMini?.url);
+  const hasEmbed = [...leadIn, ...content].some(
+    (block) =>
+      block &&
+      typeof block === "object" &&
+      (block as { _type?: string })._type === "embed",
+  );
 
   return (
     <div className="prose prose-flow">
@@ -70,6 +76,7 @@ export default function ProjectView({
             project={project}
             showDraftBadge={draftMode && project.isDraft === true}
             hasSiteMini={hasSiteMini}
+            hasEmbed={hasEmbed}
           />
           {leadInContent.length > 0 && (
             <div data-sanity={leadInDataAttribute}>

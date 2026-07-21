@@ -21,6 +21,7 @@
     "@chasecee/sanity-kit": "github:chasecee/sanity-kit",
     "@dimforge/rapier2d": "0.19.3",
     "@fontsource-variable/rubik": "^5.3.0",
+    "@resvg/resvg-js": "^2.6.2",
     "@sanity/client": "^7.24.0",
     "@sanity/image-url": "^2.1.1",
     "@sanity/visual-editing": "^5.6.0",
@@ -32,7 +33,6 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "satori": "^0.28.2",
-    "sharp": "^0.35.3",
     "tailwindcss": "^4.3.3",
     "vite-plugin-top-level-await": "^1.6.0",
     "vite-plugin-wasm": "^3.6.0"
