@@ -10,7 +10,7 @@ import { getSkillCount, sortSkills } from "./utils";
 const SkillDots = ({ value, max = 10 }: SkillDotsProps) => {
   const normalizedValue = (value / max) * 5;
   const fullDots = Math.ceil(normalizedValue);
-  const getColor = (dotIndex: number) => {
+  const getColor = () => {
     const greenIndex = Math.min(Math.max(value - 1, 0), 7);
     return palette.green[greenIndex];
   };
@@ -23,7 +23,7 @@ const SkillDots = ({ value, max = 10 }: SkillDotsProps) => {
           <div
             key={i}
             className={`relative h-2 w-2 rounded-full ${isFilled ? "" : "bg-current opacity-20"}`}
-            style={isFilled ? { backgroundColor: getColor(i) } : {}}
+            style={isFilled ? { backgroundColor: getColor() } : {}}
           />
         );
       })}

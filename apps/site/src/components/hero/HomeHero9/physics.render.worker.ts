@@ -91,12 +91,6 @@ function buildPalette(level: number, steps: number): Uint8Array {
   return lut;
 }
 
-function getPaletteColor(level: number, normPos: number, steps: number) {
-  const lut = buildPalette(level, steps);
-  const idx = Math.floor(normPos * steps) * BYTES_PER_COLOR;
-  return { r: lut[idx], g: lut[idx + 1], b: lut[idx + 2] } as const;
-}
-
 type DeepPartial<T> = T extends object
   ? { [P in keyof T]?: DeepPartial<T[P]> }
   : T;
@@ -164,7 +158,6 @@ let centerY = 0;
 let devicePixelRatio = 1;
 let isDarkMode = false;
 
-let frameCount = 0;
 const scratchDir = { x: 0, y: 0 };
 const scratchForce = { x: 0, y: 0 };
 const tmpLinvel = { x: 0, y: 0 };

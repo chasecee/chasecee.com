@@ -8,7 +8,7 @@ export async function getStaticPaths() {
   const projects = await getProjects();
   return projects
     .filter(
-      (project): project is { slug: string; name?: string | null } =>
+      (project): project is (typeof projects)[number] & { slug: string } =>
         typeof project.slug === "string" && project.slug.length > 0,
     )
     .map((project) => ({
