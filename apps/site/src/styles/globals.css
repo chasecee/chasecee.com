@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @import "@chasecee/sanity-kit/astro/tailwind.css";
 @import "./typography.css";
-@import "./logo.css";
 
 :root {
   --site-header-height: 2.5rem;
@@ -34,7 +33,6 @@ body.pt-8 {
   --font-sans: var(--font-rubik), ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-weight-bold: 500;
-  --transition-delay-400: 400ms;
   --max-width-prose: var(--prose-measure);
 
   --radius-lg: var(--radius);
@@ -70,139 +68,6 @@ body.pt-8 {
   }
 }
 
-@utility project-embed {
-  position: relative;
-  overflow: hidden;
-  aspect-ratio: var(--ar-mobile-w, 1) / var(--ar-mobile-h, 1);
-  @media (width >= 768px) {
-    aspect-ratio: var(--ar-desktop-w, 1) / var(--ar-desktop-h, 1);
-  }
-
-  iframe {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    max-width: none;
-    border: 0;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 500ms ease;
-  }
-
-  iframe.is-loaded {
-    opacity: 1;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    iframe {
-      opacity: 1;
-      transition: none;
-    }
-  }
-}
-
-@utility embed-frame {
-  aspect-ratio: var(--embed-ar-mobile, var(--embed-ar-desktop, 16 / 9));
-  @media (width >= 768px) {
-    aspect-ratio: var(--embed-ar-desktop, 16 / 9);
-  }
-}
-
-@utility embed-frame-fixed {
-  aspect-ratio: auto;
-}
-
-@utility site-mini {
-  --site-mini-frame-w: 600;
-  --site-mini-frame-h: 600;
-  --site-mini-layout-w: 1400;
-
-  display: block;
-  width: min(calc(var(--site-mini-frame-w) * 1px), 100%);
-  aspect-ratio: var(--site-mini-frame-w) / var(--site-mini-frame-h);
-  overflow: hidden;
-  position: relative;
-  container-type: inline-size;
-  background: #0a0a0a;
-
-  & iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: calc(var(--site-mini-layout-w) * 1px);
-    height: calc(
-      var(--site-mini-layout-w) * var(--site-mini-frame-h) /
-        var(--site-mini-frame-w) * 1px
-    );
-    max-width: none;
-    border: 0;
-    transform: scale(calc(100cqi / (var(--site-mini-layout-w) * 1px)));
-    transform-origin: 0 0;
-    opacity: 0;
-    animation: site-mini-reveal 500ms ease 2s forwards;
-    pointer-events: none;
-  }
-
-  &.site-mini-native iframe {
-    pointer-events: auto;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    & iframe {
-      opacity: 1;
-      animation: none;
-    }
-  }
-}
-
-@keyframes site-mini-reveal {
-  to {
-    opacity: 1;
-  }
-}
-
-@utility project-item {
-  .project-gradient-bg {
-    .color-div {
-      @apply absolute h-36 w-full;
-    }
-  }
-  &.project-strider-intel {
-    .project-gradient-bg {
-      transform: rotate(45deg) scale(1.4);
-    }
-  }
-  &.project-inmoment {
-    .project-gradient-bg {
-      @apply top-0 bottom-0 scale-[150%];
-      .color-div {
-        @apply right-0 left-0 h-full w-full rounded-full;
-      }
-    }
-  }
-  &.project-yoli {
-    .project-gradient-bg {
-      @apply top-0 bottom-0 scale-[120%];
-      .color-div {
-        @apply h-full w-full;
-      }
-    }
-  }
-  &:nth-child(even) {
-    .view-actor {
-      @apply md:delay-100;
-    }
-    .view-actor-image {
-      @apply md:delay-200;
-    }
-  }
-}
-@utility view-actor {
-  @apply transition-transform duration-200;
-  transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
-}
-
 :root {
   --physics-color-level: 8;
 }
@@ -210,15 +75,6 @@ body.pt-8 {
 @media (prefers-color-scheme: dark) {
   :root {
     --physics-color-level: 4;
-  }
-}
-.svg-parent svg {
-  width: 100%;
-  height: 100%;
-}
-.header_menu .header_item {
-  &:not(.item_active):hover {
-    @apply opacity-50;
   }
 }
 
@@ -232,19 +88,6 @@ body.pt-8 {
   ::view-transition-old(nav-active-indicator),
   ::view-transition-new(nav-active-indicator) {
     animation: none;
-  }
-}
-
-.prose-flow {
-  img {
-    max-width: 100%;
-    height: auto;
-  }
-  iframe:not(.site-mini-frame) {
-    max-width: 100%;
-  }
-  iframe:not(.embed-frame-fixed, [data-project-embed]) {
-    height: auto;
   }
 }
 

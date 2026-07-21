@@ -3,6 +3,8 @@ import Button from "../Button";
 import LucideIcon from "../icons/LucideIcon";
 import { LUCIDE_ICONS } from "../icons/lucide";
 import { cleanMaybe, cleanResource } from "@chasecee/sanity-kit/astro";
+import "../../styles/embeds.css";
+import styles from "./site-mini.module.css";
 
 type SiteMiniProps = {
   url?: string;
@@ -136,7 +138,7 @@ export default function SiteMini({
     >
       <div
         ref={shellRef}
-        className={`site-mini rounded-xl ring-site ring-neutral-500/50 ${dragEnabled ? "" : "site-mini-native"}`}
+        className={`${styles.root} rounded-xl ring-site ring-neutral-500/50 ${dragEnabled ? "" : styles.native}`}
       >
         <iframe
           ref={iframeRef}

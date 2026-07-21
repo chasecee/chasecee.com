@@ -36,3 +36,9 @@ const baseClass = "header_item no-underline transition-colors group relative";
     {normalizedActivePath === "/about" && <NavActiveIndicator />}
   </a>
 </div>
+
+<style>
+  .header_item:not(.item_active):hover {
+    opacity: 0.5;
+  }
+</style>

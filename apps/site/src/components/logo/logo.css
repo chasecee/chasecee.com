@@ -19,7 +19,12 @@
 }
 
 .logo-kapow-path {
-  @apply fill-transparent stroke-current text-yellow-400 opacity-0 transition-[opacity,color] duration-150;
+  fill: transparent;
+  stroke: currentColor;
+  color: #facc15;
+  opacity: 0;
+  transition-property: opacity, color;
+  transition-duration: 150ms;
   stroke-width: 4;
   stroke-linecap: butt;
   stroke-linejoin: miter;
@@ -47,24 +52,25 @@
 }
 
 .logo-kapow-path--phase-0 {
-  @apply text-green-400;
+  color: #4ade80;
 }
 
 .logo-kapow-path--phase-1 {
-  @apply text-red-500;
+  color: #ef4444;
 }
 
 .logo-kapow-path--phase-2 {
-  @apply text-orange-500;
+  color: #f97316;
 }
 
 .logo-kapow-path--phase-3 {
-  @apply text-purple-400;
+  color: #c084fc;
 }
 
 .logo-kapow-path--explode {
   animation: logo-kapow-path-explode 440ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
-  @apply fill-current stroke-current;
+  fill: currentColor;
+  stroke: currentColor;
 }
 
 @keyframes logo-kapow-path-explode {
@@ -79,7 +85,10 @@
 }
 
 .logo-stroke-overlay {
-  @apply block h-auto w-full max-w-none;
+  display: block;
+  height: auto;
+  width: 100%;
+  max-width: none;
   overflow: visible;
   shape-rendering: geometricPrecision;
 }
@@ -111,7 +120,6 @@
   }
 
   .header__title .logo-wordmark-underlay-path {
-
     fill: var(--color-neutral-100);
     stroke: var(--color-neutral-100);
   }
@@ -125,7 +133,12 @@
   }
 
   .logo-wordmark-svg {
-    @apply relative z-5 block h-auto w-full max-w-none;
+    position: relative;
+    z-index: 5;
+    display: block;
+    height: auto;
+    width: 100%;
+    max-width: none;
   }
 
   .logo-wordmark-core {
@@ -145,7 +158,7 @@
     --logo-wordmark-fill: rgb(255 105 180);
 
     .logo-kapow-path {
-      @apply text-yellow-400;
+      color: #facc15;
     }
   }
 }

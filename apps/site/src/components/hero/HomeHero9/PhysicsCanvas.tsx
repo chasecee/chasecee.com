@@ -4,7 +4,7 @@ import { useRef, useEffect } from "react";
 import StatsOverlay from "./StatsOverlay";
 import type { MainToWorkerMessage } from "./messages";
 import { isMobileViewport, isWithinPlanet, prefersReducedMotion, shockwaveDiameterPx } from "./shockwave";
-import "./shockwave.css";
+import styles from "./shockwave.module.css";
 
 const IS_DEV = import.meta.env.DEV;
 const MAX_DEVICE_PIXEL_RATIO = 1.5;
@@ -223,7 +223,7 @@ export function PhysicsCanvas() {
 
       const isMobile = isMobileViewport();
       const ring = document.createElement("div");
-      ring.className = "hero-shockwave";
+      ring.className = styles.heroShockwave;
       ring.style.left = `${clientX - rect.left}px`;
       ring.style.top = `${clientY - rect.top}px`;
       ring.style.setProperty(

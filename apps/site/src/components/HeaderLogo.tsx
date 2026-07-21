@@ -17,6 +17,7 @@ import {
   MORPH_PATHS,
   MORPH_VARIANT_IDS,
 } from "./logo/variants/morphMeta.js";
+import "./logo/logo.css";
 
 const parseCssDurationMs = (raw: string) => {
   const value = raw.trim();

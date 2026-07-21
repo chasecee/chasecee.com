@@ -1,0 +1,48 @@
+.root {
+  --site-mini-frame-w: 600;
+  --site-mini-frame-h: 600;
+  --site-mini-layout-w: 1400;
+
+  display: block;
+  width: min(calc(var(--site-mini-frame-w) * 1px), 100%);
+  aspect-ratio: var(--site-mini-frame-w) / var(--site-mini-frame-h);
+  overflow: hidden;
+  position: relative;
+  container-type: inline-size;
+  background: #0a0a0a;
+}
+
+.root iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(var(--site-mini-layout-w) * 1px);
+  height: calc(
+    var(--site-mini-layout-w) * var(--site-mini-frame-h) /
+      var(--site-mini-frame-w) * 1px
+  );
+  max-width: none;
+  border: 0;
+  transform: scale(calc(100cqi / (var(--site-mini-layout-w) * 1px)));
+  transform-origin: 0 0;
+  opacity: 0;
+  animation: siteMiniReveal 500ms ease 2s forwards;
+  pointer-events: none;
+}
+
+.native iframe {
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root iframe {
+    opacity: 1;
+    animation: none;
+  }
+}
+
+@keyframes siteMiniReveal {
+  to {
+    opacity: 1;
+  }
+}

@@ -6,6 +6,7 @@ import type {
 import type { SanityImageSource } from "@sanity/image-url";
 import { Body as SharedBody } from "@chasecee/sanity-kit/astro";
 import urlFor from "@/sanity/sanity.image";
+import "../styles/embeds.css";
 
 type DataAttributeResolver = (key: string | undefined) => string | undefined;
 

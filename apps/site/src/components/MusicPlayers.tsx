@@ -2,6 +2,7 @@ import { startTransition, useId, useState } from "react";
 import { stegaClean } from "@sanity/client/stega";
 import { Spotify } from "@chasecee/sanity-kit/astro";
 import type { MusicDetail } from "@/types/Music";
+import "../styles/embeds.css";
 
 type EmbedItem = NonNullable<MusicDetail["embeds"]>[number];
 type LinkItem = NonNullable<MusicDetail["links"]>[number];

@@ -118,6 +118,21 @@
   margin-inline: auto;
 }
 
+.prose-flow {
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  iframe:not(.site-mini-frame) {
+    max-width: 100%;
+  }
+
+  iframe:not(.embed-frame-fixed, [data-project-embed]) {
+    height: auto;
+  }
+}
+
 .measure {
   width: min(var(--prose-measure), 100%);
   margin-inline: auto;
