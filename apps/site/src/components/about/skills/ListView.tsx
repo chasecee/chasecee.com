@@ -87,11 +87,17 @@ const ListView = ({ skills }: ListViewProps) => {
               {skill.value && <SkillDots value={skill.value} />}
             </div>
           </div>
-          {hasChildren && isOpen && (
-            <div>
-              {sortSkills(skill.children!).map((child) =>
-                renderSkillItem(child, level + 1),
-              )}
+          {hasChildren && (
+            <div
+              className={`grid transition-[grid-template-rows] duration-200 ease-out ${
+                isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+              }`}
+            >
+              <div className="min-h-0 overflow-hidden">
+                {sortSkills(skill.children!).map((child) =>
+                  renderSkillItem(child, level + 1),
+                )}
+              </div>
             </div>
           )}
         </div>

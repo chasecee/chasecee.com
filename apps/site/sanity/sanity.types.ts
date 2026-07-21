@@ -479,6 +479,15 @@ export type Music = {
   orderRank?: string;
 };
 
+export type MediaTag = {
+  _id: string;
+  _type: "media.tag";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  name?: Slug;
+};
+
 export type Gallery = {
   _type: "gallery";
   columns?: 1 | 2 | 3 | 4 | 5 | 6 | 0;
@@ -637,7 +646,7 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = Ratio | SanityFileAssetReference | MediaMedia | SanityImageAssetReference | Poster | Columns | SiteMini | Spotify | Embed | Skills | ProjectReference | PageReference | MusicReference | Project | Color | Code | SanityImageCrop | SanityImageHotspot | Page | Slug | Music | Gallery | GalleryVideo | GalleryImage | RgbaColor | HsvaColor | HslaColor | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type AllSanitySchemaTypes = Ratio | SanityFileAssetReference | MediaMedia | SanityImageAssetReference | Poster | Columns | SiteMini | Spotify | Embed | Skills | ProjectReference | PageReference | MusicReference | Project | Color | Code | SanityImageCrop | SanityImageHotspot | Page | Slug | Music | MediaTag | Gallery | GalleryVideo | GalleryImage | RgbaColor | HsvaColor | HslaColor | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 
 // Source: ../site/sanity/queries.ts
 // Variable: PROJECT_QUERY
