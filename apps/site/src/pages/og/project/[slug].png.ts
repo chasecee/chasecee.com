@@ -1,29 +1,31 @@
 import type { APIRoute } from "astro";
 import { generateOGImagePng } from "@/lib/og-satori";
-import sanityClient from "@/sanity/sanityClient";
+import { getProjects } from "@/sanity/sanity-utils";
 
-export const prerender = false;
+export const prerender = true;
 
-const PROJECT_OG_QUERY = `*[_type == "project" && slug.current == $slug][0]{name}`;
+export async function getStaticPaths() {
+  const projects = await getProjects();
+  return projects
+    .filter(
+      (project): project is { slug: string; name?: string | null } =>
+        typeof project.slug === "string" && project.slug.length > 0,
+    )
+    .map((project) => ({
+      params: { slug: project.slug },
+      props: { title: project.name ?? project.slug },
+    }));
+}
 
-export const GET: APIRoute = async ({ params }) => {
+export const GET: APIRoute = async ({ params, props }) => {
   const slug = typeof params.slug === "string" ? params.slug : "";
   if (!slug) {
     return new Response("Not found", { status: 404 });
   }
 
-  const project = await sanityClient.fetch<{ name?: string | null } | null>(
-    PROJECT_OG_QUERY,
-    { slug },
-  );
-
-  if (!project) {
-    return new Response("Not found", { status: 404 });
-  }
-
   const png = await generateOGImagePng({
     template: "project",
-    title: project.name ?? slug,
+    title: typeof props.title === "string" ? props.title : slug,
   });
 
   return new Response(new Uint8Array(png), {

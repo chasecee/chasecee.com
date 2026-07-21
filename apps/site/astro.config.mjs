@@ -24,18 +24,11 @@ export default defineConfig({
     defaultStrategy: "viewport",
   },
   adapter: vercel({
+    imageService: true,
     isr: {
       bypassToken: process.env.ISR_BYPASS_TOKEN,
       exclude: [/^\/api\/.+/],
     },
-    // og-satori reads these from disk at runtime now that the project OG
-    // route is server-rendered (ISR) instead of prerendered.
-    includeFiles: [
-      "./assets/anton-regular.ttf",
-      "./assets/rubik-latin-400.woff",
-      "./assets/rubik-latin-800.woff",
-      "./assets/bg.png",
-    ],
   }),
   fonts: [
     {
