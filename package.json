@@ -24,10 +24,8 @@
     "blueprints:destroy": "bunx sanity@latest blueprints destroy"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.9",
     "@chasecee/sanity-kit": "github:chasecee/sanity-kit",
-    "@sanity/blueprints": "^0.22.0",
-    "typescript": "^7.0.2"
+    "@sanity/blueprints": "^0.22.0"
   },
   "devDependencies": {}
 }
