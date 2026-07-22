@@ -10,7 +10,9 @@ const { items } = Astro.props;
 const draftMode = Astro.locals.draftMode === true;
 ---
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 flex-nowrap gap-10 overflow-x-auto pb-10">
+<div
+  class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 flex-nowrap gap-10 overflow-x-auto pb-10"
+>
   {
     items.map((item, index) => {
       const showDraftBadge = draftMode && item.isDraft;
@@ -49,7 +51,9 @@ const draftMode = Astro.locals.draftMode === true;
                     )
                     .join(", ")}
                   sizes="(min-width: 1400px) 424px, (min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-                  alt={item.albumArtAlt || `${item.albumName} by ${item.bandName}`}
+                  alt={
+                    item.albumArtAlt || `${item.albumName} by ${item.bandName}`
+                  }
                   width={640}
                   height={640}
                   class="absolute inset-0 h-full w-full object-cover"
@@ -63,7 +67,9 @@ const draftMode = Astro.locals.draftMode === true;
               <span class="font-bold">{item.bandName}</span>
               <span class="font-light opacity-40">
                 &nbsp;-&nbsp;{item.albumName}
-                {typeof item.releaseYear === "number" ? ` (${item.releaseYear})` : ""}
+                {typeof item.releaseYear === "number"
+                  ? ` (${item.releaseYear})`
+                  : ""}
               </span>
             </span>
           </a>
