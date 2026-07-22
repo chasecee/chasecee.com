@@ -10,13 +10,39 @@ interface Props {
 const { activePath } = Astro.props;
 ---
 
-<div class="sticky top-2 inset-x-0 z-40 overflow-visible md:top-4" transition:name="site-header" transition:animate="none">
-  <header class="header container relative z-0 flex h-(--site-header-height) items-center overflow-visible py-2">
-    <div aria-hidden class="header-border pointer-events-none absolute inset-0 z-1 rounded-xl border-site border-neutral-500/50 dark:border-neutral-600"></div>
-    <div id="logo-border-root" aria-hidden class="pointer-events-none absolute inset-0 z-2 overflow-visible"></div>
-    <div aria-hidden class="header-inner pointer-events-none absolute inset-(--site-border-width) z-3 rounded-[calc(var(--radius-xl)-var(--site-border-width))] bg-neutral-100 dark:bg-neutral-900"></div>
-    <div id="logo-border-inner-root" aria-hidden class="pointer-events-none absolute inset-0 z-4 overflow-visible"></div>
-    <div class="relative z-5 flex shrink-0 justify-start overflow-visible md:w-1/3">
+<div
+  class="sticky top-4 inset-x-0 z-40 overflow-visible"
+  transition:name="site-header"
+  transition:animate="none"
+>
+  <header
+    class="header container -mx-2 w-auto relative z-0 flex h-(--site-header-height) items-center overflow-visible py-2"
+  >
+    <div
+      aria-hidden
+      class="header-border pointer-events-none absolute inset-0 z-1 rounded-xl border-site border-neutral-400 dark:border-neutral-700"
+    >
+    </div>
+    <div
+      id="logo-border-root"
+      aria-hidden
+      class="pointer-events-none absolute inset-0 z-2 overflow-visible"
+    >
+    </div>
+    <div
+      aria-hidden
+      class="header-inner pointer-events-none absolute inset-(--site-border-width) z-3 rounded-[calc(var(--radius-xl)-var(--site-border-width))] bg-neutral-100 dark:bg-neutral-900"
+    >
+    </div>
+    <div
+      id="logo-border-inner-root"
+      aria-hidden
+      class="pointer-events-none absolute inset-0 z-4 overflow-visible"
+    >
+    </div>
+    <div
+      class="relative z-5 flex shrink-0 justify-start overflow-visible md:w-1/3"
+    >
       <HeaderLogo client:load transition:persist="header-logo" />
       <script is:inline data-astro-rerun>
         (() => {
@@ -26,7 +52,9 @@ const { activePath } = Astro.props;
           try {
             const paths = JSON.parse(stored);
             if (!Array.isArray(paths)) return;
-            const nodes = document.querySelectorAll("[data-chasecee-logo-path-index]");
+            const nodes = document.querySelectorAll(
+              "[data-chasecee-logo-path-index]",
+            );
             nodes.forEach((node) => {
               const value = node.getAttribute("data-chasecee-logo-path-index");
               if (value == null) return;
@@ -43,7 +71,9 @@ const { activePath } = Astro.props;
       </script>
     </div>
 
-    <div class="relative z-10 flex flex-1 justify-end md:w-1/3 md:flex-none md:justify-center">
+    <div
+      class="relative z-10 flex flex-1 justify-end md:w-1/3 md:flex-none md:justify-center"
+    >
       <HeaderNav activePath={activePath} />
     </div>
 

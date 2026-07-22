@@ -265,7 +265,7 @@ export default function HeaderLogo() {
       <div className="relative">
         <a
           onClick={handleLogoClick}
-          className="header__title group relative flex flex-row items-center gap-2"
+          className="header__title group relative -left-8 md:-left-0 flex flex-row items-center gap-2"
           href="/"
         >
           <div className="sr-only">Chase Cee Logo</div>
@@ -286,7 +286,7 @@ export default function HeaderLogo() {
               </div>
             </div>
             {import.meta.env.DEV && isMounted && (
-              <span className="pointer-events-none absolute top-1/2 left-full z-20 ml-2 -translate-y-1/2 rounded border border-neutral-500/60 bg-neutral-50/90 px-2 py-1 font-mono text-[10px] leading-none text-neutral-700 dark:border-neutral-600 dark:bg-neutral-900/90 dark:text-neutral-200">
+              <span className="hidden md:block pointer-events-none absolute top-1/2 left-full z-20 ml-2 -translate-y-1/2 rounded border border-neutral-400 bg-neutral-50/90 px-2 py-1 font-mono text-[10px] leading-none text-neutral-700 dark:border-neutral-700 dark:bg-neutral-900/90 dark:text-neutral-200">
                 {currentFontId}
               </span>
             )}

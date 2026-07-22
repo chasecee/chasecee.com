@@ -101,7 +101,7 @@
 }
 
 .logo-border-path {
-  stroke: rgb(115 115 115 / 0.5);
+  stroke: var(--color-neutral-400);
   stroke-width: var(--logo-border-stroke);
 }
 
@@ -112,7 +112,7 @@
 
 @media (prefers-color-scheme: dark) {
   .logo-border-path {
-    stroke: var(--color-neutral-600);
+    stroke: var(--color-neutral-700);
   }
 
   .logo-border-inner-path {
