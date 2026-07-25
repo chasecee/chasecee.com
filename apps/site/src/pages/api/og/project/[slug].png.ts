@@ -11,10 +11,13 @@ export const GET: APIRoute = async ({ params }) => {
   }
 
   const client = getSanityClient(false, "published");
-  const project = await client.fetch<{ name?: string } | null>(
-    `*[_type == "project" && slug.current == $slug][0]{ name }`,
+  const project = await client.fetch<{ name?: string; type?: "personal" | "client" } | null>(
+    `*[_type == "project" && slug.current == $slug][0]{ name, type }`,
     { slug },
   );
+  if (project?.type === "client") {
+    return new Response("Not found", { status: 404 });
+  }
 
   const title = project?.name?.trim();
   if (!title) {

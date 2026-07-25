@@ -25,6 +25,7 @@ if (!projectSlug) {
 
 type ProjectPageData = ProjectViewData & {
   slug: string;
+  type?: "personal" | "client";
 };
 
 const initialProject = await loadQuery<ProjectPageData | null>({
@@ -35,6 +36,9 @@ const initialProject = await loadQuery<ProjectPageData | null>({
 const project = initialProject.data;
 
 if (!project) {
+  return Astro.rewrite("/404");
+}
+if (project.type === "client") {
   return Astro.rewrite("/404");
 }
 

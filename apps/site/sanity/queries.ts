@@ -59,6 +59,7 @@ export const PROJECT_QUERY = defineQuery(`*[_type == "project" && slug.current =
   name,
   "slug": slug.current,
   "image": image.asset->url,
+  type,
   subtitle,
   svgcode,
   url,
@@ -90,7 +91,7 @@ export const MUSIC_BY_SLUG_QUERY = defineQuery(
 
 export const MUSIC_QUERY = MUSIC_BY_SLUG_QUERY;
 
-export const PAGES_QUERY = defineQuery(`*[_type == "page"]{
+export const PAGES_QUERY = defineQuery(`*[_type == "page" && defined(slug.current)]{
   _id,
   _createdAt,
   title,
