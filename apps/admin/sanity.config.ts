@@ -22,6 +22,7 @@ import {
   resolveProductionUrlAsync,
   getSiteBaseUrl,
   galleryPlugin,
+  heicUploadPlugin,
   mediaPlugin,
   configureStudioPreviewUrls,
   kitStudioConfig,
@@ -188,6 +189,7 @@ export default defineConfig({
     codeInput(),
     colorInput(),
     galleryPlugin({}),
+    heicUploadPlugin(),
     mediaPlugin(),
     presentationTool({
       name: "edit",
