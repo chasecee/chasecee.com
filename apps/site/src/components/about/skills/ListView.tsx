@@ -94,7 +94,10 @@ const ListView = ({ skills }: ListViewProps) => {
               aria-expanded={isOpen}
               aria-controls={panelId}
               onClick={() => toggleCategory(skill.name)}
-              className={`${rowClass} focus-ring w-full cursor-pointer text-left transition-colors hover:bg-neutral-200 dark:hover:bg-neutral-800`}
+              // Translucent rather than a fixed gray: neutral-100 is themed to
+              // the cream page background, so the old hover was invisible, and
+              // a flat neutral-200 would clash with the background's hue.
+              className={`${rowClass} focus-ring w-full cursor-pointer text-left transition-colors hover:bg-black/5 dark:hover:bg-white/5`}
               style={{ paddingLeft: `${level * 16 + 8}px` }}
             >
               {label}
