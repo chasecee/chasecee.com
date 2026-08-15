@@ -23,7 +23,7 @@ const draftMode = Astro.locals.draftMode === true;
         <article class="w-full shrink-0">
           <a
             href={`/music/${item.slug}`}
-            class={`group block text-black no-underline dark:text-white ${draftRingClass}`}
+            class={`group focus-ring block text-black no-underline dark:text-white ${draftRingClass}`}
           >
             <div class="relative overflow-hidden aspect-square">
               {showDraftBadge && (
@@ -65,7 +65,7 @@ const draftMode = Astro.locals.draftMode === true;
             </div>
             <span class="mt-3 inline-block text-base">
               <span class="font-bold">{item.bandName}</span>
-              <span class="font-light opacity-40">
+              <span class="font-light opacity-60">
                 &nbsp;-&nbsp;{item.albumName}
                 {typeof item.releaseYear === "number"
                   ? ` (${item.releaseYear})`

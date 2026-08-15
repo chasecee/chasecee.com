@@ -94,6 +94,16 @@ body.pt-8 {
   }
 }
 
+/* Shared keyboard focus ring. currentColor tracks the theme's text color,
+   so it stays high-contrast in both light and dark without a second rule. */
+@utility focus-ring {
+  &:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+    border-radius: 0.25rem;
+  }
+}
+
 /* Visible only when focused; first tab stop on every page. */
 .skip-link {
   position: fixed;

@@ -14,7 +14,7 @@ const isMusicPath =
   normalizedActivePath === "/music" ||
   normalizedActivePath.startsWith("/music/");
 const baseClass =
-  "header_item no-underline cursor-pointer transition-colors group relative";
+  "header_item focus-ring no-underline transition-opacity group relative";
 ---
 
 <div
@@ -50,7 +50,24 @@ const baseClass =
 </div>
 
 <style>
-  .header_item:not(.item_active):hover {
-    opacity: 0.5;
+  /* Rest state is muted and hover resolves to full strength, so hovering
+     gains contrast. The previous rule faded to 0.5 (3.7:1) on hover. */
+  .item_inactive {
+    opacity: 0.7;
+  }
+
+  .item_inactive:hover,
+  .item_inactive:focus-visible {
+    opacity: 1;
+  }
+
+  .item_active {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .header_item {
+      transition: none;
+    }
   }
 </style>
