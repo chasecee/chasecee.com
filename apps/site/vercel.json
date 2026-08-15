@@ -83,23 +83,23 @@
     },
     {
       "source": "/js/u.js",
-      "destination": "https://umami-production-e048.up.railway.app/script.js"
+      "destination": "https://u.chasecee.com/script.js"
     },
     {
       "source": "/js/ur.js",
-      "destination": "https://umami-production-e048.up.railway.app/recorder.js"
+      "destination": "https://u.chasecee.com/recorder.js"
     },
     {
       "source": "/js/api/send",
-      "destination": "https://umami-production-e048.up.railway.app/api/send"
+      "destination": "https://u.chasecee.com/api/send"
     },
     {
       "source": "/js/api/record",
-      "destination": "https://umami-production-e048.up.railway.app/api/record"
+      "destination": "https://u.chasecee.com/api/record"
     },
     {
       "source": "/js/api/websites/:id/recorder",
-      "destination": "https://umami-production-e048.up.railway.app/api/websites/:id/recorder"
+      "destination": "https://u.chasecee.com/api/websites/:id/recorder"
     }
   ],
   "redirects": [
