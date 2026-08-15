@@ -465,6 +465,7 @@ export function PhysicsCanvas() {
       <canvas
         key={instanceKeyRef.current}
         ref={canvasRef}
+        aria-hidden="true"
         className="h-full w-full bg-neutral-100 dark:bg-neutral-900"
       />
       <div

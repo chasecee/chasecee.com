@@ -15,39 +15,31 @@ const isMusicPath =
   normalizedActivePath.startsWith("/music/");
 const baseClass =
   "header_item focus-ring no-underline transition-opacity group relative";
+
+const items = [
+  { href: "/", label: "Work", active: normalizedActivePath === "/" },
+  { href: "/music", label: "Music", active: isMusicPath },
+  { href: "/about", label: "About", active: normalizedActivePath === "/about" },
+];
 ---
 
-<div
+<nav
+  aria-label="Primary"
   class="header_menu flex flex-row justify-end md:justify-center items-center gap-3 sm:gap-5 md:gap-6 grow"
 >
-  <a
-    href="/"
-    class:list={[
-      baseClass,
-      normalizedActivePath === "/" ? "item_active" : "item_inactive",
-    ]}
-  >
-    Work
-    {normalizedActivePath === "/" && <NavActiveIndicator />}
-  </a>
-  <a
-    href="/music"
-    class:list={[baseClass, isMusicPath ? "item_active" : "item_inactive"]}
-  >
-    Music
-    {isMusicPath && <NavActiveIndicator />}
-  </a>
-  <a
-    href="/about"
-    class:list={[
-      baseClass,
-      normalizedActivePath === "/about" ? "item_active" : "item_inactive",
-    ]}
-  >
-    About
-    {normalizedActivePath === "/about" && <NavActiveIndicator />}
-  </a>
-</div>
+  {
+    items.map((item) => (
+      <a
+        href={item.href}
+        aria-current={item.active ? "page" : undefined}
+        class:list={[baseClass, item.active ? "item_active" : "item_inactive"]}
+      >
+        {item.label}
+        {item.active && <NavActiveIndicator />}
+      </a>
+    ))
+  }
+</nav>
 
 <style>
   /* Rest state is muted and hover resolves to full strength, so hovering

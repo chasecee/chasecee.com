@@ -1,4 +1,4 @@
-import { startTransition, useId, useState } from "react";
+import { startTransition, useId, useRef, useState } from "react";
 import { stegaClean } from "@sanity/client/stega";
 import { Spotify } from "@chasecee/sanity-kit/astro";
 import type { MusicDetail } from "@/types/Music";
@@ -115,7 +115,40 @@ export default function MusicPlayers({
   const tabs = buildTabs(embeds, links, getEmbedDataAttribute);
   const reactId = useId();
   const [activeId, setActiveId] = useState(tabs[0]?.id ?? "");
+  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const active = tabs.find((tab) => tab.id === activeId) ?? tabs[0];
+
+  // Roving tabindex takes the inactive tabs out of the tab order, so without
+  // arrow keys they are unreachable by keyboard entirely. See the WAI-ARIA
+  // APG tabs pattern.
+  const handleTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    const currentIndex = tabs.findIndex((tab) => tab.id === active?.id);
+    if (currentIndex < 0) return;
+
+    let nextIndex: number;
+    switch (event.key) {
+      case "ArrowRight":
+        nextIndex = (currentIndex + 1) % tabs.length;
+        break;
+      case "ArrowLeft":
+        nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+        break;
+      case "Home":
+        nextIndex = 0;
+        break;
+      case "End":
+        nextIndex = tabs.length - 1;
+        break;
+      default:
+        return;
+    }
+
+    event.preventDefault();
+    const nextTab = tabs[nextIndex];
+    if (!nextTab) return;
+    startTransition(() => setActiveId(nextTab.id));
+    tabRefs.current[nextTab.id]?.focus();
+  };
 
   if (!active) return null;
 
@@ -135,17 +168,21 @@ export default function MusicPlayers({
             return (
               <button
                 key={tab.id}
+                ref={(node) => {
+                  tabRefs.current[tab.id] = node;
+                }}
                 type="button"
                 role="tab"
                 id={`${reactId}-${tab.id}`}
                 aria-selected={selected}
                 aria-controls={`${reactId}-panel`}
                 tabIndex={selected ? 0 : -1}
-                className={`-mb-px border-b pb-2 text-sm tracking-wide transition-colors ${
+                className={`focus-ring -mb-px border-b pb-2 text-sm tracking-wide transition-colors ${
                   selected
                     ? "border-current text-current"
-                    : "border-transparent text-current/45 hover:text-current/75"
+                    : "border-transparent text-current/70 hover:text-current"
                 }`}
+                onKeyDown={handleTabKeyDown}
                 onClick={() => {
                   startTransition(() => setActiveId(tab.id));
                 }}
