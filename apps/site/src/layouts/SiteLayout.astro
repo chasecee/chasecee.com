@@ -72,6 +72,11 @@ const jsonLd = siteJsonLd({
       }
     />
     {!showEditorBar && <ClientRouter />}
+    <script async src="/js/pa.js"></script>
+    <script is:inline>
+      window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+      plausible.init({ endpoint: "/js/event" })
+    </script>
   </head>
   <body
     class={`font-sans w-full min-h-screen bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-white ${showEditorBar ? "pt-8" : ""}`}

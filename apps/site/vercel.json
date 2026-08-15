@@ -56,6 +56,20 @@
       ]
     }
   ],
+  "rewrites": [
+    {
+      "source": "/js/pa.js",
+      "destination": "https://t.chasecee.com/js/pa-U1IxySuA2Noz1-DkNP-zD.js"
+    },
+    {
+      "source": "/js/event",
+      "destination": "https://t.chasecee.com/api/event"
+    },
+    {
+      "source": "/js/event/",
+      "destination": "https://t.chasecee.com/api/event"
+    }
+  ],
   "redirects": [
     {
       "source": "/studio",
