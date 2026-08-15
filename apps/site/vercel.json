@@ -3,14 +3,23 @@
     {
       "source": "/icons/site/favicon.ico",
       "headers": [
-        { "key": "Content-Type", "value": "image/x-icon" },
-        { "key": "Cache-Control", "value": "public, max-age=15552000" }
+        {
+          "key": "Content-Type",
+          "value": "image/x-icon"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=15552000"
+        }
       ]
     },
     {
       "source": "/icons/:path*",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=15552000" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=15552000"
+        }
       ]
     },
     {
@@ -52,7 +61,10 @@
     {
       "source": "/:file(.*\\.pdf)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=86400" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
       ]
     }
   ],
@@ -68,6 +80,26 @@
     {
       "source": "/js/event/",
       "destination": "https://t.chasecee.com/api/event"
+    },
+    {
+      "source": "/js/u.js",
+      "destination": "https://umami-production-e048.up.railway.app/script.js"
+    },
+    {
+      "source": "/js/ur.js",
+      "destination": "https://umami-production-e048.up.railway.app/recorder.js"
+    },
+    {
+      "source": "/js/api/send",
+      "destination": "https://umami-production-e048.up.railway.app/api/send"
+    },
+    {
+      "source": "/js/api/record",
+      "destination": "https://umami-production-e048.up.railway.app/api/record"
+    },
+    {
+      "source": "/js/api/websites/:id/recorder",
+      "destination": "https://umami-production-e048.up.railway.app/api/websites/:id/recorder"
     }
   ],
   "redirects": [
