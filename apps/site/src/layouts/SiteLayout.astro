@@ -7,6 +7,7 @@ import {
   presentationEditUrl,
 } from "@chasecee/sanity-kit/astro/visual-editing";
 import { STUDIO_URL } from "@/sanity/studio-url";
+import { siteJsonLd } from "@/src/utils/seo";
 import "../styles/globals.css";
 
 interface Props {
@@ -16,7 +17,7 @@ interface Props {
 }
 
 const {
-  title = "Work - Chase Cee",
+  title = "Chase Cee — Designer and Developer in Salt Lake City",
   description = "Chase Cee is a designer and developer in Salt Lake City building excellent web products front to back, from brand and UI design to full-stack engineering.",
   ogImage = "/api/og/home.png",
 } = Astro.props;
@@ -31,6 +32,12 @@ const siteOrigin =
 const canonicalURL = new URL(pathname, siteOrigin);
 const ogImageURL = new URL(ogImage, siteOrigin);
 const editUrl = presentationEditUrl(STUDIO_URL, Astro.url.href);
+const jsonLd = siteJsonLd({
+  canonical: canonicalURL.href,
+  title,
+  description,
+  pathname,
+});
 ---
 
 <!doctype html>
@@ -46,8 +53,13 @@ const editUrl = presentationEditUrl(STUDIO_URL, Astro.url.href);
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={ogImageURL} />
+    <meta property="og:image:alt" content={title} />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageURL} />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
     <link rel="icon" href="/icons/site/favicon.ico" />
     <link rel="shortcut icon" href="/icons/site/favicon-96x96.png" />
     <link rel="apple-touch-icon" href="/icons/site/apple-touch-icon.png" />

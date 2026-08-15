@@ -24,10 +24,15 @@ if (!page) {
   return Astro.rewrite("/404");
 }
 
-const title = `${page.title} - Chase Cee`;
+const pageTitle = stegaClean(page.title);
+if (!pageTitle) {
+  return Astro.rewrite("/404");
+}
+
+const title = `${pageTitle} - Chase Cee`;
 const description = metaDescription(
   page.subtitle,
-  `${page.title} - Chase Cee, a designer and developer in Salt Lake City building excellent web products front to back.`,
+  `${pageTitle} - Chase Cee, a designer and developer in Salt Lake City building excellent web products front to back.`,
 );
 const content = page.content ?? [];
 const heroImage =
@@ -36,7 +41,7 @@ const heroImage =
 const contentWithoutHero = heroImage
   ? content.filter((block) => block !== heroImage)
   : content;
-const heroTitle = page.subtitle ?? page.title;
+const heroTitle = page.subtitle ?? pageTitle;
 const heroImageTransitionName = `page-hero-image-${page.slug}`;
 const heroImageSrc = heroImage
   ? urlFor(heroImage as SanityImageSource).width(1600).fit("max").url()
@@ -44,14 +49,15 @@ const heroImageSrc = heroImage
 const heroImageAlt =
   heroImage && typeof heroImage.alt === "string"
     ? stegaClean(heroImage.alt).trim()
-    : page.title;
+    : pageTitle;
 const draftMode = Astro.locals.draftMode === true;
 const hasLightbox =
   draftMode ||
   contentHasBlock(contentWithoutHero, "gallery");
+const ogImage = `/api/og/page.png?title=${encodeURIComponent(pageTitle)}&template=page`;
 ---
 
-<SiteLayout {title} {description}>
+<SiteLayout {title} {description} {ogImage}>
   <Container className="pt-24" showCTA={true} document={page}>
     <div class="prose prose-flow">
       <header class="not-prose relative mb-10 min-h-52 overflow-hidden rounded-xl bg-neutral-900 sm:min-h-64">

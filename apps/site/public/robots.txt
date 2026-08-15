@@ -1,5 +1,9 @@
 User-agent: *
 Allow: /
 Disallow: /preview/
+Disallow: /api/draft-mode/
+Disallow: /api/revalidate
+Disallow: /ChaseChristensen-Resume-2025.pdf
+Disallow: /Chase-Christensen-Resume-2023.pdf
 
 Sitemap: https://chasecee.com/sitemap.xml

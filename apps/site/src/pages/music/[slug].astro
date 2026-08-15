@@ -42,12 +42,16 @@ if (!item) {
 const hasGallery = contentHasBlock(item.content, "gallery");
 const bandName = stegaClean(item.bandName);
 const albumName = stegaClean(item.albumName);
+
+if (!bandName || !albumName) {
+  return Astro.rewrite("/404");
+}
 ---
 
 <SiteLayout
   title={`${albumName} by ${bandName} - Chase Cee`}
-  description={`${albumName} by ${bandName}.`}
-  ogImage="/api/og/home.png"
+  description={`${albumName} by ${bandName} — music by Chase Cee.`}
+  ogImage={`/api/og/page.png?title=${encodeURIComponent(albumName)}&template=project`}
 >
   <Container document={item}>
     {
