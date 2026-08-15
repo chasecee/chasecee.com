@@ -58,7 +58,7 @@ export default function MusicView({
 
       {otherLinks.length > 0 && (
         <section className="mt-10">
-          <h3>Links</h3>
+          <h2 style={{ fontSize: "var(--prose-h3)" }}>Links</h2>
           <ul>
             {otherLinks.map((link) => (
               <li key={link._key || link.url}>

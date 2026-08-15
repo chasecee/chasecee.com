@@ -26,9 +26,10 @@ const studioHref = studioDocumentUrl(sanityDocument);
 ---
 
 <div class={`root min-h-screen w-full ${className} pt-4`}>
+  <a class="skip-link" href="#main-content">Skip to content</a>
   <div class="container">
     <Header activePath={Astro.url.pathname} />
-    <main>
+    <main id="main-content" tabindex="-1">
       <slot />
     </main>
     {
@@ -49,7 +50,7 @@ const studioHref = studioDocumentUrl(sanityDocument);
               <div class="mt-10 flex flex-col items-center justify-center gap-6 sm:flex-row">
                 <a
                   href="/about#contact"
-                  class="not-prose inline-flex items-center justify-center gap-x-3 rounded-[.25rem] border-0 px-6 py-3 text-base text-black dark:text-white no-underline shadow-xs transition-colors ring-site ring-black/30 bg-indigo-600 ring-indigo-300 dark:bg-indigo-500/20 dark:ring-indigo-300/20"
+                  class="not-prose inline-flex items-center justify-center gap-x-3 rounded-[.25rem] border-0 px-6 py-3 text-base text-white no-underline shadow-xs transition-colors ring-site ring-black/30 bg-indigo-600 ring-indigo-300 hover:bg-indigo-700 dark:bg-indigo-500/20 dark:ring-indigo-300/20 dark:hover:bg-indigo-500/35"
                 >
                   Contact
                 </a>
@@ -70,7 +71,10 @@ const studioHref = studioDocumentUrl(sanityDocument);
         </div>
       )
     }
-    <footer class="site-footer mt-10 py-10">
+    <footer
+      class="site-footer mt-10 py-10"
+      style="padding-bottom: calc(2.5rem + env(safe-area-inset-bottom));"
+    >
       <div class="prose max-w-none">
         <div class="mb-8 md:hidden">
           <p class="m-0 mb-3">Contact</p>

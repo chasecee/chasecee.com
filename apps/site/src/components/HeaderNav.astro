@@ -14,43 +14,52 @@ const isMusicPath =
   normalizedActivePath === "/music" ||
   normalizedActivePath.startsWith("/music/");
 const baseClass =
-  "header_item no-underline cursor-pointer transition-colors group relative";
+  "header_item focus-ring no-underline transition-opacity group relative";
+
+const items = [
+  { href: "/", label: "Work", active: normalizedActivePath === "/" },
+  { href: "/music", label: "Music", active: isMusicPath },
+  { href: "/about", label: "About", active: normalizedActivePath === "/about" },
+];
 ---
 
-<div
+<nav
+  aria-label="Primary"
   class="header_menu flex flex-row justify-end md:justify-center items-center gap-3 sm:gap-5 md:gap-6 grow"
 >
-  <a
-    href="/"
-    class:list={[
-      baseClass,
-      normalizedActivePath === "/" ? "item_active" : "item_inactive",
-    ]}
-  >
-    Work
-    {normalizedActivePath === "/" && <NavActiveIndicator />}
-  </a>
-  <a
-    href="/music"
-    class:list={[baseClass, isMusicPath ? "item_active" : "item_inactive"]}
-  >
-    Music
-    {isMusicPath && <NavActiveIndicator />}
-  </a>
-  <a
-    href="/about"
-    class:list={[
-      baseClass,
-      normalizedActivePath === "/about" ? "item_active" : "item_inactive",
-    ]}
-  >
-    About
-    {normalizedActivePath === "/about" && <NavActiveIndicator />}
-  </a>
-</div>
+  {
+    items.map((item) => (
+      <a
+        href={item.href}
+        aria-current={item.active ? "page" : undefined}
+        class:list={[baseClass, item.active ? "item_active" : "item_inactive"]}
+      >
+        {item.label}
+        {item.active && <NavActiveIndicator />}
+      </a>
+    ))
+  }
+</nav>
 
 <style>
-  .header_item:not(.item_active):hover {
-    opacity: 0.5;
+  /* Rest state is muted and hover resolves to full strength, so hovering
+     gains contrast. The previous rule faded to 0.5 (3.7:1) on hover. */
+  .item_inactive {
+    opacity: 0.7;
+  }
+
+  .item_inactive:hover,
+  .item_inactive:focus-visible {
+    opacity: 1;
+  }
+
+  .item_active {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .header_item {
+      transition: none;
+    }
   }
 </style>

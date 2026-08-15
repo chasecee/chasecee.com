@@ -13,7 +13,9 @@
   --prose-heading-weight: 500;
   --prose-heading-track: -0.02em;
   --prose-link: var(--color-indigo-600);
-  --prose-link-hover: var(--color-indigo-500);
+  /* Hover must gain contrast, not lose it: 500 dropped to 3.4:1 on the
+     cream background, 700 lifts to 6.0:1. */
+  --prose-link-hover: var(--color-indigo-700);
   --prose-blockquote-border: rgb(0 0 0 / 0.2);
   --project-lead-col: 32rem;
 }
@@ -30,8 +32,10 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --prose-link: var(--color-indigo-500);
-    --prose-link-hover: var(--color-indigo-400);
+    /* indigo-500 only reached 3.9:1 on the dark background; indigo-400
+       clears AA at 5.7:1 and 300 lifts further on hover. */
+    --prose-link: var(--color-indigo-400);
+    --prose-link-hover: var(--color-indigo-300);
     --prose-blockquote-border: rgb(255 255 255 / 0.25);
   }
 }

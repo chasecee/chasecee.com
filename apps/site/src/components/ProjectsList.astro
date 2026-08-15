@@ -85,6 +85,9 @@ const restProjects = expandable
   ? validProjects.slice(initialCount)
   : [];
 
+const panelId = `projects-panel-${
+  (title ?? "list").toLowerCase().replace(/\W+/g, "-") || "list"
+}`;
 const cardImageWidths = getCardImageWidths(columns);
 const cardImageSizes = getCardImageSizes(columns);
 const cardImageMaxWidth = cardImageWidths.at(-1) ?? 640;
@@ -108,9 +111,10 @@ const listClass = scroll
         {expandable && (
           <button
             type="button"
-            class="inline-flex items-center gap-1.5 text-sm font-medium opacity-70 transition-opacity hover:opacity-100"
+            class="focus-ring inline-flex items-center gap-1.5 text-sm font-medium opacity-70 transition-opacity hover:opacity-100"
             data-see-all
             aria-expanded="false"
+            aria-controls={panelId}
           >
             <span data-see-all-label>See All</span>
             <span
@@ -142,9 +146,11 @@ const listClass = scroll
   {
     expandable && (
       <div
+        id={panelId}
         class="grid transition-[grid-template-rows] duration-200 ease-out"
         style="grid-template-rows: 0fr"
         data-see-all-panel
+        inert
       >
         <div class="min-h-0 overflow-hidden">
           <div class={`grid gap-8 pt-8 ${gridClass}`}>
@@ -219,6 +225,9 @@ const listClass = scroll
             "(prefers-reduced-motion: reduce)",
           ).matches;
           button.setAttribute("aria-expanded", String(next));
+          // Collapsed cards stay in the DOM for the height animation, so
+          // `inert` is what actually keeps their links out of the tab order.
+          panel.inert = !next;
           if (reducedMotion) panel.style.transition = "none";
           panel.style.gridTemplateRows = next ? "1fr" : "0fr";
           if (reducedMotion) {

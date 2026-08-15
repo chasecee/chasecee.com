@@ -44,9 +44,20 @@ const jsonLd = siteJsonLd({
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta
+      name="theme-color"
+      content="#e3ded1"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#171717"
+      media="(prefers-color-scheme: dark)"
+    />
+    <link rel="preconnect" href="https://cdn.sanity.io" />
     <link rel="canonical" href={canonicalURL} />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:site_name" content="Chase Cee" />

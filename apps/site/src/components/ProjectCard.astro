@@ -100,7 +100,7 @@ const linkTitle = isExternalClient
   <a
     href={href}
     title={linkTitle}
-    class="group"
+    class="group focus-ring"
     target={isExternalClient ? "_blank" : undefined}
     rel={isExternalClient ? "noopener" : undefined}
   >
@@ -257,7 +257,7 @@ const linkTitle = isExternalClient
         }
         {
           project.subtitle && (
-            <span class="font-light opacity-40">
+            <span class="font-light opacity-60">
               &nbsp;-&nbsp;{project.subtitle}
             </span>
           )

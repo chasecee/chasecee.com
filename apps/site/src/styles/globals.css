@@ -12,6 +12,14 @@
     var(--site-header-height) + var(--site-header-pad) + var(--site-scroll-gap) +
       var(--site-draft-offset)
   );
+  --site-gutter: 1.5rem;
+  --tap-highlight: rgb(0 0 0 / 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --tap-highlight: rgb(255 255 255 / 0.12);
+  }
 }
 
 @media (width >= theme(--breakpoint-md)) {
@@ -49,7 +57,9 @@ body.pt-8 {
 
 @utility container {
   margin-inline: auto;
-  padding-inline: 1.5rem;
+  /* Keep content clear of notches/rounded corners in landscape. */
+  padding-left: max(var(--site-gutter), env(safe-area-inset-left));
+  padding-right: max(var(--site-gutter), env(safe-area-inset-right));
   @media (width >= --theme(--breakpoint-sm)) {
     max-width: none;
   }
@@ -65,6 +75,60 @@ body.pt-8 {
   ::backdrop,
   ::file-selector-button {
     border-color: var(--color-gray-200, currentColor);
+  }
+
+  /* Declare both schemes so form controls, scrollbars and native <select>
+     follow the user's preference instead of always rendering light. */
+  html {
+    color-scheme: light dark;
+  }
+
+  /* Anything scrolled to by anchor must clear the sticky header. */
+  :where(h1, h2, h3, h4, h5, h6, [id]) {
+    scroll-margin-top: var(--site-scroll-offset);
+  }
+
+  :where(a, button, summary, label, [role="button"], [role="tab"]) {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: var(--tap-highlight);
+  }
+}
+
+/* Shared keyboard focus ring. currentColor tracks the theme's text color,
+   so it stays high-contrast in both light and dark without a second rule. */
+@utility focus-ring {
+  &:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+    border-radius: 0.25rem;
+  }
+}
+
+/* Visible only when focused; first tab stop on every page. */
+.skip-link {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  z-index: 200;
+  translate: -50% -120%;
+  border-radius: 0 0 0.5rem 0.5rem;
+  background: var(--color-indigo-600);
+  padding: 0.625rem 1.25rem;
+  color: #fff;
+  font-size: 0.9375rem;
+  text-decoration: none;
+  transition: translate 160ms ease;
+}
+
+.skip-link:focus-visible {
+  translate: -50% 0;
+  outline: 2px solid currentColor;
+  outline-offset: -4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skip-link {
+    transition: none;
   }
 }
 

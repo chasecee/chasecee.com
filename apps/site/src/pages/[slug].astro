@@ -66,7 +66,12 @@ const ogImage = `/api/og/page.png?title=${encodeURIComponent(pageTitle)}&templat
             <img
               src={heroImageSrc}
               alt={heroImageAlt || page.title}
+              width={1600}
+              height={900}
               class="absolute inset-0 h-full w-full scale-105 object-cover"
+              loading="eager"
+              fetchpriority="high"
+              decoding="async"
               transition:name={heroImageTransitionName}
             />
           )
