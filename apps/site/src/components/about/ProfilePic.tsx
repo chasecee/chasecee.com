@@ -105,6 +105,7 @@ export default function ProfilePic() {
   const [controls, setControls] = useState<ProfilePicDevParams>(DEFAULT_PARAMS);
   const [isMounted, setIsMounted] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [isTouch, setIsTouch] = useState(false);
 
   const updateControls = (next: ProfilePicDevParams) => {
     const sanitized: ProfilePicDevParams = {
@@ -131,6 +132,17 @@ export default function ProfilePic() {
     }
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const update = () => setReducedMotion(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return;
+    }
+    const media = window.matchMedia("(hover: none) and (pointer: coarse)");
+    const update = () => setIsTouch(media.matches);
     update();
     media.addEventListener("change", update);
     return () => media.removeEventListener("change", update);
@@ -293,12 +305,14 @@ export default function ProfilePic() {
       targetStrength = 0;
     };
 
-    canvas.addEventListener("pointerenter", onPointerEnter);
-    canvas.addEventListener("pointerdown", onPointerDown);
-    canvas.addEventListener("pointerup", releasePointer);
-    canvas.addEventListener("pointercancel", releasePointer);
-    canvas.addEventListener("pointerleave", onPointerLeave);
-    window.addEventListener("pointermove", onWindowPointerMove);
+    if (!isTouch) {
+      canvas.addEventListener("pointerenter", onPointerEnter);
+      canvas.addEventListener("pointerdown", onPointerDown);
+      canvas.addEventListener("pointerup", releasePointer);
+      canvas.addEventListener("pointercancel", releasePointer);
+      canvas.addEventListener("pointerleave", onPointerLeave);
+      window.addEventListener("pointermove", onWindowPointerMove);
+    }
 
     const observer = new ResizeObserver(() => resize());
     observer.observe(canvas);
@@ -335,7 +349,7 @@ export default function ProfilePic() {
       gl.deleteShader(vertexShader);
       gl.deleteShader(fragmentShader);
     };
-  }, [reducedMotion]);
+  }, [reducedMotion, isTouch]);
 
   if (reducedMotion) {
     return (
@@ -344,7 +358,8 @@ export default function ProfilePic() {
         alt={alt}
         width={1200}
         height={1200}
-        className="m-0 block aspect-square w-full object-cover"
+        className="m-0 block aspect-square w-full object-cover select-none [-webkit-touch-callout:none]"
+        draggable={false}
       />
     );
   }
@@ -354,7 +369,9 @@ export default function ProfilePic() {
       <canvas
         ref={canvasRef}
         aria-label={alt}
-        className="m-0 block aspect-square w-full touch-none"
+        className={`m-0 block aspect-square w-full select-none [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] ${
+          isTouch ? "pointer-events-none" : "touch-none"
+        }`}
       />
       {IS_DEV && isMounted ? (
         <ProfilePicDevControls values={controls} onChange={updateControls} />
