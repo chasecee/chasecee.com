@@ -118,6 +118,7 @@ const linkTitle = isExternalClient
           <iframe
             title={project.name ?? undefined}
             tabindex="-1"
+            loading="lazy"
             data-project-embed
             data-src={project.embedUrl}
           />

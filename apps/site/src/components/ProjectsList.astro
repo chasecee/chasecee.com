@@ -173,6 +173,11 @@ const listClass = scroll
 </section>
 
 <script>
+  const whenPageLoaded = (run: () => void) => {
+    if (document.readyState === "complete") run();
+    else window.addEventListener("load", run, { once: true });
+  };
+
   const bindEmbedFades = () => {
     document
       .querySelectorAll<HTMLIFrameElement>("[data-project-embed]:not([data-bound])")
@@ -189,20 +194,30 @@ const listClass = scroll
           frame.src = src;
         };
 
-        if (!("IntersectionObserver" in window)) {
-          activate();
-          return;
-        }
-
-        const io = new IntersectionObserver(
-          (entries) => {
-            if (!entries.some((entry) => entry.isIntersecting)) return;
-            io.disconnect();
+        const scheduleActivate = () => {
+          if (!("IntersectionObserver" in window)) {
             activate();
-          },
-          { rootMargin: "200px 0px" },
-        );
-        io.observe(frame);
+            return;
+          }
+
+          const io = new IntersectionObserver(
+            (entries) => {
+              if (!entries.some((entry) => entry.isIntersecting)) return;
+              io.disconnect();
+              activate();
+            },
+            { rootMargin: "200px 0px" },
+          );
+          io.observe(frame);
+        };
+
+        whenPageLoaded(() => {
+          if ("requestIdleCallback" in window) {
+            requestIdleCallback(scheduleActivate, { timeout: 2000 });
+          } else {
+            scheduleActivate();
+          }
+        });
       });
   };
 
