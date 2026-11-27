@@ -19,6 +19,7 @@ const appRoot = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   site: "https://chasecee.com",
+  trailingSlash: "never",
   output: "server",
   prefetch: {
     defaultStrategy: "viewport",
