@@ -15,7 +15,10 @@ const [personalProjects, clientProjects] = await Promise.all([
 ]);
 ---
 
-<SiteLayout ogImage="/api/og/home.png">
+<SiteLayout 
+  description="Chase Cee is a designer and developer in Salt Lake City building excellent web products front to back. View portfolio work spanning web design, development, and branding."
+  ogImage="/api/og/home.png"
+>
   <Container className="relative z-10">
     <HomeHero9 client:load />
     <div class="relative z-10 flex flex-col gap-10">
